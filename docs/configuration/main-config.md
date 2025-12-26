@@ -8,7 +8,6 @@ The `config.yml` file is located in the `plugins/CraftEngineConverter/` director
 ## ⚙️ Configuration Options
 
 ```yaml
-# Enable or disable debug mode
 enable-debug: false
 
 # Auto-convert items on plugin enable
@@ -41,6 +40,14 @@ tag:
     enabled: true
   placeholder-api: # <placeholderapi:placeholder> or <papi:placeholder>
     enabled: true
+
+allow-block-conversion-propagation: true # When enabled, if a block is converted, the surrounding blocks will also be checked for conversion
+max-block-conversion-propagation-depth: 64 # Maximum number of blocks to propagate conversion in one block interaction event
+
+nexo:
+  enable-hook: true # Enable Nexo integration if Nexo is installed
+  enable-block-interaction-conversion: true # When enabled, when you interact with a nexo block, it will convert the nexo block to their CE equivalent
+  enable-furniture-interaction-conversion: true # When enabled, when you interact with a nexo furniture, it will convert the furniture to their CE equivalent
 
 # Available colors:
 # BLACK, DARK_BLUE, DARK_GREEN, DARK_AQUA, DARK_RED, DARK_PURPLE,
