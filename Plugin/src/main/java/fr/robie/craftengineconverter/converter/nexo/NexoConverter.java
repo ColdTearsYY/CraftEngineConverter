@@ -13,6 +13,7 @@ import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.utils.ConfigFile;
 import fr.robie.craftengineconverter.utils.SnakeUtils;
+import fr.robie.craftengineconverter.utils.enums.RecipeType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -109,6 +110,7 @@ public class NexoConverter extends Converter {
 
     private void processConfigFile(ConfigFile configFile, File outputBase, BukkitProgressBar progress) {
         String fileName = configFile.sourceFile().getName();
+        File itemFile = configFile.sourceFile();
         YamlConfiguration config = configFile.config();
 
         YamlConfiguration convertedConfig = new YamlConfiguration();
@@ -151,23 +153,7 @@ public class NexoConverter extends Converter {
 
         generateCategorie(itemsIds, convertedConfig, finalFileName);
         if (this.settings.dryRunEnabled()) return;
-        try {
-            Path relative = configFile.baseDir().toPath().relativize(configFile.sourceFile().toPath());
-            File output = new File(outputBase, relative.toString());
-
-            if (!output.getParentFile().exists()) {
-                if (!output.getParentFile().mkdirs()) {
-                    Logger.debug("Failed to create output directory for converted item file: " +
-                            output.getParentFile().getAbsolutePath(), LogType.ERROR);
-                }
-            }
-
-            convertedConfig.save(output);
-        } catch (IOException e) {
-            Logger.showException("Failed to save converted item file: " + fileName, e);
-        } catch (IllegalArgumentException e) {
-            Logger.showException("Failed to compute relative path for: " + configFile.sourceFile().getPath(), e);
-        }
+        saveConvertedConfig(convertedConfig, configFile, itemFile, outputBase, "items","item");
     }
 
     @Override
@@ -293,21 +279,7 @@ public class NexoConverter extends Converter {
         }
         if (this.settings.dryRunEnabled()) return;
         if (convertedCount > 0) {
-            try {
-                Path relativePath = configFile.baseDir().toPath().relativize(emojiFile.toPath());
-                File outputFile = new File(outputBaseDir, relativePath.toString());
-
-                if (!outputFile.getParentFile().exists()) {
-                    if (!outputFile.getParentFile().mkdirs()) {
-                        Logger.debug("Failed to create output directory for emoji file: " +
-                                outputFile.getParentFile().getAbsolutePath(), LogType.ERROR);
-                    }
-                }
-
-                convertedConfig.save(outputFile);
-            } catch (IOException e) {
-                Logger.showException("Failed to save converted emoji file: " + emojiFile.getName(), e);
-            }
+            saveConvertedConfig(convertedConfig, configFile, emojiFile, outputBaseDir, "emojis","emoji");
         }
     }
 
@@ -324,6 +296,395 @@ public class NexoConverter extends Converter {
     @Override
     public CompletableFuture<Void> convertSounds(boolean async, Optional<Player> player) {
         return executeTask(async, ()->this.convertSoundsSync(player));
+    }
+
+    @Override
+    public CompletableFuture<Void> convertRecipes(boolean async, Optional<Player> player) {
+        return executeTask(async, ()-> this.convertRecipesSync(player));
+    }
+
+
+
+    private void convertRecipesSync(Optional<Player> player) {
+        File recipesFolder = new File("plugins/" + converterName + "/recipes");
+        File outputFolder = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/recipes");
+        if (!recipesFolder.exists() || !recipesFolder.isDirectory()) {
+            Logger.debug("Nexo recipes directory not found at: " + recipesFolder.getAbsolutePath());
+            return;
+        }
+        if (outputFolder.exists()) {
+            deleteDirectory(outputFolder);
+        }
+        if (!outputFolder.mkdirs()) {
+            Logger.debug("Failed to create Nexo recipes output directory", LogType.ERROR);
+            return;
+        }
+        Map<RecipeType, List<ConfigFile>> toConvert = new HashMap<>();
+        populateRecipeQueue(recipesFolder, recipesFolder, toConvert);
+
+        int totalRecipes = 0;
+        for (List<ConfigFile> configFiles : toConvert.values()) {
+            for (ConfigFile configFile : configFiles) {
+                totalRecipes += countItemsInConfig(configFile.config());
+            }
+        }
+
+        BukkitProgressBar.Builder progressBarBuilder = new BukkitProgressBar.Builder(totalRecipes);
+        if (player.isPresent()){
+            progressBarBuilder.player(player.get());
+            progressBarBuilder.showBar(false);
+        }
+        BukkitProgressBar progress = progressBarBuilder
+                .prefix("Converting Nexo recipes")
+                .suffix("recipes")
+                .options(ConverterOptions.RECIPES)
+                .updateInterval(5000)
+                .build(plugin);
+
+        progress.start();
+
+        try {
+            processRecipeConfigs(toConvert, outputFolder, progress);
+            toConvert.clear();
+        } catch (Exception e) {
+            Logger.showException("Error during Nexo recipes conversion", e);
+        } finally {
+            progress.stop();
+        }
+    }
+
+    private void processRecipeConfigs(Map<RecipeType, List<ConfigFile>> toConvert, File outputFolder, BukkitProgressBar progress) {
+        for (Map.Entry<RecipeType, List<ConfigFile>> entry : toConvert.entrySet()) {
+            RecipeType recipeType = entry.getKey();
+            List<ConfigFile> configFiles = entry.getValue();
+
+            for (ConfigFile configFile : configFiles) {
+                processRecipeConfigFile(configFile, outputFolder, recipeType, progress);
+            }
+        }
+    }
+
+    private void processRecipeConfigFile(ConfigFile configFile, File outputFolder, RecipeType recipeType, BukkitProgressBar progress) {
+        File recipeFile = configFile.sourceFile();
+        YamlConfiguration config = configFile.config();
+
+        Set<String> keys = config.getKeys(false);
+        YamlConfiguration convertedConfig = new YamlConfiguration();
+        ConfigurationSection recipesSection = convertedConfig.createSection("recipes");
+        int convertedCount = 0;
+
+        for (String key : keys) {
+            ConfigurationSection recipeSection = config.getConfigurationSection(key);
+            if (recipeSection == null) {
+                progress.increment();
+                continue;
+            }
+
+            String finalRecipeId = recipeType.name().toLowerCase() + ":" + key;
+            ConfigurationSection ceRecipeSection = recipesSection.createSection(finalRecipeId);
+
+            switch (recipeType) {
+                case SHAPELESS -> {
+                    ceRecipeSection.set("type", "shapeless");
+                    setCategory(recipeSection, ceRecipeSection);
+                    setGroup(recipeSection, ceRecipeSection);
+
+                    convertResult(recipeSection, ceRecipeSection, finalRecipeId);
+
+                    ConfigurationSection ingredientsSection = recipeSection.getConfigurationSection("ingredients");
+                    if (isNotNull(ingredientsSection)) {
+                        List<String> ingredientsList = new ArrayList<>();
+                        for (String letter : ingredientsSection.getKeys(false)) {
+                            String ingredient = convertItemOrTag(ingredientsSection, letter, finalRecipeId);
+                            if (isValidString(ingredient)) {
+                                ingredientsList.add(ingredient);
+                            }
+                        }
+                        if (!ingredientsList.isEmpty()) {
+                            ceRecipeSection.set("ingredients", ingredientsList);
+                            convertedCount++;
+                        } else {
+                            Logger.debug("No valid ingredients for recipe: " + finalRecipeId, LogType.WARNING);
+                        }
+                    }
+                }
+
+                case SHAPED -> {
+                    ceRecipeSection.set("type", "shaped");
+                    setCategory(recipeSection, ceRecipeSection);
+                    setGroup(recipeSection, ceRecipeSection);
+
+                    convertResult(recipeSection, ceRecipeSection, finalRecipeId);
+
+                    List<String> pattern = recipeSection.getStringList("shape");
+                    if (!pattern.isEmpty()) {
+                        ceRecipeSection.set("pattern", pattern);
+                    }
+
+                    ConfigurationSection ingredientsSection = recipeSection.getConfigurationSection("ingredients");
+                    if (isNotNull(ingredientsSection)) {
+                        ConfigurationSection ceIngredientsSection = ceRecipeSection.createSection("ingredients");
+                        for (String letter : ingredientsSection.getKeys(false)) {
+                            String ingredient = convertItemOrTag(ingredientsSection, letter, finalRecipeId);
+                            if (isValidString(ingredient)) {
+                                ceIngredientsSection.set(letter, ingredient);
+                            }
+                        }
+                    }
+                    convertedCount++;
+                }
+
+                case FURNACE, BLASTING, SMOKING -> {
+                    ceRecipeSection.set("type", recipeType.name().toLowerCase());
+                    setCategory(recipeSection, ceRecipeSection);
+                    setGroup(recipeSection, ceRecipeSection);
+
+                    double experience = recipeSection.getDouble("experience", 0.0);
+                    if (experience > 0) ceRecipeSection.set("experience", experience);
+
+                    int cookingTime = recipeSection.getInt("cookingTime", 200);
+                    ceRecipeSection.set("time", cookingTime);
+
+                    convertIngredient(recipeSection, ceRecipeSection, finalRecipeId);
+                    convertResult(recipeSection, ceRecipeSection, finalRecipeId);
+
+                    convertedCount++;
+                }
+
+                case STONECUTTING -> {
+                    ceRecipeSection.set("type", "stonecutting");
+                    setGroup(recipeSection, ceRecipeSection);
+
+                    convertIngredient(recipeSection, ceRecipeSection, finalRecipeId);
+                    convertResult(recipeSection, ceRecipeSection, finalRecipeId);
+
+                    convertedCount++;
+                }
+
+                case BREWING -> {
+                    ceRecipeSection.set("type", "brewing");
+
+                    convertContainer(recipeSection, ceRecipeSection, finalRecipeId);
+                    convertBrewingIngredient(recipeSection, ceRecipeSection, finalRecipeId);
+                    convertResult(recipeSection, ceRecipeSection, finalRecipeId);
+
+                    convertedCount++;
+                }
+
+                default -> {
+                    Logger.debug("Unsupported recipe type: " + recipeType + " for recipe: " + finalRecipeId, LogType.WARNING);
+                }
+            }
+            progress.increment();
+        }
+
+        if (this.settings.dryRunEnabled()) return;
+        if (convertedCount > 0) {
+            saveConvertedConfig(convertedConfig, configFile, recipeFile, outputFolder, "recipes","recipe");
+        }
+    }
+
+
+    private void setCategory(ConfigurationSection source, ConfigurationSection target) {
+        String category = source.getString("category");
+        if (isValidString(category)) target.set("category", category);
+    }
+
+    private void setGroup(ConfigurationSection source, ConfigurationSection target) {
+        String group = source.getString("group");
+        if (isValidString(group)) target.set("group", group);
+    }
+
+    private String convertItemOrTag(ConfigurationSection section, String key, String recipeId) {
+        String tag = section.getString(key + ".tag");
+        if (isValidString(tag)) {
+            return "#" + tag;
+        }
+
+        String minecraftType = section.getString(key + ".minecraft_type");
+        if (isValidString(minecraftType)) {
+            return namespaced(minecraftType.toLowerCase());
+        }
+
+        String nexoItem = section.getString(key + ".nexo_item");
+        if (isValidString(nexoItem)) {
+            String newName = PluginNameMapper.getInstance().getNewName(Plugins.NEXO, nexoItem);
+            if (isValidString(newName)) {
+                return newName;
+            } else {
+                Logger.debug("No mapping found for Nexo item " + "ingredient" + ": " + nexoItem + " in recipe: " + recipeId, LogType.WARNING);
+            }
+        }
+
+        return null;
+    }
+
+    private void convertResult(ConfigurationSection recipeSection, ConfigurationSection ceRecipeSection, String finalRecipeId) {
+        ConfigurationSection resultSection = recipeSection.getConfigurationSection("result");
+        if (isNotNull(resultSection)) {
+            ConfigurationSection ceResultSection = ceRecipeSection.createSection("result");
+
+            String minecraftType = resultSection.getString("minecraft_type");
+            if (isValidString(minecraftType)) {
+                ceResultSection.set("id", namespaced(minecraftType.toLowerCase()));
+            }
+
+            String nexoItem = resultSection.getString("nexo_item");
+            if (isValidString(nexoItem)) {
+                String newName = PluginNameMapper.getInstance().getNewName(Plugins.NEXO, nexoItem);
+                if (isValidString(newName)) {
+                    ceResultSection.set("id", newName);
+                } else {
+                    Logger.debug("No mapping found for Nexo item result: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                }
+            }
+
+            int amount = resultSection.getInt("amount", 1);
+            if (amount != 1) ceResultSection.set("count", amount);
+        }
+    }
+
+    private void convertIngredient(ConfigurationSection recipeSection, ConfigurationSection ceRecipeSection, String finalRecipeId) {
+        ConfigurationSection inputSection = recipeSection.getConfigurationSection("input");
+        if (isNotNull(inputSection)) {
+            String tag = inputSection.getString("tag");
+            if (isValidString(tag)) {
+                ceRecipeSection.set("ingredient", "#" + tag);
+                return;
+            }
+
+            String minecraftType = inputSection.getString("minecraft_type");
+            if (isValidString(minecraftType)) {
+                ceRecipeSection.set("ingredient", namespaced(minecraftType.toLowerCase()));
+            }
+
+            String nexoItem = inputSection.getString("nexo_item");
+            if (isValidString(nexoItem)) {
+                String newName = PluginNameMapper.getInstance().getNewName(Plugins.NEXO, nexoItem);
+                if (isValidString(newName)) {
+                    ceRecipeSection.set("ingredient", newName);
+                } else {
+                    Logger.debug("No mapping found for Nexo item input: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                }
+            }
+        }
+    }
+
+    private void convertContainer(ConfigurationSection recipeSection, ConfigurationSection ceRecipeSection, String finalRecipeId) {
+        ConfigurationSection inputSection = recipeSection.getConfigurationSection("input");
+        if (isNotNull(inputSection)) {
+            String tag = inputSection.getString("tag");
+            if (isValidString(tag)) {
+                ceRecipeSection.set("container", "#" + tag);
+                return;
+            }
+
+            String minecraftType = inputSection.getString("minecraft_type");
+            if (isValidString(minecraftType)) {
+                ceRecipeSection.set("container", namespaced(minecraftType.toLowerCase()));
+            }
+
+            String nexoItem = inputSection.getString("nexo_item");
+            if (isValidString(nexoItem)) {
+                String newName = PluginNameMapper.getInstance().getNewName(Plugins.NEXO, nexoItem);
+                if (isValidString(newName)) {
+                    ceRecipeSection.set("container", newName);
+                } else {
+                    Logger.debug("No mapping found for Nexo item container: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                }
+            }
+        }
+    }
+
+    private void convertBrewingIngredient(ConfigurationSection recipeSection, ConfigurationSection ceRecipeSection, String finalRecipeId) {
+        ConfigurationSection ingredientSection = recipeSection.getConfigurationSection("ingredient");
+        if (isNotNull(ingredientSection)) {
+            String tag = ingredientSection.getString("tag");
+            if (isValidString(tag)) {
+                ceRecipeSection.set("ingredient", "#" + tag);
+                return;
+            }
+
+            String minecraftType = ingredientSection.getString("minecraft_type");
+            if (isValidString(minecraftType)) {
+                ceRecipeSection.set("ingredient", namespaced(minecraftType.toLowerCase()));
+            }
+
+            String nexoItem = ingredientSection.getString("nexo_item");
+            if (isValidString(nexoItem)) {
+                String newName = PluginNameMapper.getInstance().getNewName(Plugins.NEXO, nexoItem);
+                if (isValidString(newName)) {
+                    ceRecipeSection.set("ingredient", newName);
+                } else {
+                    Logger.debug("No mapping found for Nexo item ingredient: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                }
+            }
+        }
+    }
+
+    private void saveConvertedConfig(YamlConfiguration convertedConfig, ConfigFile configFile, File baseFile, File outputFolder, String directoryName, String type) {
+        try {
+            Path relativePath = configFile.baseDir().toPath().relativize(baseFile.toPath());
+            File outputFile = new File(outputFolder, relativePath.toString());
+
+            if (!outputFile.getParentFile().exists()) {
+                if (!outputFile.getParentFile().mkdirs()) {
+                    Logger.debug("Failed to create output directory for "+directoryName+" file: " +
+                            outputFile.getParentFile().getAbsolutePath(), LogType.ERROR);
+                }
+            }
+
+            convertedConfig.save(outputFile);
+        } catch (IOException e) {
+            Logger.showException("Failed to save converted "+type+" file: " + baseFile.getName(), e);
+        }
+    }
+
+    private void populateRecipeQueue(File baseDir, File currentDir, Map<RecipeType, List<ConfigFile>> toConvert) {
+        File[] files = currentDir.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                populateRecipeQueue(baseDir, file, toConvert);
+            } else if (file.isFile() && file.getName().endsWith(".yml")) {
+                try {
+                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+                    RecipeType recipeType = determineRecipeType(file, baseDir);
+
+                    if (recipeType != null) {
+                        ConfigFile configFile = new ConfigFile(file, baseDir, config);
+                        toConvert.computeIfAbsent(recipeType, k -> new ArrayList<>()).add(configFile);
+                        Logger.debug("Added recipe file: " + file.getName() + " as type: " + recipeType);
+                    } else {
+                        Logger.debug("Could not determine recipe type for: " + file.getAbsolutePath(), LogType.WARNING);
+                    }
+                } catch (Exception e) {
+                    Logger.debug("Failed to load recipe file: " + file.getName() + " - " + e.getMessage(), LogType.ERROR);
+                }
+            }
+        }
+    }
+
+    private RecipeType determineRecipeType(File file, File baseDir) {
+        String relativePath = baseDir.toURI().relativize(file.getParentFile().toURI()).getPath();
+
+        String[] pathParts = relativePath.split("/");
+        if (pathParts.length == 0) {
+            return null;
+        }
+
+        String recipeTypeName = pathParts[0].toUpperCase();
+
+        try {
+            return RecipeType.valueOf(recipeTypeName);
+        } catch (IllegalArgumentException e) {
+            Logger.debug("Unknown recipe type folder: " + recipeTypeName, LogType.WARNING);
+            return null;
+        }
     }
 
     private void convertSoundsSync(Optional<Player> player) {

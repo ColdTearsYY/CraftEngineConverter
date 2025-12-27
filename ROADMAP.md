@@ -99,6 +99,7 @@
 
 ## ✅ Recently Completed
 
+- Nexo Recipes conversion
 - Interaction with furniture/block convert to CE equivalent
 - Fix Nexo JukeboxPlayableComponent && PlaceOn/Break
 - Multi-threaded pack conversion: just add the `--threads=<number>` argument to the command line

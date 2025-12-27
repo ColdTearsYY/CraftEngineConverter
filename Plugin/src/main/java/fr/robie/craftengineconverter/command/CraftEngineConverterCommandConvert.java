@@ -102,6 +102,7 @@ public class CraftEngineConverterCommandConvert extends VCommand {
             case EMOJIS -> converter.convertEmojis(true, player);
             case IMAGES -> converter.convertImages(true, player);
             case LANGUAGES -> converter.convertLanguages(true, player);
+            case RECIPES -> converter.convertRecipes(true, player);
             case SOUNDS -> converter.convertSounds(true, player);
         };
     }

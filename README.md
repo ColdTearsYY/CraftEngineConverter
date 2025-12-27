@@ -48,11 +48,11 @@ A powerful Minecraft plugin that converts configurations, items, and resources f
 
 ## 🔌 Supported Plugins
 
-| Plugin | Items | Glyphs | Emojis | Sounds | Packs |
-|--------|-------|--------|--------|--------|-------|
-| **Nexo** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Oraxen** | 🚧 | 🚧 | 🚧 | 🚧 | 🚧 |
-| **ItemsAdder** | 🚧 | 🚧 | 🚧 | 🚧 | 🚧 |
+| Plugin | Items | Glyphs | Emojis | Sounds | Packs | Recipes |
+|--------|-------|--------|--------|--------|-------|---------|
+| **Nexo** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **ItemsAdder** | 🚧 | 🚧 | 🚧 | 🚧 | 🚧 | 🚧 |
+| **Oraxen** | 🚧 | 🚧 | 🚧 | 🚧 | 🚧 | 🚧 |
 
 ✅ Fully Supported | 🚧 Work in Progress | ❌ Not Supported
 
@@ -87,7 +87,7 @@ Convert items from another plugin to CraftEngine format.
 
 **Arguments:**
 - `plugin` - The source plugin name (e.g., `nexo`)
-- `type` - The conversion type: `items`, `glyphs`, `emojis`, `images`, `languages`, `sounds`, `pack`, or `all`
+- `type` - The conversion type: `items`, `glyphs`, `emojis`, `images`, `languages`, `sounds`, `pack`, `recipes`, or `all`
 
 **Examples:**
 ```

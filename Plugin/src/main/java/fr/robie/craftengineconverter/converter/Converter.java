@@ -35,6 +35,7 @@ public abstract class Converter extends YamlUtils {
             convertImages(false, player);
             convertLanguages(false, player);
             convertSounds(false, player);
+            convertRecipes(false, player);
             convertPack(false, player);
         });
     }
@@ -48,6 +49,8 @@ public abstract class Converter extends YamlUtils {
     public abstract CompletableFuture<Void> convertLanguages(boolean async, Optional<Player> player);
 
     public abstract CompletableFuture<Void> convertSounds(boolean async, Optional<Player> player);
+
+    public abstract CompletableFuture<Void> convertRecipes(boolean async, Optional<Player> player);
 
     public abstract CompletableFuture<Void> convertPack(boolean async, Optional<Player> player);
 

@@ -12,7 +12,9 @@ public enum ConverterOptions implements ProgressBarUtils {
     IMAGES(ProgressColor.GOLD),
     LANGUAGES(ProgressColor.BLUE),
     SOUNDS(ProgressColor.LIGHT_PURPLE),
-    PACKS(ProgressColor.RED);
+    RECIPES(ProgressColor.DARK_AQUA),
+    PACKS(ProgressColor.RED)
+    ;
     private ProgressColor progressColor;
     private ProgressColor emptyColor;
     private ProgressColor percentColor;
