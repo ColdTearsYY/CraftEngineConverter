@@ -53,7 +53,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertItemName() {
         String itemName = this.nexoItemSection.getString("itemname");
         if (isValidString(itemName)){
-            this.craftEngineItemUtils.getDataSection().set("item-name", (Configuration.disableDefaultItalic?"<!i>":"")+itemName);
+            this.craftEngineItemUtils.setItemName(itemName);
         }
     }
 
@@ -61,14 +61,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertLore() {
         List<String> lore = this.nexoItemSection.getStringList("lore");
         if (!lore.isEmpty()) {
-            if (Configuration.disableDefaultItalic){
-                List<String> convertedLore = new ArrayList<>();
-                for (String line : lore) {
-                    convertedLore.add("<!i>" + line);
-                }
-                lore = convertedLore;
-            }
-            this.craftEngineItemUtils.getDataSection().set("lore", lore);
+            this.craftEngineItemUtils.setLore(lore);
         }
     }
 
@@ -175,7 +168,7 @@ public class NexoItemConverter extends ItemConverter {
     @Override
     public void convertEnchantmentGlintOverride() {
         if (this.nexoItemSection.getBoolean("Components.enchantment_glint_override", false)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:enchantment_glint_override", true);
+            this.craftEngineItemUtils.enableEnchantmentGlint();
         }
     }
 
@@ -315,9 +308,7 @@ public class NexoItemConverter extends ItemConverter {
     @Override
     public void convertJukeboxPlayable() {
         String song = this.nexoItemSection.getString("Components.jukebox_playable.song_key");
-        if (song != null && !song.isEmpty()) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:jukebox_playable", Map.of("song", song));
-        }
+        this.craftEngineItemUtils.setJukeboxPlayable(song);
     }
 
     @Override
@@ -865,10 +856,8 @@ public class NexoItemConverter extends ItemConverter {
                         String texturePath = packSection.getString("texture");
                         if (isValidString(texturePath)){
                             String namespacedTexturePath = namespaced(texturePath);
-                            if (isValidString(namespacedTexturePath)){
-                                Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
-                                this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
-                            }
+                            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
+                            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
                         }
                         return;
                     }
@@ -879,53 +868,51 @@ public class NexoItemConverter extends ItemConverter {
                 String modelTexturePath = packSection.getString("model");
                 if (isValidString(texturePath) && isNull(modelTexturePath) && !packSection.isConfigurationSection("CustomArmor")){
                     String namespacedTexturePath = namespaced(texturePath);
-                    if (isValidString(namespacedTexturePath)){
-                        ConfigurationSection fileEquipementsSection = getEquipmentsSection();
+                    ConfigurationSection fileEquipementsSection = getEquipmentsSection();
 
-                        String assetId = determineAssetId(packSection, List.of("_helmet","_chestplate","_leggings","_boots"));
+                    String assetId = determineAssetId(packSection, List.of("_helmet","_chestplate","_leggings","_boots"));
 
-                        if (isValidString(assetId)){
-                            List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
-                            Map<ArmorConverter, ConfigurationSection> converterSections = createArmorConverterSections(fileEquipementsSection, assetId);
+                    if (isValidString(assetId)){
+                        List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
+                        Map<ArmorConverter, ConfigurationSection> converterSections = createArmorConverterSections(fileEquipementsSection, assetId);
 
-                            String armorName = assetId.split(":", 2)[1];
-                            String[] split = namespacedTexturePath.split(":",2);
-                            String namespace = split[0];
+                        String armorName = assetId.split(":", 2)[1];
+                        String[] split = namespacedTexturePath.split(":",2);
+                        String namespace = split[0];
 
-                            String textureBasePath = namespacedTexturePath.split(":", 2)[1];
-                            String textureDir = "";
-                            int lastSlashIndex = textureBasePath.lastIndexOf("/");
-                            if (lastSlashIndex != -1) {
-                                textureDir = textureBasePath.substring(0, lastSlashIndex + 1);
-                            }
+                        String textureBasePath = namespacedTexturePath.split(":", 2)[1];
+                        String textureDir = "";
+                        int lastSlashIndex = textureBasePath.lastIndexOf("/");
+                        if (lastSlashIndex != -1) {
+                            textureDir = textureBasePath.substring(0, lastSlashIndex + 1);
+                        }
 
-                            // Layer 1 - Humanoid (helmet, chestplate, boots)
-                            String layer1FileName = armorName + "_armor_layer_1";
-                            String originalPathLayer1 = "textures/" + textureDir + layer1FileName + ".png";
-                            getConverter().addPackMapping(namespace, originalPathLayer1, namespace, "textures/entity/equipment/humanoid/");
+                        // Layer 1 - Humanoid (helmet, chestplate, boots)
+                        String layer1FileName = armorName + "_armor_layer_1";
+                        String originalPathLayer1 = "textures/" + textureDir + layer1FileName + ".png";
+                        getConverter().addPackMapping(namespace, originalPathLayer1, namespace, "textures/entity/equipment/humanoid/");
 
-                            // Layer 2 - Humanoid-leggings (leggings)
-                            String layer2FileName = armorName + "_armor_layer_2";
-                            String originalPathLayer2 = "textures/" + textureDir + layer2FileName + ".png";
-                            getConverter().addPackMapping(namespace, originalPathLayer2, namespace, "textures/entity/equipment/humanoid_leggings/");
+                        // Layer 2 - Humanoid-leggings (leggings)
+                        String layer2FileName = armorName + "_armor_layer_2";
+                        String originalPathLayer2 = "textures/" + textureDir + layer2FileName + ".png";
+                        getConverter().addPackMapping(namespace, originalPathLayer2, namespace, "textures/entity/equipment/humanoid_leggings/");
 
-                            for (ArmorConverter converter : convertersToProcess) {
-                                ConfigurationSection section = converterSections.get(converter);
-                                if (isNotNull(section)) {
-                                    String layer1Texture = generateArmorTexturePath(converter, namespace, layer1FileName, "humanoid");
-                                    String layer2Texture = generateArmorTexturePath(converter, namespace, layer2FileName, "humanoid_leggings");
+                        for (ArmorConverter converter : convertersToProcess) {
+                            ConfigurationSection section = converterSections.get(converter);
+                            if (isNotNull(section)) {
+                                String layer1Texture = generateArmorTexturePath(converter, namespace, layer1FileName, "humanoid");
+                                String layer2Texture = generateArmorTexturePath(converter, namespace, layer2FileName, "humanoid_leggings");
 
-                                    if (isNotNull(layer1Texture) && isNotNull(layer2Texture)) {
-                                        addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
-                                        addEquipmentTextures(section, "humanoid-leggings", Set.of(layer2Texture));
-                                    }
+                                if (isNotNull(layer1Texture) && isNotNull(layer2Texture)) {
+                                    addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
+                                    addEquipmentTextures(section, "humanoid-leggings", Set.of(layer2Texture));
                                 }
                             }
-
-                            getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
-                            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
-                            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
                         }
+
+                        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
+                        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
+                        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
                     }
                 }
             }
@@ -957,20 +944,18 @@ public class NexoItemConverter extends ItemConverter {
         String elytraModel = cleanPath(packSection.getString("texture"));
         if (isValidString(elytraModel)) {
             String namespacedElytra = namespaced(elytraModel);
-            if (isValidString(namespacedElytra)){
-                Map<String, Object> parseTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_ELYTRA, "%model_path%", namespacedElytra, "%texture_path%", namespacedElytra, "%broken_model_path%", namespacedElytra, "%broken_texture_path%", namespacedElytra);
-                this.craftEngineItemUtils.getGeneralSection().createSection("model", parseTemplate);
-                String[] split = namespacedElytra.split(":", 2);
-                String itemIdPartTwo = this.itemId.split(":")[1];
-                getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable").set("wings", split[0]+":"+itemIdPartTwo);
-                String string = split[1];
-                int lastIndexOf = string.lastIndexOf("/");
-                if (lastIndexOf != -1) {
-                    string = string.substring(0, lastIndexOf)+"/"+itemIdPartTwo;
-                }
-                String originalPath = "textures/" + string + ".png";
-                getConverter().addPackMapping(split[0], originalPath, split[0], "textures/entity/equipment/wings/");
+            Map<String, Object> parseTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_ELYTRA, "%model_path%", namespacedElytra, "%texture_path%", namespacedElytra, "%broken_model_path%", namespacedElytra, "%broken_texture_path%", namespacedElytra);
+            this.craftEngineItemUtils.getGeneralSection().createSection("model", parseTemplate);
+            String[] split = namespacedElytra.split(":", 2);
+            String itemIdPartTwo = this.itemId.split(":")[1];
+            getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable").set("wings", split[0]+":"+itemIdPartTwo);
+            String string = split[1];
+            int lastIndexOf = string.lastIndexOf("/");
+            if (lastIndexOf != -1) {
+                string = string.substring(0, lastIndexOf)+"/"+itemIdPartTwo;
             }
+            String originalPath = "textures/" + string + ".png";
+            getConverter().addPackMapping(split[0], originalPath, split[0], "textures/entity/equipment/wings/");
         }
     }
 
@@ -992,7 +977,7 @@ public class NexoItemConverter extends ItemConverter {
             if (isNotNull(shieldBlockingModel)) {
                 String namespacedBlocking = namespaced(shieldBlockingModel);
                 String namespacedModel = namespaced(modelPath);
-                if (isValidString(namespacedBlocking) && isValidString(namespacedModel)) {
+                if (isValidString(namespacedModel)) {
                     this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_SHIELD, "%blocking_model_path%",namespacedBlocking,"%default_model_path%",namespacedModel));
                     return true;
                 }
@@ -1022,7 +1007,7 @@ public class NexoItemConverter extends ItemConverter {
             if (isNotNull(castModel)) {
                 String namespacedCast = namespaced(castModel);
                 String namespacedModel = namespaced(modelPath);
-                if (isNotNull(namespacedCast) && isNotNull(namespacedModel)) {
+                if (isNotNull(namespacedModel)) {
                     this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_FISHING_ROD, "%casting_model_path%", namespacedCast, "%default_model_path%", namespacedModel));
                     return true;
                 }
@@ -1043,23 +1028,19 @@ public class NexoItemConverter extends ItemConverter {
         String texturePath = getTexturePath(packSection);
         if (isValidString(texturePath)) {
             String finalTexturePath = namespaced(texturePath);
-            if (isValidString(finalTexturePath)) {
-                String finalModelPath = finalTexturePath;
-                if (template.getType() == TemplateType.BLOCK) {
-                    finalModelPath = filterModelPath(finalTexturePath);
-                }
-                Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(template, "%model_path%", finalModelPath, "%texture_path%", finalTexturePath);
-                ConfigurationSection generalSection = this.craftEngineItemUtils.getGeneralSection();
-                if (template.getType() == TemplateType.BLOCK) {
-                    setSavedModelTemplates(parsedTemplate);
-                    ConfigurationSection ceModelSection = generalSection.createSection("model");
-                    ceModelSection.set("path", finalModelPath);
-                } else {
-                    parsedTemplate.put("type", "minecraft:model");
-                    generalSection.createSection("model", parsedTemplate);
-                }
+            String finalModelPath = finalTexturePath;
+            if (template.getType() == TemplateType.BLOCK) {
+                finalModelPath = filterModelPath(finalTexturePath);
+            }
+            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(template, "%model_path%", finalModelPath, "%texture_path%", finalTexturePath);
+            ConfigurationSection generalSection = this.craftEngineItemUtils.getGeneralSection();
+            if (template.getType() == TemplateType.BLOCK) {
+                setSavedModelTemplates(parsedTemplate);
+                ConfigurationSection ceModelSection = generalSection.createSection("model");
+                ceModelSection.set("path", finalModelPath);
             } else {
-                Logger.debug("Final texture path is invalid for item '" + this.itemId + "'. Skipping texture conversion.", LogType.WARNING);
+                parsedTemplate.put("type", "minecraft:model");
+                generalSection.createSection("model", parsedTemplate);
             }
         } else {
             Logger.debug("No texture path found for item '" + this.itemId + "' despite parent_model being '" + parent + "'. Skipping texture conversion.", LogType.WARNING);

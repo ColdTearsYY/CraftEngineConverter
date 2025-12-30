@@ -6,6 +6,7 @@ import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,8 @@ public abstract class ItemConverter extends ObjectUtils {
         convertEnchantmentGlintOverride();
         convertFireResistance();
         convertMaxDamage();
+        convertGlowDropColor();
+        convertDropShowName();
         convertHideTooltip();
         convertFood();
         convertTool();
@@ -68,47 +71,49 @@ public abstract class ItemConverter extends ObjectUtils {
         convertOversizedInGui();
         convertItemTexture();
         convertOther();
-    };
+    }
 
-    public void convertMaterial(){};
-    public void convertItemName(){};
-    public void convertLore(){};
-    public void convertDyedColor(){};
-    public void convertUnbreakable(){};
-    public void convertItemFlags(){};
-    public void convertAttributeModifiers(){};
-    public void convertEnchantments(){};
-    public void convertCustomModelData(){};
-    public void convertItemModel(){};
-    public void convertMaxStackSize(){};
-    public void convertEnchantmentGlintOverride(){};
-    public void convertFireResistance(){};
-    public void convertMaxDamage(){};
-    public void convertHideTooltip(){};
-    public void convertFood(){};
-    public void convertTool(){};
-    public void convertCustomData(){};
-    public void convertJukeboxPlayable(){};
-    public void convertConsumable(){};
-    public void convertEquipable(){};
-    public void convertDamageResistance(){};
-    public void convertEnchantableComponent(){};
-    public void convertGliderComponent(){};
-    public void convertToolTipStyle(){};
-    public void convertUseCooldown(){};
-    public void convertUseRemainderComponent(){};
-    public void convertAnvilRepairable(){};
-    public void convertDeathProtection(){};
-    public void convertToolTipDisplay(){};
-    public void convertBreakSound(){};
-    public void convertWeaponComponent(){};
-    public void convertBlocksAttackComponent(){};
-    public void convertCanPlaceOnComponent(){};
-    public void convertCanBreakComponent(){};
-    public void convertOversizedInGui(){};
-    public void convertItemTexture(){};
+    public void convertMaterial(){}
+    public void convertItemName(){}
+    public void convertLore(){}
+    public void convertDyedColor(){}
+    public void convertUnbreakable(){}
+    public void convertGlowDropColor(){}
+    public void convertDropShowName(){}
+    public void convertItemFlags(){}
+    public void convertAttributeModifiers(){}
+    public void convertEnchantments(){}
+    public void convertCustomModelData(){}
+    public void convertItemModel(){}
+    public void convertMaxStackSize(){}
+    public void convertEnchantmentGlintOverride(){}
+    public void convertFireResistance(){}
+    public void convertMaxDamage(){}
+    public void convertHideTooltip(){}
+    public void convertFood(){}
+    public void convertTool(){}
+    public void convertCustomData(){}
+    public void convertJukeboxPlayable(){}
+    public void convertConsumable(){}
+    public void convertEquipable(){}
+    public void convertDamageResistance(){}
+    public void convertEnchantableComponent(){}
+    public void convertGliderComponent(){}
+    public void convertToolTipStyle(){}
+    public void convertUseCooldown(){}
+    public void convertUseRemainderComponent(){}
+    public void convertAnvilRepairable(){}
+    public void convertDeathProtection(){}
+    public void convertToolTipDisplay(){}
+    public void convertBreakSound(){}
+    public void convertWeaponComponent(){}
+    public void convertBlocksAttackComponent(){}
+    public void convertCanPlaceOnComponent(){}
+    public void convertCanBreakComponent(){}
+    public void convertOversizedInGui(){}
+    public void convertItemTexture(){}
     public void convertExcludeFromInventory(){}
-    public void convertOther(){};
+    public void convertOther(){}
 
     public void setSavedModelTemplates(Map<String,Object> savedModelTemplates){
         this.savedModelTemplates.clear();
@@ -147,7 +152,8 @@ public abstract class ItemConverter extends ObjectUtils {
         this.assetId = assetId;
     }
 
-    protected String getTexturePath(ConfigurationSection packSection) {
+    @Nullable
+    protected String getTexturePath(@NotNull ConfigurationSection packSection) {
         List<String> textures = packSection.getStringList("textures");
         if (!textures.isEmpty()) {
             return textures.getFirst();

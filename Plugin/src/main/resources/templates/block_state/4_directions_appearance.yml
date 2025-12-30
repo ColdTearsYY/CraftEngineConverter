@@ -1,0 +1,12 @@
+east:
+  auto-state: solid
+  model: "%model%${append:y:270}"
+  north:
+    auto-state: solid
+    model: "%model%${append:y:180}"
+  south:
+    auto-state: solid
+    model: "%model%"
+  west:
+    auto-state: solid
+    model: "%model%${append:y:90}"

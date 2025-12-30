@@ -69,19 +69,8 @@ public class NexoConverter extends Converter {
         for (ConfigFile configFile : toConvert) {
             totalItems += countItemsInConfig(configFile.config());
         }
-        BukkitProgressBar.Builder progressBarBuilder;
-        progressBarBuilder = new BukkitProgressBar.Builder(totalItems);
 
-        if (player.isPresent()){
-            progressBarBuilder.player(player.get());
-            progressBarBuilder.showBar(false);
-        }
-
-        BukkitProgressBar progress = progressBarBuilder.prefix("Converting Nexo items")
-                .suffix("items")
-                .options(ConverterOptions.ITEMS)
-                .updateInterval(5000)
-                .build(plugin);
+        BukkitProgressBar progress = createProgressBar(player, totalItems, "Converting Nexo items", "items", ConverterOptions.ITEMS);
 
         progress.start();
 
@@ -619,24 +608,6 @@ public class NexoConverter extends Converter {
                     Logger.debug("No mapping found for Nexo item ingredient: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
                 }
             }
-        }
-    }
-
-    private void saveConvertedConfig(YamlConfiguration convertedConfig, ConfigFile configFile, File baseFile, File outputFolder, String directoryName, String type) {
-        try {
-            Path relativePath = configFile.baseDir().toPath().relativize(baseFile.toPath());
-            File outputFile = new File(outputFolder, relativePath.toString());
-
-            if (!outputFile.getParentFile().exists()) {
-                if (!outputFile.getParentFile().mkdirs()) {
-                    Logger.debug("Failed to create output directory for "+directoryName+" file: " +
-                            outputFile.getParentFile().getAbsolutePath(), LogType.ERROR);
-                }
-            }
-
-            convertedConfig.save(outputFile);
-        } catch (IOException e) {
-            Logger.showException("Failed to save converted "+type+" file: " + baseFile.getName(), e);
         }
     }
 
@@ -1586,30 +1557,5 @@ public class NexoConverter extends Converter {
         }
 
         return entryName;
-    }
-
-    private void deleteDirectory(File directory) {
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    deleteDirectory(file);
-                } else if (!file.delete()){
-                    Logger.debug("Failed to delete file: " + file.getAbsolutePath(), LogType.ERROR);
-                }
-            }
-        }
-        if (!directory.delete()){
-            Logger.debug("Failed to delete directory: " + directory.getAbsolutePath(), LogType.ERROR);
-        }
-    }
-
-    public void generateCategorie(List<String> itemsIds, YamlConfiguration config, String fileName) {
-        if (itemsIds.isEmpty()) return;
-        ConfigurationSection categoriesSection = config.createSection("categories");
-        ConfigurationSection categorySection = categoriesSection.createSection(itemsIds.getFirst());
-        categorySection.set("name", (Configuration.disableDefaultItalic? "<!i>":"") + "Category "+fileName);
-        categorySection.set("icon", itemsIds.getFirst());
-        categorySection.set("list", itemsIds);
     }
 }

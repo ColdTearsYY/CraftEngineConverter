@@ -7,7 +7,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ObjectUtils {
-    protected String cleanPath(String path) {
+    @Contract("null -> null")
+    @Nullable
+    protected String cleanPath(@Nullable String path) {
         if (path == null || path.isEmpty()) return null;
         if (path.endsWith(".png")) {
             path = path.substring(0, path.length() - 4);
@@ -33,6 +35,7 @@ public class ObjectUtils {
         return obj == null;
     }
 
+    @Contract("!null -> !null")
     protected @Nullable String namespaced(String path) {
         path = cleanPath(path);
         if (path == null || path.isEmpty()) return null;

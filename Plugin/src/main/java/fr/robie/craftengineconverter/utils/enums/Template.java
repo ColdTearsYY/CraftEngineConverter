@@ -1,8 +1,10 @@
 package fr.robie.craftengineconverter.utils.enums;
 
 public enum Template {
+    MODEL_CUBE("templates/model/cube", TemplateType.BLOCK),
     MODEL_CUBE_ALL("templates/model/cube_all", TemplateType.BLOCK),
     MODEL_CUBE_TOP("templates/model/cube_top", TemplateType.BLOCK),
+
     MODEL_ITEM_GENERATED("templates/model/item_generated"),
     MODEL_ITEM_SHIELD("templates/model/item_shield"),
     MODEL_ITEM_FISHING_ROD("templates/model/item_fishing_rod"),
@@ -18,7 +20,10 @@ public enum Template {
     LOOT_TABLE_SILK_TOUCH_ONLY("templates/loot_table/silk_touch_only_drop", TemplateType.LOOT_TABLE),
     LOOT_TABLE_FORTUNE_ONLY("templates/loot_table/fortune_only_drop", TemplateType.LOOT_TABLE),
 
-    MINECRAFT_EFFECT("templates/minecraft/effect",TemplateType.OTHER)
+    MINECRAFT_EFFECT("templates/minecraft/effect",TemplateType.OTHER),
+
+    BLOCK_STATE_LOG_APPEARANCE("templates/block_state/log_appearance", TemplateType.BLOCK_APPEARANCE),
+    BLOCK_STATE_4_DIRECTIONS_APPEARANCE("templates/block_state/4_directions_appearance", TemplateType.BLOCK_APPEARANCE)
 
     ;
     private final String path;

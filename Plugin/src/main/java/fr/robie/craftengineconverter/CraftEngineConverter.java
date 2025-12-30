@@ -16,6 +16,7 @@ import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import fr.robie.craftengineconverter.converter.Converter;
+import fr.robie.craftengineconverter.converter.itemsadder.ItemsAdderConverter;
 import fr.robie.craftengineconverter.converter.nexo.NexoConverter;
 import fr.robie.craftengineconverter.hooks.nexo.NexoBlockConverter;
 import fr.robie.craftengineconverter.hooks.nexo.NexoFurnitureConverter;
@@ -100,6 +101,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
         this.commandManager.validCommands();
         registerConverter(new NexoConverter(this));
+        registerConverter(new ItemsAdderConverter(this));
 
         this.tagResolver.initTagProcessors();
 

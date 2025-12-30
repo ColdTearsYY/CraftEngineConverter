@@ -1,17 +1,23 @@
 package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
+import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.configuration.ConverterSettings;
+import fr.robie.craftengineconverter.common.enums.ConverterOptions;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.utils.ConfigFile;
 import fr.robie.craftengineconverter.utils.YamlUtils;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -123,6 +129,58 @@ public abstract class Converter extends YamlUtils {
             } catch (Exception e) {
                 Logger.debug("Failed to load config file: " + fileName, LogType.ERROR);
             }
+        }
+    }
+
+    protected BukkitProgressBar createProgressBar(Optional<Player> optionalPlayer, int totalSteps, String prefix, String suffix, ConverterOptions options) {
+        BukkitProgressBar.Builder builder = new BukkitProgressBar.Builder(totalSteps);
+        if (optionalPlayer.isPresent()) {
+            builder.player(optionalPlayer.get());
+            builder.showBar(false);
+        }
+        return builder.prefix(prefix).suffix(suffix).options(options).updateInterval(5000).build(this.plugin);
+    }
+
+    protected void generateCategorie(List<String> itemsIds, YamlConfiguration config, String fileName) {
+        if (itemsIds.isEmpty()) return;
+        ConfigurationSection categoriesSection = config.createSection("categories");
+        ConfigurationSection categorySection = categoriesSection.createSection(itemsIds.getFirst());
+        categorySection.set("name", (Configuration.disableDefaultItalic? "<!i>":"") + "Category "+fileName);
+        categorySection.set("icon", itemsIds.getFirst());
+        categorySection.set("list", itemsIds);
+    }
+
+    protected void saveConvertedConfig(YamlConfiguration convertedConfig, ConfigFile configFile, File baseFile, File outputFolder, String directoryName, String type) {
+        try {
+            Path relativePath = configFile.baseDir().toPath().relativize(baseFile.toPath());
+            File outputFile = new File(outputFolder, relativePath.toString());
+
+            if (!outputFile.getParentFile().exists()) {
+                if (!outputFile.getParentFile().mkdirs()) {
+                    Logger.debug("Failed to create output directory for "+directoryName+" file: " +
+                            outputFile.getParentFile().getAbsolutePath(), LogType.ERROR);
+                }
+            }
+
+            convertedConfig.save(outputFile);
+        } catch (IOException e) {
+            Logger.showException("Failed to save converted "+type+" file: " + baseFile.getName(), e);
+        }
+    }
+
+    protected void deleteDirectory(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else if (!file.delete()){
+                    Logger.debug("Failed to delete file: " + file.getAbsolutePath(), LogType.ERROR);
+                }
+            }
+        }
+        if (!directory.delete()){
+            Logger.debug("Failed to delete directory: " + directory.getAbsolutePath(), LogType.ERROR);
         }
     }
 
