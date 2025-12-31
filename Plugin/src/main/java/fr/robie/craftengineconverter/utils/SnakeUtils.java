@@ -7,10 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -76,6 +73,14 @@ public class SnakeUtils implements AutoCloseable {
      */
     public SnakeUtils(@NotNull File targetFile) throws IOException {
         this(targetFile, false);
+    }
+
+    public SnakeUtils(@NotNull InputStream inputStream) throws IOException {
+        Yaml yaml = new Yaml();
+        Map<String, Object> loadedData = yaml.load(inputStream);
+        this.data = (loadedData != null) ? loadedData : new LinkedHashMap<>();
+        this.targetFile = File.createTempFile("snakeutils_temp_"+System.currentTimeMillis(), ".yml");
+        this.autoSave = false;
     }
 
     /**
@@ -188,6 +193,11 @@ public class SnakeUtils implements AutoCloseable {
     @Nullable
     private Object getValue(@NotNull String key){
         return getValue(key, ".");
+    }
+
+    @NotNull
+    public Object getObject(@NotNull String key){
+        return getValue(key);
     }
 
     /**

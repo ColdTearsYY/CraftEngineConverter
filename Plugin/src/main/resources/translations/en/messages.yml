@@ -1,0 +1,56 @@
+# Don't change this
+version: "${version}"
+
+time:
+  format:
+    year: "%02d %year% %02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"
+    month: "%02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"
+    week: "%02d %week% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"
+    day: "%02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"
+    hour: "%02d %hour% %02d %minute% %02d %second% %02d %millisecond%"
+    minute: "%02d %minute% %02d %second% %02d %millisecond%"
+    second: "%02d %second% %02d %millisecond%"
+    millisecond: "%02d %millisecond%"
+  unit:
+    year: "year"
+    years: "years"
+    month: "month"
+    months: "months"
+    week: "week"
+    weeks: "weeks"
+    day: "day"
+    days: "days"
+    hour: "hour"
+    hours: "hours"
+    minute: "minute"
+    minutes: "minutes"
+    second: "second"
+    seconds: "seconds"
+    millisecond: "millisecond"
+    milliseconds: "milliseconds"
+
+command:
+  prefix: "&#FFD166C&#FFC863r&#FEBF61a&#FEB65Ef&#FEAD5Bt&#FEA459E&#FD9B56n&#FD9253g&#FD8951i&#FC814En&#FC784Ce&#FC6F49C&#FB6646o&#FB5D44n&#FB5441v&#FB4B3Ee&#FA423Cr&#FA3939t ┃&r "
+  no-permission: "§cYou do not have permission to run this command."
+  player-only: "§cOnly one player can execute this command."
+  no-args: "§cImpossible to find the command with its arguments."
+  syntax:
+    error: "§cYou must execute the command like this§7: §a%syntax%"
+    help: "§f%syntax% §7» §7%description%"
+  reload:
+    description: "Reloads the plugin configuration and messages."
+    success: "§aPlugin configuration and messages reloaded in §c%time%§a."
+    failure: "§cAn error occurred while reloading the plugin configuration and messages. Check the console for more details."
+  converter:
+    description: "Converts items from another plugin to CraftEngine format."
+    not-supported: "§cThe plugin §e%plugin%§c is not supported for conversion."
+    start:
+      single: "§aStarting conversion for §e%plugin%§a..."
+      all: "§aStarting conversion for all supported plugins..."
+    complete:
+      single: "§aConversion completed for §e%plugin%§a! In §c%time%§a."
+      all: "§aConversion completed for all plugins! In §c%time%§a."
+    dry-run-note: "§eNote§7: This was a dry run, no changes were applied."
+    threads:
+      info: "§aUsing §e%threads%§a threads for conversion."
+      error-too-many: "§cThe number of threads specified exceeds the number of available processors (%max%). Using the maximum available."

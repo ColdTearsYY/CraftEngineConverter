@@ -31,6 +31,8 @@
                                 <includes>
                                     <include>fr.robie.craftengineconverter:*</include>
                                     <include>com.tcoded:FoliaLib</include>
+                                    <include>org.bstats:bstats-bukkit</include>
+                                    <include>org.bstats:bstats-base</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
@@ -73,7 +75,12 @@
         <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
-            <version>3.1.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-base</artifactId>
             <scope>compile</scope>
         </dependency>
 

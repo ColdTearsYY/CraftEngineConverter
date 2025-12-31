@@ -4,47 +4,55 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
+/**
+ * __ = . and _ = - when storing in a file.
+ */
 public enum Message {
-    PREFIX("&#FFD166C&#FFC863r&#FEBF61a&#FEB65Ef&#FEAD5Bt&#FEA459E&#FD9B56n&#FD9253g&#FD8951i&#FC814En&#FC784Ce&#FC6F49C&#FB6646o&#FB5D44n&#FB5441v&#FB4B3Ee&#FA423Cr&#FA3939t ┃§r "),
+    /**
+     * Time format messages.
+     */
+    TIME__FORMAT__YEAR("%02d %year% %02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
+    TIME__FORMAT__MONTH("%02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
+    TIME__FORMAT__WEEK("%02d %week% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
+    TIME__FORMAT__DAY("%02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
+    TIME__FORMAT__HOUR("%02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
+    TIME__FORMAT__MINUTE("%02d %minute% %02d %second% %02d %millisecond%"),
+    TIME__FORMAT__SECOND("%02d %second% %02d %millisecond%"),
+    TIME__FORMAT__MILLISECOND("%02d %millisecond%"),
+    TIME__UNIT__YEAR("year"), TIME__UNIT__YEARS("years"),
+    TIME__UNIT__MONTH("month"), TIME__UNIT__MONTHS("months"),
+    TIME__UNIT__WEEK("week"), TIME__UNIT__WEEKS("weeks"),
+    TIME__UNIT__DAY("day"), TIME__UNIT__DAYS("days"),
+    TIME__UNIT__HOUR("hour"), TIME__UNIT__HOURS("hours"),
+    TIME__UNIT__MINUTE("minute"), TIME__UNIT__MINUTES("minutes"),
+    TIME__UNIT__SECOND("second"), TIME__UNIT__SECONDS("seconds"),
+    TIME__UNIT__MILLISECOND("millisecond"), TIME__UNIT__MILLISECONDS("milliseconds"),
 
-    TIME_YEAR("%02d %year% %02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
-    TIME_MONTH("%02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
-    TIME_WEEK("%02d %week% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
-    TIME_DAY("%02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
-    TIME_HOUR("%02d %hour% %02d %minute% %02d %second% %02d %millisecond%"),
-    TIME_MINUTE("%02d %minute% %02d %second% %02d %millisecond%"),
-    TIME_SECOND("%02d %second% %02d %millisecond%"),
-    TIME_MILLISECOND("%02d %millisecond%"),
+    /**
+     * Command prefix message.
+     */
+    COMMAND__PREFIX("&#FFD166C&#FFC863r&#FEBF61a&#FEB65Ef&#FEAD5Bt&#FEA459E&#FD9B56n&#FD9253g&#FD8951i&#FC814En&#FC784Ce&#FC6F49C&#FB6646o&#FB5D44n&#FB5441v&#FB4B3Ee&#FA423Cr&#FA3939t ┃&r "),
+    COMMAND__NO_PERMISSION("§cYou do not have permission to run this command."),
+    COMMAND__PLAYER_ONLY("§cOnly one player can execute this command."),
+    COMMAND__NO_ARGS("§cImpossible to find the command with its arguments."),
+    COMMAND__SYNTAX__ERROR("§cYou must execute the command like this§7: §a%syntax%"),
+    COMMAND__SYNTAX__HELP("§f%syntax% §7» §7%description%"),
 
-    FORMAT_MILLISECOND("millisecond"), FORMAT_MILLISECONDS("milliseconds"),
-    FORMAT_SECOND("second"), FORMAT_SECONDS("seconds"),
-    FORMAT_MINUTE("minute"), FORMAT_MINUTES("minutes"),
-    FORMAT_HOUR("hour"), FORMAT_HOURS("hours"),
-    FORMAT_DAY("day"), FORMAT_DAYS("days"),
-    FORMAT_WEEK("week"), FORMAT_WEEKS("weeks"),
-    FORMAT_MONTH("month"), FORMAT_MONTHS("months"),
-    FORMAT_YEAR("year"), FORMAT_YEARS("years"),
+    COMMAND__RELOAD__DESCRIPTION("Reloads the plugin configuration and messages."),
+    COMMAND__RELOAD__SUCCESS("§aPlugin configuration and messages reloaded in §c%time%§a."),
+    COMMAND__RELOAD__FAILURE("§cAn error occurred while reloading the plugin configuration and messages. Check the console for more details."),
 
-    COMMAND_SYNTAXE_ERROR("§cYou must execute the command like this§7: §a%syntax%"),
-    COMMAND_NO_PERMISSION("§cYou do not have permission to run this command."),
-    COMMAND_NO_CONSOLE("§cOnly one player can execute this command."),
-    COMMAND_NO_ARG("§cImpossible to find the command with its arguments."),
-    COMMAND_SYNTAXE_HELP("§f%syntax% §7» §7%description%"),
-    COMMAND_PLAYER_NOT_FOUND("§cPlayer not found."),
-    COMMAND_CONVERTER_NOT_FOUND("§cConverter for plugin §c%plugin% §cnot found."),
-    COMMAND_CONVERTER_START("§aStarting conversion for §e%plugin%§a..."),
-    COMMAND_CONVERTER_START_ALL("§aStarting conversion for all supported plugins..."),
-    COMMAND_CONVERTER_COMPLETE("§aConversion completed for §e%plugin%§a! In §c%time%§a."),
-    COMMAND_CONVERTER_COMPLETE_ALL("§aConversion completed for all plugins! In §c%time%§a."),
-    COMMAND_CONVERTER_DRYRUN_ENABLED("§eDry run §aenabled. No changes will be applied."),
-    COMMAND_CONVERTER_THREADS_LIMIT("§cThe number of threads specified exceeds the number of available processors. Using the maximum available: §e%max%§c."),
+    COMMAND__CONVERTER__DESCRIPTION("Converts items from another plugin to CraftEngine format."),
+    COMMAND__CONVERTER__NOT_SUPPORTED("§cThe plugin §e%plugin%§c is not supported for conversion."),
+    COMMAND__CONVERTER__START__SINGLE("§aStarting conversion for §e%plugin%§a..."),
+    COMMAND__CONVERTER__START__ALL("§aStarting conversion for all supported plugins..."),
+    COMMAND__CONVERTER__COMPLETE__SINGLE("§aConversion completed for §e%plugin%§a! In §c%time%§a."),
+    COMMAND__CONVERTER__COMPLETE__ALL("§aConversion completed for all plugins! In §c%time%§a."),
+    COMMAND__CONVERTER__DRY_RUN_NOTE("§eNote§7: This was a dry run, no changes were applied."),
+    COMMAND__CONVERTER__THREADS__INFO("§aUsing §e%threads%§a threads for conversion."),
+    COMMAND__CONVERTER__THREADS__ERROR_TOO_MANY("§cThe number of threads specified exceeds the number of available processors (%max%). Using the maximum available."),
 
-    COMMAND_RELOAD_SUCCESS("§aPlugin configuration and messages reloaded in §c%time%§a."),
-
-    DESCRIPTION_COMMAND_RELOAD("Reloads the plugin configuration and messages."),
-    DESCRIPTION_COMMAND_CONVERT("Converts items from another plugin to CraftEngine format."),
-
-    ITEM_CONVERTED("§aItem §e%item%§a converted successfully in §c%time%§a.");
+    ;
 
     private List<String> messages;
     private String message;

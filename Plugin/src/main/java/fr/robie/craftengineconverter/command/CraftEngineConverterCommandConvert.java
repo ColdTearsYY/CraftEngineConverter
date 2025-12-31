@@ -22,7 +22,7 @@ public class CraftEngineConverterCommandConvert extends VCommand {
     public CraftEngineConverterCommandConvert(CraftEngineConverter plugin) {
         super(plugin);
         this.setPermission(Permission.COMMAND_CONVERT);
-        this.setDescription(Message.DESCRIPTION_COMMAND_CONVERT);
+        this.setDescription(Message.COMMAND__CONVERTER__DESCRIPTION);
         this.addSubCommand("convert");
         this.addOptionalArg("plugin",(sender,args)-> this.plugin.getConverterNames());
         this.addOptionalArg("type", (sender,args)-> {
@@ -42,7 +42,7 @@ public class CraftEngineConverterCommandConvert extends VCommand {
         ConverterOptions converterOption = argAsEnum(1, ConverterOptions.class, ConverterOptions.ALL);
         boolean dryRun = this.containFlag("-dryrun");
         if (dryRun){
-            message(plugin,sender, Message.COMMAND_CONVERTER_DRYRUN_ENABLED);
+            message(plugin,sender, Message.COMMAND__CONVERTER__DRY_RUN_NOTE);
         }
         int threads = this.getFlagValueAsInteger("threads");
         if (threads < 1){
@@ -50,11 +50,12 @@ public class CraftEngineConverterCommandConvert extends VCommand {
         } else if (threads > Runtime.getRuntime().availableProcessors()){
             int availableProcessors = Runtime.getRuntime().availableProcessors();
             threads = availableProcessors;
-            message(plugin,sender, Message.COMMAND_CONVERTER_THREADS_LIMIT, "max", availableProcessors);
+            message(plugin,sender, Message.COMMAND__CONVERTER__THREADS__ERROR_TOO_MANY, "max", availableProcessors);
         }
+        message(plugin, sender, Message.COMMAND__CONVERTER__THREADS__INFO, "threads", threads);
         if (targetPlugin == null){
             long startTime = System.currentTimeMillis();
-            message(plugin,sender, Message.COMMAND_CONVERTER_START_ALL);
+            message(plugin,sender, Message.COMMAND__CONVERTER__START__ALL);
             Collection<Converter> converters = plugin.getConverters();
             AtomicInteger counter = new AtomicInteger(converters.size());
             for (Converter converter : converters){
@@ -65,7 +66,7 @@ public class CraftEngineConverterCommandConvert extends VCommand {
                     int remaining = counter.decrementAndGet();
                     if (remaining == 0) {
                         long endTime = System.currentTimeMillis();
-                        message(plugin,sender, Message.COMMAND_CONVERTER_COMPLETE_ALL, "time", TimerBuilder.formatTimeAuto(endTime-startTime));
+                        message(plugin,sender, Message.COMMAND__CONVERTER__COMPLETE__ALL, "time", TimerBuilder.formatTimeAuto(endTime-startTime));
                         converterSettings.restoreBackup();
                     }
                 });
@@ -74,18 +75,18 @@ public class CraftEngineConverterCommandConvert extends VCommand {
             Optional<Converter> optionalConverter = plugin.getConverter(targetPlugin);
             if (optionalConverter.isPresent()){
                 long startTime = System.currentTimeMillis();
-                message(plugin,sender, Message.COMMAND_CONVERTER_START, "plugin", targetPlugin);
+                message(plugin,sender, Message.COMMAND__CONVERTER__START__SINGLE, "plugin", targetPlugin);
                 Converter converter = optionalConverter.get();
                 ConverterSettings converterSettings = converter.getSettings();
                 converterSettings.createBackup();
                 CompletableFuture<Void> voidCompletableFuture = processConverter(converter, converterOption, Optional.ofNullable(this.player), dryRun, threads);
                 voidCompletableFuture.thenRun(() -> {
                     long endTime = System.currentTimeMillis();
-                    message(plugin,sender, Message.COMMAND_CONVERTER_COMPLETE, "plugin", targetPlugin, "time", TimerBuilder.formatTimeAuto(endTime-startTime));
+                    message(plugin,sender, Message.COMMAND__CONVERTER__COMPLETE__SINGLE, "plugin", targetPlugin, "time", TimerBuilder.formatTimeAuto(endTime-startTime));
                     converterSettings.restoreBackup();
                 });
             } else {
-                message(plugin,sender, Message.COMMAND_CONVERTER_NOT_FOUND, "plugin", targetPlugin);
+                message(plugin,sender, Message.COMMAND__CONVERTER__NOT_SUPPORTED, "plugin", targetPlugin);
             }
         }
         return CommandType.SUCCESS;

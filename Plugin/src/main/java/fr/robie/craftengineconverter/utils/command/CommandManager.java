@@ -86,7 +86,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
                     return true;
             }
         }
-        message(plugin,sender, Message.COMMAND_NO_ARG);
+        message(plugin,sender, Message.COMMAND__NO_ARGS);
         return true;
     }
 
@@ -144,7 +144,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
     private CommandType processRequirements(VCommand command, CommandSender sender, String[] strings) {
 
         if (!(sender instanceof Player) && !command.isConsoleCanUse()) {
-            message(plugin,sender, Message.COMMAND_NO_CONSOLE);
+            message(plugin,sender, Message.COMMAND__PLAYER_ONLY);
             return CommandType.DEFAULT;
         }
 
@@ -154,7 +154,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
                 super.runAsync(this.plugin, () -> {
                     CommandType returnType = command.prePerform(this.plugin, sender, strings);
                     if (returnType == CommandType.SYNTAX_ERROR) {
-                        message(plugin,sender, Message.COMMAND_SYNTAXE_ERROR, "syntax", command.getSyntax());
+                        message(plugin,sender, Message.COMMAND__SYNTAX__ERROR, "syntax", command.getSyntax());
                     }
                 });
                 return CommandType.DEFAULT;
@@ -162,11 +162,11 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
 
             CommandType returnType = command.prePerform(this.plugin, sender, strings);
             if (returnType == CommandType.SYNTAX_ERROR) {
-                message(plugin,sender, Message.COMMAND_SYNTAXE_ERROR, "syntax", command.getSyntax());
+                message(plugin,sender, Message.COMMAND__SYNTAX__ERROR, "syntax", command.getSyntax());
             }
             return returnType;
         }
-        message(plugin,sender, Message.COMMAND_NO_PERMISSION);
+        message(plugin,sender, Message.COMMAND__NO_PERMISSION);
         return CommandType.DEFAULT;
     }
 

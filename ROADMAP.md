@@ -99,6 +99,7 @@
 
 ## ✅ Recently Completed
 
+- Multiple Translation support (English, French) + easy addition of new languages
 - Nexo Recipes conversion
 - Interaction with furniture/block convert to CE equivalent
 - Fix Nexo JukeboxPlayableComponent && PlaceOn/Break

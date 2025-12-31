@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter.common.configuration;
 
 import fr.robie.craftengineconverter.common.enums.ArmorConverter;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
+import fr.robie.craftengineconverter.common.enums.Languages;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
@@ -15,6 +16,7 @@ import java.util.function.Consumer;
 
 public class Configuration {
     public static boolean enableDebug = false;
+    public static Languages language = Languages.EN;
     public static boolean autoConvertOnStartup = false;
     public static Material defaultMaterial = Material.PAPER;
     public static boolean disableDefaultItalic = true;
@@ -224,6 +226,15 @@ public class Configuration {
 
     public enum ConfigPath {
         ENABLE_DEBUG("enable-debug", false, v -> enableDebug = (Boolean) v),
+        LANGUAGE("language", "EN", v -> {
+            try {
+                String string = (String) v;
+                language = Languages.valueOf(string.toUpperCase());
+            } catch (Exception e) {
+                Logger.debug("Invalid language in configuration, using EN as default.", LogType.WARNING);
+                language = Languages.EN;
+            }
+        }),
         AUTO_CONVERT_ON_STARTUP("auto-convert-on-startup", false, v -> autoConvertOnStartup = (Boolean) v),
         DEFAULT_MATERIAL("default-material", "PAPER", v -> {
             try {

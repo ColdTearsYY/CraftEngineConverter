@@ -25,10 +25,6 @@ import fr.robie.craftengineconverter.loader.MessageLoader;
 import fr.robie.craftengineconverter.utils.TagResolver;
 import fr.robie.craftengineconverter.utils.command.CommandManager;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
-import fr.robie.craftengineconverter.utils.save.NoReloadable;
-import fr.robie.craftengineconverter.utils.save.Persist;
-import fr.robie.craftengineconverter.utils.save.PersistImp;
-import fr.robie.craftengineconverter.utils.save.Savable;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
@@ -51,9 +47,8 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final CommandManager commandManager = new CommandManager(this);
     private final Gson gson = getGsonBuilder().create();
     private final InternalTemplateManager templateManager = new InternalTemplateManager(this);
-    private final List<Savable> savables = new ArrayList<>();
-    private final Persist persist = new PersistImp(this);
     private final ITagResolver tagResolver = new TagResolver();
+    private final MessageLoader messageLoader = new MessageLoader(this);
     private MessageFormatter messageFormatter = new ClassicMeta();
     private Metrics metrics;
     private PacketLoader packetLoader;
@@ -94,12 +89,12 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         if (this.foliaCompatibilityManager.isPaper()){
             messageFormatter = new ComponentMeta();
         }
-        this.addSave(new MessageLoader(this));
+
+        this.reloadMessages();
+
         if (!this.templateManager.loadTemplates()){
             Logger.info("A error occure during the loading of templates");
         }
-
-        this.loadFiles();
 
         this.commandManager.registerCommand("craftengineconverter",new CraftEngineConverterCommand(this),"cengineconverter","cec");
 
@@ -126,7 +121,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
                     int remaining = counter.decrementAndGet();
                     if (remaining == 0) {
                         long endTime = System.currentTimeMillis();
-                        Logger.info("Auto-conversion complete in " + TimerBuilder.formatTime(endTime-startTime, TimerBuilder.TimeUnit.SECOND) + " !");
+                        Logger.info("Auto-conversion complete in " + TimerBuilder.formatTimeAuto(endTime-startTime) + " !");
                     }
                 });
             }
@@ -147,8 +142,6 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     public void onDisable() {
         Logger.info("Disabling plugin ...");
 
-        this.saveFiles();
-
         if (this.packetLoader != null){
             this.packetLoader.onDisable();
         }
@@ -161,6 +154,10 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         }
 
         Logger.info("Plugin disabled !");
+    }
+
+    public void reloadMessages(){
+        this.messageLoader.reload();
     }
 
     private void registerListener(@NotNull Listener listener){
@@ -186,22 +183,6 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         return foliaCompatibilityManager;
     }
 
-    public void loadFiles() {
-        this.savables.forEach(save -> save.load(this.persist));
-    }
-
-    public void saveFiles() {
-        this.savables.forEach(save -> save.save(this.persist));
-    }
-
-    public void reloadFiles() {
-        this.savables.forEach(save -> {
-            if (!(save instanceof NoReloadable)) {
-                save.load(this.persist);
-            }
-        });
-    }
-
     public void registerConverter(Converter converter) {
         this.converterMap.put(converter.getName().toLowerCase(), converter);
     }
@@ -220,10 +201,6 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
     public Gson getGson() {
         return this.gson;
-    }
-
-    public void addSave(Savable saver) {
-        this.savables.add(saver);
     }
 
     private GsonBuilder getGsonBuilder() {

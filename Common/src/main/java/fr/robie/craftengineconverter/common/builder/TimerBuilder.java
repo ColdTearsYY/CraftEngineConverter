@@ -9,14 +9,14 @@ import java.util.List;
 public class TimerBuilder {
 
     public enum TimeUnit {
-        YEAR(31536000000L, Message.TIME_YEAR, Message.FORMAT_YEAR, Message.FORMAT_YEARS),
-        MONTH(2592000000L, Message.TIME_MONTH, Message.FORMAT_MONTH, Message.FORMAT_MONTHS),
-        WEEK(604800000L, Message.TIME_WEEK, Message.FORMAT_WEEK, Message.FORMAT_WEEKS),
-        DAY(86400000L, Message.TIME_DAY, Message.FORMAT_DAY, Message.FORMAT_DAYS),
-        HOUR(3600000L, Message.TIME_HOUR, Message.FORMAT_HOUR, Message.FORMAT_HOURS),
-        MINUTE(60000L, Message.TIME_MINUTE, Message.FORMAT_MINUTE, Message.FORMAT_MINUTES),
-        SECOND(1000L, Message.TIME_SECOND, Message.FORMAT_SECOND, Message.FORMAT_SECONDS),
-        MILLISECOND(1L, Message.TIME_MILLISECOND, Message.FORMAT_MILLISECOND, Message.FORMAT_MILLISECONDS);
+        YEAR(31536000000L, Message.TIME__FORMAT__YEAR, Message.TIME__UNIT__YEAR, Message.TIME__UNIT__YEARS),
+        MONTH(2592000000L, Message.TIME__FORMAT__MONTH, Message.TIME__UNIT__MONTH, Message.TIME__UNIT__MONTHS),
+        WEEK(604800000L, Message.TIME__FORMAT__WEEK, Message.TIME__UNIT__WEEK, Message.TIME__UNIT__WEEKS),
+        DAY(86400000L, Message.TIME__FORMAT__DAY, Message.TIME__UNIT__DAY, Message.TIME__UNIT__DAYS),
+        HOUR(3600000L, Message.TIME__FORMAT__HOUR, Message.TIME__UNIT__HOUR, Message.TIME__UNIT__HOURS),
+        MINUTE(60000L, Message.TIME__FORMAT__MINUTE, Message.TIME__UNIT__MINUTE, Message.TIME__UNIT__MINUTES),
+        SECOND(1000L, Message.TIME__FORMAT__SECOND, Message.TIME__UNIT__SECOND, Message.TIME__UNIT__SECONDS),
+        MILLISECOND(1L, Message.TIME__FORMAT__MILLISECOND, Message.TIME__UNIT__MILLISECOND, Message.TIME__UNIT__MILLISECONDS);
 
         private final long milliseconds;
         private final Message timeMessage;

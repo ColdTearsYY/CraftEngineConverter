@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter.utils.format;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.ObjectUtils;
+import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.utils.enums.DefaultFontInfo;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -19,14 +20,14 @@ public abstract class MessageUtils extends ObjectUtils {
         plugin.getMessageFormatter().sendMessage(player, getMessage(message, args));
     }
     protected void message(CraftEngineConverter plugin, CommandSender sender, String message, Object... args) {
-        plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.PREFIX.msg() + getMessage(message, args));
+        plugin.getMessageFormatter().sendMessage(sender, Message.COMMAND__PREFIX.msg() + getMessage(message, args));
     }
     protected void message(CraftEngineConverter plugin, CommandSender sender, fr.robie.craftengineconverter.common.format.Message message, Object... args) {
         if (sender instanceof ConsoleCommandSender) {
             if (!message.getMessages().isEmpty()) {
-                message.getMessages().forEach(msg -> plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.PREFIX.msg() + getMessage(msg, args)));
+                message.getMessages().forEach(msg -> plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(msg, args)));
             } else {
-                plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.PREFIX.msg() + getMessage(message, args));
+                plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(message, args));
             }
         } else {
             Player player = (Player) sender;
@@ -43,9 +44,9 @@ public abstract class MessageUtils extends ObjectUtils {
                     break;
                 case TCHAT:
                     if (!message.getMessages().isEmpty()) {
-                        message.getMessages().forEach(msg -> plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.PREFIX.msg() + getMessage(msg, args)));
+                        message.getMessages().forEach(msg -> plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(msg, args)));
                     } else {
-                        plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.PREFIX.msg() + getMessage(message, args));
+                        plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(message, args));
                     }
                     break;
                 default:

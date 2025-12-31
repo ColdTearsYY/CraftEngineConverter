@@ -3,6 +3,7 @@ package fr.robie.craftengineconverter.command;
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.format.Message;
+import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.utils.command.CommandType;
 import fr.robie.craftengineconverter.utils.command.VCommand;
 import fr.robie.craftengineconverter.utils.permission.Permission;
@@ -12,16 +13,21 @@ public class CraftEngineConverterCommandReload extends VCommand {
         super(plugin);
         this.addSubCommand("reload","rl");
         this.setPermission(Permission.COMMAND_RELOAD);
-        this.setDescription(Message.DESCRIPTION_COMMAND_RELOAD);
+        this.setDescription(Message.COMMAND__RELOAD__DESCRIPTION);
     }
 
     @Override
     protected CommandType perform(CraftEngineConverter plugin) {
-        long startTime = System.currentTimeMillis();
-        plugin.reloadConfig();
-        plugin.reloadFiles();
-        long endTime = System.currentTimeMillis();
-        message(plugin,sender, Message.COMMAND_RELOAD_SUCCESS,"time",TimerBuilder.formatTimeAuto(endTime-startTime));
+        try {
+            long startTime = System.currentTimeMillis();
+            plugin.reloadConfig();
+            plugin.reloadMessages();
+            long endTime = System.currentTimeMillis();
+            message(plugin,sender, Message.COMMAND__RELOAD__SUCCESS,"time",TimerBuilder.formatTimeAuto(endTime-startTime));
+        } catch (Exception e){
+            Logger.showException("An error occurred while reloading the plugin.",e);
+            message(plugin,sender, Message.COMMAND__RELOAD__FAILURE);
+        }
         return CommandType.SUCCESS;
     }
 }

@@ -1,5 +1,8 @@
 enable-debug: false
 
+# Language settings (available languages: EN, FR)
+language: "EN"
+
 # Auto-convert items on plugin enable
 auto-convert-on-startup: false
 
