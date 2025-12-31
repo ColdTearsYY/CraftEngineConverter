@@ -181,18 +181,7 @@ public class NexoConverter extends Converter {
             totalEmojis += countItemsInConfig(configFile.config());
         }
 
-        BukkitProgressBar.Builder progressBarBuilder = new BukkitProgressBar.Builder(totalEmojis);
-        if (player.isPresent()){
-            progressBarBuilder.player(player.get());
-            progressBarBuilder.showBar(false);
-        }
-
-        BukkitProgressBar progress = progressBarBuilder
-                .prefix("Converting Nexo emojis")
-                .suffix("emojis")
-                .options(ConverterOptions.EMOJIS)
-                .updateInterval(5000)
-                .build(plugin);
+        BukkitProgressBar progress = createProgressBar(player, totalEmojis, "Converting Nexo emojis", "emojis", ConverterOptions.EMOJIS);
 
         progress.start();
 
@@ -318,17 +307,7 @@ public class NexoConverter extends Converter {
             }
         }
 
-        BukkitProgressBar.Builder progressBarBuilder = new BukkitProgressBar.Builder(totalRecipes);
-        if (player.isPresent()){
-            progressBarBuilder.player(player.get());
-            progressBarBuilder.showBar(false);
-        }
-        BukkitProgressBar progress = progressBarBuilder
-                .prefix("Converting Nexo recipes")
-                .suffix("recipes")
-                .options(ConverterOptions.RECIPES)
-                .updateInterval(5000)
-                .build(plugin);
+        BukkitProgressBar progress = createProgressBar(player, totalRecipes, "Converting Nexo recipes", "recipes", ConverterOptions.RECIPES);
 
         progress.start();
 
@@ -688,18 +667,7 @@ public class NexoConverter extends Converter {
 
             int totalSounds = nexoSoundsList.size();
 
-            BukkitProgressBar.Builder progressBarBuilder = new BukkitProgressBar.Builder(totalSounds);
-            if (player.isPresent()){
-                progressBarBuilder.player(player.get());
-                progressBarBuilder.showBar(false);
-            }
-
-            BukkitProgressBar progress = progressBarBuilder
-                    .prefix("Converting Nexo sounds")
-                    .suffix("sounds")
-                    .options(ConverterOptions.SOUNDS)
-                    .updateInterval(5000)
-                    .build(plugin);
+            BukkitProgressBar progress = createProgressBar(player, totalSounds, "Converting Nexo sounds", "sounds", ConverterOptions.SOUNDS);
 
             progress.start();
 
@@ -897,18 +865,7 @@ public class NexoConverter extends Converter {
                 return;
             }
 
-            BukkitProgressBar.Builder progressBarBuilder = new BukkitProgressBar.Builder(totalTranslations);
-            if (player.isPresent()){
-                progressBarBuilder.player(player.get());
-                progressBarBuilder.showBar(false);
-            }
-
-            BukkitProgressBar progress = progressBarBuilder
-                    .prefix("Converting Nexo languages")
-                    .suffix("translations")
-                    .options(ConverterOptions.LANGUAGES)
-                    .updateInterval(5000)
-                    .build(plugin);
+            BukkitProgressBar progress = createProgressBar(player, totalTranslations, "Converting Nexo languages", "translations", ConverterOptions.LANGUAGES);
 
             progress.start();
 
@@ -995,18 +952,7 @@ public class NexoConverter extends Converter {
             totalImages += countItemsInConfig(configFile.config());
         }
 
-        BukkitProgressBar.Builder progressBarBuilder = new BukkitProgressBar.Builder(totalImages);
-        if (player.isPresent()){
-            progressBarBuilder.player(player.get());
-            progressBarBuilder.showBar(false);
-        }
-
-        BukkitProgressBar progress = progressBarBuilder
-                .prefix("Converting Nexo images")
-                .suffix("images")
-                .options(ConverterOptions.IMAGES)
-                .updateInterval(5000)
-                .build(plugin);
+        BukkitProgressBar progress = createProgressBar(player, totalImages, "Converting Nexo images", "images", ConverterOptions.IMAGES);
 
         progress.start();
 
@@ -1190,17 +1136,8 @@ public class NexoConverter extends Converter {
                 }
             }
 
-            BukkitProgressBar.Builder progressBarBuilder = new BukkitProgressBar.Builder(totalFiles);
-            if (player.isPresent()){
-                progressBarBuilder.player(player.get());
-                progressBarBuilder.showBar(false);
-            }
-            BukkitProgressBar progress = progressBarBuilder
-                    .prefix("Converting Nexo resource pack")
-                    .suffix("files")
-                    .options(ConverterOptions.PACKS)
-                    .updateInterval(5000)
-                    .build(plugin);
+            BukkitProgressBar progress = createProgressBar(player, totalFiles, "Converting Nexo resource pack", "files", ConverterOptions.PACKS);
+
             progress.start();
 
             int threadCount = Math.max(1, this.getSettings().threadCount());

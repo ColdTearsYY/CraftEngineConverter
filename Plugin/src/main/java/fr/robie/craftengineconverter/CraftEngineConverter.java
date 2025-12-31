@@ -29,6 +29,7 @@ import fr.robie.craftengineconverter.utils.save.NoReloadable;
 import fr.robie.craftengineconverter.utils.save.Persist;
 import fr.robie.craftengineconverter.utils.save.PersistImp;
 import fr.robie.craftengineconverter.utils.save.Savable;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
@@ -42,6 +43,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private static CraftEngineConverter INSTANCE;
 
+    private static final int BSTAT_PLUGIN_ID = 28612;
+
     private final Map<String, Converter> converterMap = new HashMap<>();
 
     private final FoliaCompatibilityManager foliaCompatibilityManager = new FoliaCompatibilityManager(this);
@@ -52,6 +55,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final Persist persist = new PersistImp(this);
     private final ITagResolver tagResolver = new TagResolver();
     private MessageFormatter messageFormatter = new ClassicMeta();
+    private Metrics metrics;
     private PacketLoader packetLoader;
 
     public CraftEngineConverter() {
@@ -104,6 +108,8 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         registerConverter(new ItemsAdderConverter(this));
 
         this.tagResolver.initTagProcessors();
+
+        this.metrics = new Metrics(this, BSTAT_PLUGIN_ID);
 
         if (this.packetLoader != null){
             this.packetLoader.onEnable();
