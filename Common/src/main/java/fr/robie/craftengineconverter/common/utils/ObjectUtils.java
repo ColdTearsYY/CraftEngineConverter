@@ -36,11 +36,16 @@ public class ObjectUtils {
         return obj == null;
     }
 
-    @Contract("!null -> !null")
+    @Contract("null -> null")
     protected @Nullable String namespaced(String path) {
+        return namespaced(path, "minecraft");
+    }
+
+    @Contract("null, _ -> null")
+    protected @Nullable String namespaced(String path, @NotNull String defaultNamespace) {
         path = cleanPath(path);
         if (path == null || path.isEmpty()) return null;
-        return path.contains(":") ? path : "minecraft:" + path;
+        return path.contains(":") ? path : defaultNamespace + ":" + path;
     }
 
     public String removeEndWith(@NotNull String str, List<String> ends, String defaultValue) {

@@ -7,6 +7,8 @@ import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
+import fr.robie.craftengineconverter.common.records.ImageConversion;
+import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.utils.ConfigFile;
 import fr.robie.craftengineconverter.utils.SnakeUtils;
@@ -130,7 +132,86 @@ public class ItemsAdderConverter extends Converter {
 
     @Override
     public CompletableFuture<Void> convertImages(boolean async, Optional<Player> player) {
-        return null;
+        return executeTask(async, () -> convertImagesSync(player));
+    }
+
+    private void convertImagesSync(Optional<Player> optionalPlayer){
+        File inputFolder = new File("plugins/"+this.converterName+"/contents");
+        File outputBase = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/images");
+        if (!inputFolder.exists() || !inputFolder.isDirectory()) {
+            Logger.debug("ItemsAdder contents folder not found: " + inputFolder.getAbsolutePath());
+            return;
+        }
+
+        Queue<ConfigFile> toConvert = new LinkedList<>();
+        int totalFontImage = populateQueueIA(inputFolder, inputFolder, toConvert, "font_images");
+
+        if (toConvert.isEmpty()) {
+            Logger.debug("No ItemsAdder font images found to convert");
+            return;
+        }
+
+        BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalFontImage,
+                "Converting ItemsAdder font images", "images", ConverterOptions.IMAGES);
+        progressBar.start();
+
+        try {
+            while (!toConvert.isEmpty()) {
+                ConfigFile configFile = toConvert.poll();
+                convertFontImageFile(configFile, outputBase, progressBar);
+            }
+        } catch (Exception e) {
+            Logger.showException("An error occurred during ItemsAdder font image conversion", e);
+        } finally {
+            progressBar.stop();
+        }
+    }
+
+    private void convertFontImageFile(ConfigFile configFile, File outputBase, BukkitProgressBar progressBar) {
+        File sourceFile = configFile.sourceFile();
+        YamlConfiguration config = configFile.config();
+        ConfigurationSection fontImagesSection = config.getConfigurationSection("font_images");
+        if (isNull(fontImagesSection)) return;
+        YamlConfiguration convertedConfig = new YamlConfiguration();
+        ConfigurationSection ceImagesSection = convertedConfig.createSection("images");
+
+        String finalFileName = sourceFile.getName().replace(".yml","");
+        String namespace = config.getString("info.namespace", finalFileName);
+
+        int convertedImages = 0;
+
+        for (String imageId : fontImagesSection.getKeys(false)){
+            ConfigurationSection imageSection = fontImagesSection.getConfigurationSection(imageId);
+            if (isNull(imageSection)){
+                progressBar.increment();
+                continue;
+            }
+
+            String finalImageId = namespace + ":" + imageId;
+            ConfigurationSection ceImageSection = ceImagesSection.createSection(finalImageId);
+            String path = imageSection.getString("path");
+            if (isValidString(path)){
+                ceImageSection.set("file", namespaced(path, namespace));
+            }
+
+            int scaleRatio = imageSection.getInt("scale_ratio", 1);
+            if (scaleRatio != 1){
+                ceImageSection.set("ascent", scaleRatio);
+            }
+
+            int yPosition = imageSection.getInt("y_position", 0);
+            if (yPosition != 0){
+                ceImageSection.set("height", yPosition);
+            }
+
+            CraftEngineImageUtils.register(imageId, new ImageConversion(finalImageId, 0,0));
+            convertedImages++;
+            progressBar.increment();
+        }
+        if (this.settings.dryRunEnabled()) return;
+        if (convertedImages > 0){
+            saveConvertedConfig(convertedConfig, configFile, sourceFile, outputBase, "images","image");
+        }
     }
 
     @Override

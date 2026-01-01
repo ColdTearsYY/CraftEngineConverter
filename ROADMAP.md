@@ -1,6 +1,6 @@
 # 🗺️ ROADMAP - CraftEngineConverter
 
-> **Last Updated:** December 25, 2025
+> **Last Updated:** January 1, 2026
 > **Project Status:** 🟢 Active Development
 > **This file serves as the main project roadmap and development tracker.**
 
@@ -99,6 +99,7 @@
 
 ## ✅ Recently Completed
 
+- ItemsAdder font conversion (no emojis yet)
 - Multiple Translation support (English, French) + easy addition of new languages
 - Nexo Recipes conversion
 - Interaction with furniture/block convert to CE equivalent
