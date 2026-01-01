@@ -326,7 +326,98 @@ public class ItemsAdderConverter extends Converter {
 
     @Override
     public CompletableFuture<Void> convertSounds(boolean async, Optional<Player> player) {
-        return null;
+        return executeTask(async, () -> convertSoundsSync(player));
+    }
+
+    private void convertSoundsSync(Optional<Player> optionalPlayer){
+        File inputFolder = new File("plugins/"+this.converterName+"/contents");
+        File outputFolder = new File(this.plugin.getDataFolder(), "converted/"+converterName+"/CraftEngine/resources/craftengineconverter/configuration/sounds");
+        if (!inputFolder.exists() || !inputFolder.isDirectory()) {
+            Logger.debug("ItemsAdder contents folder not found: " + inputFolder.getAbsolutePath());
+            return;
+        }
+
+        if (outputFolder.exists()){
+            deleteDirectory(outputFolder);
+        }
+
+        if (!outputFolder.mkdirs()) {
+            Logger.debug("Failed to create output folder: " + outputFolder.getAbsolutePath(), LogType.ERROR);
+            return;
+        }
+
+        Queue<ConfigFile> toConvert = new LinkedList<>();
+        int totalSounds = populateQueueIA(inputFolder, inputFolder, toConvert, "sounds");
+
+        if (toConvert.isEmpty()) {
+            return;
+        }
+
+        BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalSounds, "Converting ItemsAdder sounds", "sounds", ConverterOptions.SOUNDS);
+        progressBar.start();
+
+        try {
+            while (!toConvert.isEmpty()) {
+                ConfigFile configFile = toConvert.poll();
+                convertSoundsFile(configFile, outputFolder, progressBar);
+            }
+        } catch (Exception e) {
+            Logger.showException("An error occurred during ItemsAdder sound conversion", e);
+        } finally {
+            progressBar.stop();
+        }
+    }
+
+    private void convertSoundsFile(ConfigFile configFile, File outputFolder, BukkitProgressBar progressBar) {
+        String fileName = configFile.sourceFile().getName();
+        File soundFile = configFile.sourceFile();
+        YamlConfiguration config = configFile.config();
+
+        YamlConfiguration convertedConfig = new YamlConfiguration();
+        String finalFileName = fileName.replace(".yml","");
+        String namespace = config.getString("info.namespace", finalFileName);
+        ConfigurationSection sounds = convertedConfig.createSection("sounds");
+        ConfigurationSection originalSounds = config.getConfigurationSection("sounds");
+        if (isNull(originalSounds)) {
+            Logger.debug("[ItemsAdderConverter] No 'sounds' section found in: " + fileName);
+            return;
+        }
+
+        for (String soundId : originalSounds.getKeys(false)){
+            ConfigurationSection section = originalSounds.getConfigurationSection(soundId);
+            if (isNull(section)){
+                Logger.debug("[ItemsAdderConverter] Skipped sound (no section): " + soundId + " in file: " + fileName);
+                progressBar.increment();
+                continue;
+            }
+            String finalSoundId = namespace + ":" + soundId;
+            try {
+                ConfigurationSection ceSoundSection = sounds.createSection(finalSoundId);
+                String path = section.getString("path");
+                if (isValidString(path)){
+                    ceSoundSection.set("sounds", List.of(cleanPath(path)));
+                }
+                String subtitle = section.getString("settings.subtitle");
+                if (isValidString(subtitle)){
+                    ceSoundSection.set("subtitle", subtitle);
+                }
+                ConfigurationSection jukeboxSection = section.getConfigurationSection("jukebox");
+                if (isNotNull(jukeboxSection)){
+                    ConfigurationSection ceJukeBoxSection = getOrCreateSection(convertedConfig, "jukebox-songs");
+                    ConfigurationSection ceJukeBoxSoundSection = ceJukeBoxSection.createSection(finalSoundId);
+                    ceJukeBoxSoundSection.set("sound", finalSoundId);
+                    String description = jukeboxSection.getString("description");
+                    if (isValidString(description)){
+                        ceJukeBoxSoundSection.set("description", description);
+                    }
+                }
+            } catch (Exception e) {
+                Logger.showException("Failed to convert ItemsAdder sound: " + soundId + " in file: " + fileName, e);
+            }
+            progressBar.increment();
+        }
+        if (this.settings.dryRunEnabled()) return;
+        saveConvertedConfig(convertedConfig, configFile, soundFile, outputFolder, "sounds","sound");
     }
 
     @Override

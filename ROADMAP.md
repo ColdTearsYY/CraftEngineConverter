@@ -99,6 +99,7 @@
 
 ## ✅ Recently Completed
 
+- ItemsAdder song conversion
 - ItemsAdder font conversion (no emojis yet)
 - Multiple Translation support (English, French) + easy addition of new languages
 - Nexo Recipes conversion

@@ -11,7 +11,7 @@ public class ObjectUtils {
     @Contract("null -> null")
     @Nullable
     protected String cleanPath(@Nullable String path) {
-        if (path == null || path.isEmpty()) return null;
+        if (path == null) return null;
         if (path.endsWith(".png")) {
             path = path.substring(0, path.length() - 4);
         }
