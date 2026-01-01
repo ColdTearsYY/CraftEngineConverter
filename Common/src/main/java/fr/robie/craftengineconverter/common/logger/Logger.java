@@ -1,12 +1,14 @@
 package fr.robie.craftengineconverter.common.logger;
 
 import fr.robie.craftengineconverter.common.configuration.Configuration;
+import fr.robie.craftengineconverter.common.format.Message;
+import fr.robie.craftengineconverter.common.format.TextFormatter;
 import org.bukkit.Bukkit;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class Logger {
+public class Logger extends TextFormatter {
 
     private final String prefix;
     private static Logger logger;
@@ -28,12 +30,44 @@ public class Logger {
         getLogger().log(message, LogType.INFO);
     }
 
+    public static void info(Message message) {
+        getLogger().log(message, LogType.INFO);
+    }
+
+    public static void info(String message, LogType type, Object... args) {
+        getLogger().log(message, type, args);
+    }
+
+    public static void info(Message message, LogType type, Object... args) {
+        getLogger().log(message, type, args);
+    }
+
+    public static void info(Message message, Object... args) {
+        getLogger().log(message, LogType.INFO, args);
+    }
+
     public static void debug(String message) {
         getLogger().logDebug(message, LogType.WARNING);
     }
 
     public static void debug(String message, LogType type) {
         getLogger().logDebug(message, type);
+    }
+
+    public static void debug(String message, LogType type, Object... args) {
+        getLogger().logDebug(message, type, args);
+    }
+
+    public static void debug(String message, Object... args) {
+        getLogger().logDebug(message, LogType.WARNING, args);
+    }
+
+    public static void debug(Message message, Object... args) {
+        getLogger().logDebug(message.getMessage(), LogType.WARNING, args);
+    }
+
+    public static void debug(Message message, LogType type, Object... args) {
+        getLogger().logDebug(message.getMessage(), type, args);
     }
 
     public static void showException(String errorName,Throwable throwable) {
@@ -44,31 +78,17 @@ public class Logger {
         return prefix;
     }
 
-    public void log(String message, LogType type) {
-        Bukkit.getConsoleSender().sendMessage("§8[§e" + prefix + "§8] " + type.getColor() + getColoredMessage(message));
+    public void log(String message, LogType logType, Object... args){
+        Bukkit.getConsoleSender().sendMessage("§8[§e" + prefix + "§8] " + logType.getColor() + parseText(message, args));
     }
 
-    public void log(String message) {
-        Bukkit.getConsoleSender().sendMessage("§8[§e" + prefix + "§8] §e" + getColoredMessage(message));
+    public void log(Message message, LogType logType, Object... args){
+        this.log(message.getMessage(), logType, args);
     }
 
-    public void log(String message, Object... args) {
-        log(String.format(message, args));
-    }
-
-    public void log(String message, LogType type, Object... args) {
-        log(String.format(message, args), type);
-    }
-
-    public void log(String[] messages, LogType type) {
-        for (String message : messages) {
-            log(message, type);
-        }
-    }
-
-    public void logDebug(String message, LogType type) {
+    public void logDebug(String message, LogType type, Object... args) {
         if (Configuration.enableDebug){
-            log(message, type);
+            log(message, type, args);
         }
     }
 

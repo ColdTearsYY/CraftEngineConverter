@@ -1,52 +1,54 @@
 package fr.robie.craftengineconverter.utils.format;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.common.ObjectUtils;
 import fr.robie.craftengineconverter.common.format.Message;
+import fr.robie.craftengineconverter.common.format.MessageFormatter;
+import fr.robie.craftengineconverter.common.format.TextFormatter;
 import fr.robie.craftengineconverter.utils.enums.DefaultFontInfo;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
-public abstract class MessageUtils extends ObjectUtils {
+public abstract class MessageUtils extends TextFormatter {
     private final static int CENTER_PX = 154;
 
-    protected void messageWO(CraftEngineConverter plugin, CommandSender sender, fr.robie.craftengineconverter.common.format.Message message, Object... args) {
-        plugin.getMessageFormatter().sendMessage(sender, getMessage(message, args));
+    protected void messageWO(CraftEngineConverter plugin, CommandSender sender, Message message, Object... args) {
+        plugin.getMessageFormatter().sendMessage(sender, parseText(message, args));
     }
 
     protected void messageWO(CraftEngineConverter plugin, CommandSender player, String message, Object... args) {
-        plugin.getMessageFormatter().sendMessage(player, getMessage(message, args));
+        plugin.getMessageFormatter().sendMessage(player, parseText(message, args));
     }
     protected void message(CraftEngineConverter plugin, CommandSender sender, String message, Object... args) {
-        plugin.getMessageFormatter().sendMessage(sender, Message.COMMAND__PREFIX.msg() + getMessage(message, args));
+        plugin.getMessageFormatter().sendMessage(sender, Message.COMMAND__PREFIX.msg() + parseText(message, args));
     }
-    protected void message(CraftEngineConverter plugin, CommandSender sender, fr.robie.craftengineconverter.common.format.Message message, Object... args) {
+    protected void message(CraftEngineConverter plugin, CommandSender sender, Message message, Object... args) {
+        MessageFormatter messageFormatter = plugin.getMessageFormatter();
         if (sender instanceof ConsoleCommandSender) {
             if (!message.getMessages().isEmpty()) {
-                message.getMessages().forEach(msg -> plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(msg, args)));
+                message.getMessages().forEach(msg -> messageFormatter.sendMessage(sender, Message.COMMAND__PREFIX.msg() + parseText(msg, args)));
             } else {
-                plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(message, args));
+                messageFormatter.sendMessage(sender, Message.COMMAND__PREFIX.msg() + parseText(message, args));
             }
         } else {
             Player player = (Player) sender;
             switch (message.getType()) {
                 case CENTER:
                     if (!message.getMessages().isEmpty()) {
-                        message.getMessages().forEach(msg -> plugin.getMessageFormatter().sendMessage(sender, this.getCenteredMessage(getMessage(msg, args))));
+                        message.getMessages().forEach(msg -> messageFormatter.sendMessage(sender, this.getCenteredMessage(parseText(msg, args))));
                     } else {
-                        plugin.getMessageFormatter().sendMessage(sender, this.getCenteredMessage(getMessage(message, args)));
+                        messageFormatter.sendMessage(sender, this.getCenteredMessage(parseText(message, args)));
                     }
                     break;
                 case ACTION:
-                    plugin.getMessageFormatter().sendAction(player, getMessage(message, args));
+                    messageFormatter.sendAction(player, parseText(message, args));
                     break;
                 case TCHAT:
                     if (!message.getMessages().isEmpty()) {
-                        message.getMessages().forEach(msg -> plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(msg, args)));
+                        message.getMessages().forEach(msg -> messageFormatter.sendMessage(sender, Message.COMMAND__PREFIX.msg() + parseText(msg, args)));
                     } else {
-                        plugin.getMessageFormatter().sendMessage(sender, fr.robie.craftengineconverter.common.format.Message.COMMAND__PREFIX.msg() + getMessage(message, args));
+                        messageFormatter.sendMessage(sender, Message.COMMAND__PREFIX.msg() + parseText(message, args));
                     }
                     break;
                 default:
@@ -57,27 +59,8 @@ public abstract class MessageUtils extends ObjectUtils {
 
     }
 
-    private void message(CraftEngineConverter plugin, CommandSender sender, String message) {
-        plugin.getMessageFormatter().sendMessage(sender, message);
-    }
-    protected String getMessage(fr.robie.craftengineconverter.common.format.Message message, Object... args) {
-        return getMessage(message.getMessage(), args);
-    }
-    protected String getMessage(String message, Object... args) {
-        if (args.length % 2 != 0) {
-            throw new IllegalArgumentException("Number of invalid arguments. Arguments must be in pairs.");
-        }
-
-        for (int i = 0; i < args.length; i += 2) {
-            if (args[i] == null || args[i + 1] == null) {
-                throw new IllegalArgumentException("Keys and replacement values must not be null.");
-            }
-            message = message.replace("%"+args[i].toString()+"%", args[i + 1].toString());
-        }
-        return message;
-    }
     protected String getCenteredMessage(String message) {
-        if (message == null || message.equals("")) {
+        if (message == null || message.isEmpty()) {
             return "";
         }
         message = ChatColor.translateAlternateColorCodes('&', message);

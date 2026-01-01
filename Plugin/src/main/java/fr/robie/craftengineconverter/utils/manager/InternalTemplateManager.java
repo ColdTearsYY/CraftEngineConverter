@@ -1,6 +1,8 @@
 package fr.robie.craftengineconverter.utils.manager;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
+import fr.robie.craftengineconverter.common.format.Message;
+import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.utils.enums.Template;
 import fr.robie.craftengineconverter.utils.enums.TemplatesCommands;
@@ -35,25 +37,24 @@ public class InternalTemplateManager {
         this.craftEngineConverter = craftEngineConverter;
     }
 
-    public boolean loadTemplates() {
-        try {
-            for (Template template : Template.values()) {
+    public void loadTemplates() {
+        for (Template template : Template.values()) {
+            try {
                 InputStream inputStream = this.craftEngineConverter.getResource(template.getPath() + ".yml");
                 if (inputStream == null) {
-                    Logger.info("Template " + template.getPath() + " not found! Please report this issue.");
+                    Logger.info(Message.WARNING__TEMPLATE_MANAGER__MISSING_TEMPLATE,LogType.ERROR, "template_name",template.name());
                     continue;
                 }
-                YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(
-                        new InputStreamReader(inputStream, StandardCharsets.UTF_8)
-                );
+
+                YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 templates.put(template, yamlConfiguration);
+            } catch (Exception ex) {
+                Logger.debug(Message.WARNING__TEMPLATE_MANAGER__ERROR_LOADING_TEMPLATE, LogType.ERROR, "template_name", template.name());
+                Logger.showException("loading template " + template.name(), ex);
             }
-        } catch (Exception ex) {
-            Logger.debug("Error loading templates: " + ex.getMessage());
-            return false;
         }
-        return true;
     }
+
 
     public static @Nullable Map<String, Object> getTemplate(Template template) {
         YamlConfiguration yamlConfiguration = templates.get(template);
@@ -95,8 +96,7 @@ public class InternalTemplateManager {
 
     public static @NotNull Map<String, Object> parseTemplate(Template template, Object... args) {
         if (args.length % 2 != 0) {
-            Logger.debug("Invalid args number for template " + template.name() + ", must be even. " +
-                    "Received " + args.length + " arguments.");
+            Logger.debug(Message.WARNING__TEMPLATE_MANAGER__INVALID_ARGS_NUMBER, "template_name", template.name(), "args_length", args.length);
             return new LinkedHashMap<>();
         }
 

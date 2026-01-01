@@ -52,6 +52,18 @@ public enum Message {
     COMMAND__CONVERTER__THREADS__INFO("§aUsing §e%threads%§a threads for conversion."),
     COMMAND__CONVERTER__THREADS__ERROR_TOO_MANY("§cThe number of threads specified exceeds the number of available processors (%max%). Using the maximum available."),
 
+
+    MESSAGE__PLUGIN__STARTUP("Enabling plugin ..."),
+    MESSAGE__PLUGIN__STARTUP__COMPLETE("Plugin enabled in §c%time%§a!"),
+    MESSAGE__PLUGIN__SHUTDOWN("Disabling plugin ..."),
+    MESSAGE__PLUGIN__SHUTDOWN__COMPLETE("Plugin disabled in §c%time%§a!"),
+    MESSAGES__AUTO_CONVERTER__STARTUP__START("Auto-conversion for supported plugins is starting..."),
+    MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE("Auto-conversion for supported plugins completed! In §c%time%§a."),
+    MESSAGES__AUTO_CONVERTER__STARTUP__DISABLED("Auto-conversion is disabled. Use /cec convert to manually convert supported plugins."),
+
+    WARNING__TEMPLATE_MANAGER__MISSING_TEMPLATE("The template §e%template_name%§c is missing! Please report this to the plugin developer."),
+    WARNING__TEMPLATE_MANAGER__ERROR_LOADING_TEMPLATE("An error occurred while loading the template §e%template_name%§c! Please report this to the plugin developer."),
+    WARNING__TEMPLATE_MANAGER__INVALID_ARGS_NUMBER("Invalid args number for template %template_name%, must be %2. Received %args_length% arguments.")
     ;
 
     private List<String> messages;

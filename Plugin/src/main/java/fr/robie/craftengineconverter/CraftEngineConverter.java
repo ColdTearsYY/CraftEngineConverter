@@ -11,6 +11,7 @@ import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.format.ClassicMeta;
 import fr.robie.craftengineconverter.common.format.ComponentMeta;
+import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.format.MessageFormatter;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
@@ -75,7 +76,8 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     public void onEnable() {
         INSTANCE = this;
 
-        Logger.info("Enabling plugin ...");
+        long startTime = System.currentTimeMillis();
+        Logger.info(Message.MESSAGE__PLUGIN__STARTUP);
         if (!Plugins.CRAFTENGINE.isPresent()){
             Logger.info("CraftEngine plugin not found ! Disabling CraftEngineConverter ...");
             getServer().getPluginManager().disablePlugin(this);
@@ -92,9 +94,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
         this.reloadMessages();
 
-        if (!this.templateManager.loadTemplates()){
-            Logger.info("A error occure during the loading of templates");
-        }
+        this.templateManager.loadTemplates();
 
         this.commandManager.registerCommand("craftengineconverter",new CraftEngineConverterCommand(this),"cengineconverter","cec");
 
@@ -111,8 +111,8 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         }
 
         if (Configuration.autoConvertOnStartup) {
-            Logger.info("Auto-conversion is enabled, starting conversion...");
-            long startTime = System.currentTimeMillis();
+            Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__START);
+            long startTimeAutoConverter = System.currentTimeMillis();
             Collection<Converter> values = this.converterMap.values();
             AtomicInteger counter = new AtomicInteger(values.size());
             for (Converter converter : values) {
@@ -120,13 +120,12 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
                 voidCompletableFuture.thenAccept(voidCompletableFuture1 -> {
                     int remaining = counter.decrementAndGet();
                     if (remaining == 0) {
-                        long endTime = System.currentTimeMillis();
-                        Logger.info("Auto-conversion complete in " + TimerBuilder.formatTimeAuto(endTime-startTime) + " !");
+                        Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
                     }
                 });
             }
         } else {
-            Logger.info("Auto-conversion is disabled. Use /cec convert to manually convert items.");
+            Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__DISABLED);
         }
 
         if (Plugins.NEXO.isEnabled() && Configuration.nexoEnableHook){
@@ -135,12 +134,13 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
         }
 
-        Logger.info("Plugin enabled !");
+        Logger.info(Message.MESSAGE__PLUGIN__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTime));
     }
 
     @Override
     public void onDisable() {
-        Logger.info("Disabling plugin ...");
+        long startTime = System.currentTimeMillis();
+        Logger.info(Message.MESSAGE__PLUGIN__SHUTDOWN);
 
         if (this.packetLoader != null){
             this.packetLoader.onDisable();
@@ -155,7 +155,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
             Logger.info("Grand total converted : " + this.placementTracker.getTotalConverted() + " (Failed : " + this.placementTracker.getTotalFailed() + ", Overall success rate : " + String.format("%.2f", this.placementTracker.getOverallSuccessRate()) + "%)");
         }
 
-        Logger.info("Plugin disabled !");
+        Logger.info(Message.MESSAGE__PLUGIN__SHUTDOWN__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTime));
     }
 
     public void reloadMessages(){

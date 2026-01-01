@@ -55,3 +55,21 @@ command:
     threads:
       info: "§aUtilisation de §e%threads%§a threads pour la conversion."
       error-too-many: "§cLe nombre de threads spécifié dépasse le nombre de processeurs disponibles (%max%). Utilisation du maximum disponible."
+
+messages:
+  plugin:
+    startup: "Activation du plugin ..."
+    startup-complete: "Plugin activé en §c%time%§a."
+    shutdown: "Désactivation du plugin ..."
+    shutdown-complete: "Plugin désactivé en §c%time%§a."
+  auto-converter:
+    startup:
+      start: "La conversion automatique pour les plugins supportés démarre..."
+      complete: "La conversion automatique pour les plugins supportés est terminée en §c%time%§a."
+      disabled: "La conversion automatique est désactivée. Utilisez /cec convert pour convertir manuellement les plugins supportés."
+
+warning:
+  template-manager:
+    missing-template: "Le modèle §e%template_name%§c est manquant ! Veuillez le signaler au développeur du plugin."
+    error-loading-template: "Une erreur est survenue lors du chargement du modèle §e%template_name%§c ! Veuillez le signaler au développeur du plugin."
+    invalid-args-number: "Nombre d'arguments invalide pour le modèle %template_name%, doit être %2. %args_length% arguments reçus."

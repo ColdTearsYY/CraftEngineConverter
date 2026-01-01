@@ -54,3 +54,21 @@ command:
     threads:
       info: "§aUsing §e%threads%§a threads for conversion."
       error-too-many: "§cThe number of threads specified exceeds the number of available processors (%max%). Using the maximum available."
+
+messages:
+  plugin:
+    startup: "Enabling plugin ..."
+    startup-complete: "Plugin enabled in §c%time%§a."
+    shutdown: "Disabling plugin ..."
+    shutdown-complete: "Plugin disabled in §c%time%§a."
+  auto-converter:
+    startup:
+      start: "Auto-conversion for supported plugins is starting..."
+      complete: "Auto-conversion for supported plugins is complete in §c%time%§a."
+      disabled: "Auto-conversion is disabled. Use /cec convert to manually convert supported plugins."
+
+warning:
+  template-manager:
+    missing-template: "The template §e%template_name%§c is missing! Please report this to the plugin developer."
+    error-loading-template: "An error occurred while loading the template §e%template_name%§c! Please report this to the plugin developer."
+    invalid-args-number: "Invalid args number for template %template_name%, must be %2. Received %args_length% arguments."
