@@ -1,9 +1,9 @@
-name: CraftEngineConverter
-authors: [ 1robie ]
-main: fr.robie.craftengineconverter.CraftEngineConverter
-description: A plugin to convert configurations to CraftEngine format
-version: 1.0.0
-api-version: 1.21
+name: ${project.parent.artifactId}
+version: ${project.version}
+authors: [ ${plugin.author} ]
+description: ${plugin.description}
+main: ${plugin.mainClass}
+api-version: ${plugin.apiVersion}
 softdepend:
   - CraftEngine
   - packetevents
