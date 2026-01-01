@@ -12,6 +12,8 @@ import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.utils.ConfigFile;
 import fr.robie.craftengineconverter.utils.SnakeUtils;
+import fr.robie.craftengineconverter.utils.enums.IARecipesTypes;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -422,7 +424,333 @@ public class ItemsAdderConverter extends Converter {
 
     @Override
     public CompletableFuture<Void> convertRecipes(boolean async, Optional<Player> player) {
-        return null;
+        return executeTask(async, () -> convertRecipesSync(player));
+    }
+
+    private void convertRecipesSync(Optional<Player> optionalPlayer){
+        File inputFolder = new File("plugins/"+this.converterName+"/contents");
+        File outputFolder = new File(this.plugin.getDataFolder(), "converted/"+converterName+"/CraftEngine/resources/craftengineconverter/configuration/recipes");
+        if (!inputFolder.exists() || !inputFolder.isDirectory()) {
+            Logger.debug("ItemsAdder contents folder not found: " + inputFolder.getAbsolutePath());
+            return;
+        }
+        if (outputFolder.exists()){
+            deleteDirectory(outputFolder);
+        }
+        if (!outputFolder.mkdirs()) {
+            Logger.debug("Failed to create output folder: " + outputFolder.getAbsolutePath(), LogType.ERROR);
+            return;
+        }
+
+        Queue<ConfigFile> toConvert = new LinkedList<>();
+        populateQueueIA(inputFolder, inputFolder, toConvert, "recipes");
+        if (toConvert.isEmpty()) {
+            return;
+        }
+
+        int totalRecipes = 0;
+        for (ConfigFile configFile : toConvert) {
+            YamlConfiguration config = configFile.config();
+            ConfigurationSection recipesSection = config.getConfigurationSection("recipes");
+            if (isNull(recipesSection)) continue;
+            for (String craftingType : recipesSection.getKeys(false)){
+                ConfigurationSection craftingSection = recipesSection.getConfigurationSection(craftingType);
+                if (isNull(craftingSection)) continue;
+                totalRecipes += craftingSection.getKeys(false).size();
+            }
+        }
+
+        BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalRecipes, "Converting ItemsAdder recipes", "recipes", ConverterOptions.RECIPES);
+        progressBar.start();
+
+        try {
+            while (!toConvert.isEmpty()) {
+                ConfigFile configFile = toConvert.poll();
+                convertRecipesFile(configFile, outputFolder, progressBar);
+            }
+        } catch (Exception e) {
+            Logger.showException("An error occurred during ItemsAdder recipe conversion", e);
+        } finally {
+            progressBar.stop();
+        }
+    }
+
+    private void convertRecipesFile(ConfigFile configFile, File outputFolder, BukkitProgressBar progressBar) {
+        String fileName = configFile.sourceFile().getName();
+        File recipeFile = configFile.sourceFile();
+        YamlConfiguration config = configFile.config();
+
+        YamlConfiguration convertedConfig = new YamlConfiguration();
+        String finalFileName = fileName.replace(".yml","");
+        String namespace = config.getString("info.namespace", finalFileName);
+        ConfigurationSection recipes = convertedConfig.createSection("recipes");
+        ConfigurationSection originalRecipes = config.getConfigurationSection("recipes");
+
+        if (isNull(originalRecipes)) {
+            Logger.debug("[ItemsAdderConverter] No 'recipes' section found in: " + fileName);
+            return;
+        }
+
+        for (String craftingType : originalRecipes.getKeys(false)){
+            ConfigurationSection craftingSection = originalRecipes.getConfigurationSection(craftingType);
+            if (isNull(craftingSection)) continue;
+
+            for (String recipeId : craftingSection.getKeys(false)){
+                IARecipesTypes iaRecipesType;
+                try {
+                    iaRecipesType = IARecipesTypes.valueOf(craftingType.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    Logger.debug("[ItemsAdderConverter] Skipped recipe (unknown type): " + craftingType + " for recipe: " + recipeId + " in file: " + fileName);
+                    progressBar.increment();
+                    continue;
+                }
+
+                ConfigurationSection recipeSection = craftingSection.getConfigurationSection(recipeId);
+                if (isNull(recipeSection)){
+                    Logger.debug("[ItemsAdderConverter] Skipped recipe (no section): " + recipeId + " in file: " + fileName);
+                    progressBar.increment();
+                    continue;
+                }
+
+                String baseRecipeId = namespace + ":" + recipeId;
+                try {
+                    convertRecipe(iaRecipesType, recipeSection, recipes, baseRecipeId, recipeId, fileName);
+                } catch (Exception e) {
+                    Logger.showException("Failed to convert ItemsAdder recipe: " + recipeId + " in file: " + fileName, e);
+                }
+                progressBar.increment();
+            }
+        }
+
+        if (this.settings.dryRunEnabled()) return;
+        saveConvertedConfig(convertedConfig, configFile, recipeFile, outputFolder, "recipes","recipe");
+    }
+
+    private void convertRecipe(IARecipesTypes type, ConfigurationSection iaRecipe,
+                               ConfigurationSection recipesSection, String baseRecipeId,
+                               String recipeId, String fileName) {
+        switch (type) {
+            case CRAFTING_TABLE -> {
+                ConfigurationSection ceRecipe = recipesSection.createSection(baseRecipeId);
+                convertCraftingTableRecipe(iaRecipe, ceRecipe, recipeId, fileName);
+            }
+            case COOKING -> convertCookingRecipes(iaRecipe, recipesSection, baseRecipeId, recipeId, fileName);
+            case ANVIL_REPAIR -> //TODO: Implement Anvil Repair conversion
+                Logger.debug("[ItemsAdderConverter] Anvil Repair recipe conversion not implemented yet for recipe: " + recipeId);
+            case SMITHING -> {
+                ConfigurationSection ceRecipe = recipesSection.createSection(baseRecipeId);
+                convertSmithingRecipe(iaRecipe, ceRecipe, recipeId, fileName);
+            }
+            default -> Logger.debug("[ItemsAdderConverter] Unsupported recipe type: " + type + " for recipe: " + recipeId);
+        }
+    }
+
+    private void convertCraftingTableRecipe(ConfigurationSection iaRecipe, ConfigurationSection ceRecipe,
+                                            String recipeId, String fileName) {
+        boolean shapeless = iaRecipe.getBoolean("shapeless", false);
+
+        if (shapeless) {
+            ceRecipe.set("type", "shapeless");
+
+            ConfigurationSection ingredients = iaRecipe.getConfigurationSection("ingredients");
+            if (isNotNull(ingredients)) {
+                List<String> ceIngredients = new ArrayList<>();
+                for (String key : ingredients.getKeys(false)) {
+                    String ingredientName = ingredients.getString(key);
+                    String convertedIngredient = convertItemReference(ingredientName, recipeId, fileName);
+                    if (isValidString(convertedIngredient)) {
+                        ceIngredients.add(convertedIngredient);
+                    }
+                }
+                ceRecipe.set("ingredients", ceIngredients);
+            }
+        } else {
+            ceRecipe.set("type", "shaped");
+            ceRecipe.set("pattern", iaRecipe.getStringList("pattern"));
+
+            ConfigurationSection ingredients = iaRecipe.getConfigurationSection("ingredients");
+            if (isNotNull(ingredients)) {
+                Map<String, String> ceIngredients = new HashMap<>();
+                for (String key : ingredients.getKeys(false)) {
+                    String ingredientName = ingredients.getString(key);
+                    String convertedIngredient = convertItemReference(ingredientName, recipeId, fileName);
+                    if (isValidString(convertedIngredient)) {
+                        ceIngredients.put(key, convertedIngredient);
+                    }
+                }
+                ceRecipe.set("ingredients", ceIngredients);
+            }
+        }
+
+        convertRecipeResult(iaRecipe, ceRecipe, recipeId, fileName);
+    }
+
+    private void convertCookingRecipes(ConfigurationSection iaRecipe, ConfigurationSection recipesSection,
+                                       String baseRecipeId, String recipeId, String fileName) {
+        List<String> machines = iaRecipe.getStringList("machines");
+
+        if (machines.isEmpty()) {
+            machines = List.of("FURNACE");
+        }
+
+        // Créer une recette pour chaque machine
+        for (int i = 0; i < machines.size(); i++) {
+            String machine = machines.get(i);
+            String cookingType = getCookingTypeFromMachine(machine);
+
+            if (cookingType == null) {
+                Logger.debug("[ItemsAdderConverter] Unknown machine type: " + machine + " for recipe: " + recipeId);
+                continue;
+            }
+
+            String finalRecipeId = machines.size() > 1 ? baseRecipeId + "_" + (i + 1) : baseRecipeId;
+
+            ConfigurationSection ceRecipe = recipesSection.createSection(finalRecipeId);
+            convertSingleCookingRecipe(iaRecipe, ceRecipe, cookingType, recipeId, fileName);
+        }
+    }
+
+    private void convertSingleCookingRecipe(ConfigurationSection iaRecipe, ConfigurationSection ceRecipe,
+                                            String cookingType, String recipeId, String fileName) {
+        ceRecipe.set("type", cookingType);
+
+        ConfigurationSection ingredientSection = iaRecipe.getConfigurationSection("ingredient");
+        if (isNotNull(ingredientSection)) {
+            String ingredientItem = ingredientSection.getString("item");
+            String convertedIngredient = convertItemReference(ingredientItem, recipeId, fileName);
+            if (isValidString(convertedIngredient)) {
+                ceRecipe.set("ingredient", convertedIngredient);
+            }
+        }
+
+        double exp = iaRecipe.getDouble("exp", 0.0);
+        if (exp > 0) {
+            ceRecipe.set("experience", exp);
+        }
+
+        int cookTime = iaRecipe.getInt("cook_time", 200);
+        ceRecipe.set("time", cookTime);
+
+        ConfigurationSection resultSection = iaRecipe.getConfigurationSection("result");
+        if (isNotNull(resultSection)) {
+            ConfigurationSection ceResultSection = ceRecipe.createSection("result");
+
+            String resultItem = resultSection.getString("item");
+            String convertedResult = convertItemReference(resultItem, recipeId, fileName);
+            if (isValidString(convertedResult)) {
+                ceResultSection.set("id", convertedResult);
+            }
+
+            int amount = resultSection.getInt("amount", 1);
+            ceResultSection.set("count", amount);
+        }
+
+        ceRecipe.set("category", "misc");
+    }
+
+    private void convertSmithingRecipe(ConfigurationSection iaRecipe, ConfigurationSection ceRecipe,
+                                       String recipeId, String fileName) {
+        ceRecipe.set("type", "smithing_transform");
+
+        String template = iaRecipe.getString("template");
+        if (isValidString(template)) {
+            String convertedTemplate = convertItemReference(template, recipeId, fileName);
+            if (isValidString(convertedTemplate)) {
+                ceRecipe.set("template-type", convertedTemplate);
+            }
+        }
+
+        String base = iaRecipe.getString("base");
+        if (isValidString(base)) {
+            String convertedBase = convertItemReference(base, recipeId, fileName);
+            if (isValidString(convertedBase)) {
+                ceRecipe.set("base", convertedBase);
+            }
+        } else {
+            Logger.debug("[ItemsAdderConverter] Missing required 'base' for smithing recipe: " + recipeId + " in file: " + fileName);
+        }
+
+        String addition = iaRecipe.getString("addition");
+        if (isValidString(addition)) {
+            String convertedAddition = convertItemReference(addition, recipeId, fileName);
+            if (isValidString(convertedAddition)) {
+                ceRecipe.set("addition", convertedAddition);
+            }
+        }
+
+        ConfigurationSection resultSection = iaRecipe.getConfigurationSection("result");
+        if (isNotNull(resultSection)) {
+            ConfigurationSection ceResultSection = ceRecipe.createSection("result");
+
+            String resultItem = resultSection.getString("item");
+            String convertedResult = convertItemReference(resultItem, recipeId, fileName);
+            if (isValidString(convertedResult)) {
+                ceResultSection.set("id", convertedResult);
+            }
+
+            int amount = resultSection.getInt("amount", 1);
+            ceResultSection.set("count", amount);
+        }
+    }
+
+    private String getCookingTypeFromMachine(String machine) {
+        return switch (machine.toUpperCase()) {
+            case "FURNACE" -> "smelting";
+            case "BLAST_FURNACE" -> "blasting";
+            case "SMOKER" -> "smoking";
+            case "CAMPFIRE" -> "campfire_cooking";
+            default -> null;
+        };
+    }
+
+    private String convertItemReference(String itemReference, String recipeId, String fileName) {
+        if (!isValidString(itemReference)) {
+            return null;
+        }
+
+        try {
+            Material material = Material.valueOf(itemReference.toUpperCase());
+            return "minecraft:" + material.name().toLowerCase();
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        if (itemReference.startsWith("itemsadder:")) {
+            String iaItemId = itemReference.replace("itemsadder:", "");
+            String mappedId = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, iaItemId);
+            if (isValidString(mappedId)) {
+                return mappedId;
+            } else {
+                Logger.debug("[ItemsAdderConverter] Unknown ItemsAdder item: " + itemReference + " for recipe: " + recipeId + " in file: " + fileName);
+                return null;
+            }
+        }
+
+        String mappedId = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, itemReference);
+        if (isValidString(mappedId)) {
+            return mappedId;
+        }
+
+        Logger.debug("[ItemsAdderConverter] Could not convert item reference: " + itemReference + " for recipe: " + recipeId + " in file: " + fileName);
+        return itemReference;
+    }
+
+    private void convertRecipeResult(ConfigurationSection iaRecipe, ConfigurationSection ceRecipe,
+                                     String recipeId, String fileName) {
+        ConfigurationSection resultSection = iaRecipe.getConfigurationSection("result");
+        if (isNotNull(resultSection)) {
+            ConfigurationSection ceResultSection = ceRecipe.createSection("result");
+
+            String resultItem = resultSection.getString("item");
+            String convertedResult = convertItemReference(resultItem, recipeId, fileName);
+            if (isValidString(convertedResult)) {
+                ceResultSection.set("id", convertedResult);
+            }
+
+            int amount = resultSection.getInt("amount", 1);
+            if (amount > 1) {
+                ceResultSection.set("amount", amount);
+            }
+        }
     }
 
     @Override
