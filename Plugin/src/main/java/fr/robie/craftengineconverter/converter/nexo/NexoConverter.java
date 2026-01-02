@@ -2,7 +2,6 @@ package fr.robie.craftengineconverter.converter.nexo;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.logger.LogType;
@@ -22,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.*;
@@ -1055,26 +1053,6 @@ public class NexoConverter extends Converter {
         return executeTask(async, ()-> convertPackSync(player));
     }
 
-    private int countFilesInDirectory(File directory) {
-        if (!directory.exists() || !directory.isDirectory()) {
-            return 0;
-        }
-
-        int count = 0;
-        File[] files = directory.listFiles();
-        if (files == null) return 0;
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                count += countFilesInDirectory(file);
-            } else if (file.isFile()) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
     private int countFilesInZip(File zipFile) {
         int count = 0;
 
@@ -1196,139 +1174,6 @@ public class NexoConverter extends Converter {
         }
     }
 
-    private void copyAssetsFolder(File assetsFolder, File outputAssetsFolder, String packName,
-                                  BukkitProgressBar progress, ExecutorService executor,
-                                  CountDownLatch latch, AtomicReference<Exception> errorRef,
-                                  boolean useMultiThread) {
-        if (!assetsFolder.exists() || !assetsFolder.isDirectory()) {
-            Logger.debug("Assets folder not found for pack '" + packName + "' at: " + assetsFolder.getAbsolutePath());
-            return;
-        }
-
-        try {
-            copyDirectory(assetsFolder, outputAssetsFolder, assetsFolder, progress, executor, latch, errorRef, useMultiThread);
-        } catch (IOException e) {
-            Logger.info("Failed to copy assets from " + packName + " pack: " + e.getMessage(), LogType.ERROR);
-            errorRef.compareAndSet(null, e);
-        }
-    }
-
-    private void copyDirectory(File source, File destination, File assetsRoot,
-                               BukkitProgressBar progress, ExecutorService executor,
-                               CountDownLatch latch, AtomicReference<Exception> errorRef,
-                               boolean useMultiThread) throws IOException {
-        if (!this.settings.dryRunEnabled() && !destination.exists() && !destination.mkdirs()) {
-            Logger.debug("Failed to create destination directory: " + destination.getAbsolutePath(), LogType.ERROR);
-            return;
-        }
-
-        File[] files = source.listFiles();
-        if (files == null) return;
-
-        for (File file : files) {
-            Path relativePath = assetsRoot.toPath().relativize(file.toPath());
-            String relativePathStr = relativePath.toString().replace("\\", "/");
-
-            String[] parts = relativePathStr.split("/", 2);
-            String namespace = parts[0];
-            String pathInNamespace = parts.length > 1 ? parts[1] : "";
-
-            String fullPath = namespace + ":" + pathInNamespace;
-
-            if (Configuration.isPathBlacklisted(fullPath)) {
-                if (file.isFile()) {
-                    progress.increment();
-                }
-                continue;
-            }
-
-            if (file.isFile()) {
-                String fullPathWithFile = namespace + ":" + pathInNamespace + "/" + file.getName();
-                if (Configuration.isPathBlacklisted(fullPathWithFile)) {
-                    progress.increment();
-                    continue;
-                }
-            }
-
-            PackMapping resolvedMapping = resolvePackMapping(namespace, pathInNamespace);
-
-            File targetFile;
-            if (resolvedMapping != null) {
-                String mappedFullPath = resolvedMapping.namespaceTarget() + "/" + resolvedMapping.targetPath();
-
-                if (file.isFile()) {
-                    targetFile = new File(destination, mappedFullPath + "/" + file.getName());
-                } else {
-                    targetFile = new File(destination, mappedFullPath);
-                }
-            } else {
-                targetFile = new File(destination, relativePathStr);
-            }
-
-            if (file.isDirectory()) {
-                if (!this.settings.dryRunEnabled() && !targetFile.exists() && !targetFile.mkdirs()) {
-                    Logger.debug("Failed to create target directory: " + targetFile.getAbsolutePath(), LogType.ERROR);
-                }
-
-                if (resolvedMapping != null) {
-                    copyDirectoryContents(file, targetFile, progress, executor, latch, errorRef, useMultiThread);
-                } else {
-                    copyDirectory(file, destination, assetsRoot, progress, executor, latch, errorRef, useMultiThread);
-                }
-            } else {
-                copyFileWithProgress(progress, executor, latch, errorRef, useMultiThread, file, targetFile);
-            }
-        }
-    }
-
-    private void copyFileWithProgress(BukkitProgressBar progress, ExecutorService executor, CountDownLatch latch, AtomicReference<Exception> errorRef, boolean useMultiThread, File file, File targetFile) throws IOException {
-        if (useMultiThread) {
-            executor.submit(() -> {
-                try {
-                    latch.await();
-                    if (!this.settings.dryRunEnabled() && !targetFile.getParentFile().exists()
-                            && !targetFile.getParentFile().mkdirs()) {
-                        Logger.debug("Failed to create parent directory for file: " + targetFile.getAbsolutePath(), LogType.ERROR);
-                    }
-                    copyFile(file, targetFile);
-                    progress.increment();
-                } catch (Exception e) {
-                    Logger.debug("Error copying file: " + file.getName() + " - " + e.getMessage(), LogType.ERROR);
-                    errorRef.compareAndSet(null, e);
-                }
-            });
-        } else {
-            if (!this.settings.dryRunEnabled() && !targetFile.getParentFile().exists()
-                    && !targetFile.getParentFile().mkdirs()) {
-                Logger.debug("Failed to create parent directory for file: " + targetFile.getAbsolutePath(), LogType.ERROR);
-            }
-            copyFile(file, targetFile);
-            progress.increment();
-        }
-    }
-
-    private void copyDirectoryContents(File source, File destination, BukkitProgressBar progress,
-                                       ExecutorService executor, CountDownLatch latch,
-                                       AtomicReference<Exception> errorRef, boolean useMultiThread) throws IOException {
-        if (!this.settings.dryRunEnabled() && !destination.exists() && !destination.mkdirs()) {
-            Logger.debug("Failed to create destination directory: " + destination.getAbsolutePath(), LogType.ERROR);
-            return;
-        }
-
-        File[] files = source.listFiles();
-        if (files == null) return;
-
-        for (File file : files) {
-            File targetFile = new File(destination, file.getName());
-
-            if (file.isDirectory()) {
-                copyDirectoryContents(file, targetFile, progress, executor, latch, errorRef, useMultiThread);
-            } else {
-                copyFileWithProgress(progress, executor, latch, errorRef, useMultiThread, file, targetFile);
-            }
-        }
-    }
-
     private void extractAndCopyZipAssets(File zipFile, File outputAssetsFolder, String packName,
                                          BukkitProgressBar progress, ExecutorService executor,
                                          CountDownLatch latch, AtomicReference<Exception> errorRef,
@@ -1438,14 +1283,7 @@ public class NexoConverter extends Converter {
         }
     }
 
-    private void copyFile(File source, File destination) throws IOException {
-        if (this.settings.dryRunEnabled()) return;
-        Files.copy(
-            source.toPath(),
-            destination.toPath(),
-            StandardCopyOption.REPLACE_EXISTING
-        );
-    }
+
 
     private String validateZipEntryName(@Nullable String entryName) throws IOException {
         // Reject null or empty names

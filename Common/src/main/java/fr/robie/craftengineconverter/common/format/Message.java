@@ -63,7 +63,13 @@ public enum Message {
 
     WARNING__TEMPLATE_MANAGER__MISSING_TEMPLATE("The template §e%template_name%§c is missing! Please report this to the plugin developer."),
     WARNING__TEMPLATE_MANAGER__ERROR_LOADING_TEMPLATE("An error occurred while loading the template §e%template_name%§c! Please report this to the plugin developer."),
-    WARNING__TEMPLATE_MANAGER__INVALID_ARGS_NUMBER("Invalid args number for template %template_name%, must be %2. Received %args_length% arguments.")
+    WARNING__TEMPLATE_MANAGER__INVALID_ARGS_NUMBER("Invalid args number for template %template_name%, must be %2. Received %args_length% arguments."),
+    WARNING__FILE__DELETE_FAILURE("Failed to delete file §e%file% (%path%)§c!"),
+    WARNING__FOLDER__DELETE_FAILURE("Failed to delete folder §e%folder% (%path%)§c!"),
+
+
+    ERROR__MKDIR_FAILURE("Failed to create directory §e%directory% (%path%)§c!"),
+    ERROR__FILE_COPY_EXCEPTION("An error occurred while copying file §e%file%§c: §e%message%§c"),
     ;
 
     private List<String> messages;

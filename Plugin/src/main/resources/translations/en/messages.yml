@@ -72,3 +72,10 @@ warning:
     missing-template: "The template §e%template_name%§c is missing! Please report this to the plugin developer."
     error-loading-template: "An error occurred while loading the template §e%template_name%§c! Please report this to the plugin developer."
     invalid-args-number: "Invalid args number for template %template_name%, must be %2. Received %args_length% arguments."
+  file:
+    delete-failure: "Failed to delete file §e%file% (%path%)§c!"
+  folder:
+    delete-failure: "Failed to delete folder §e%folder% (%path%)§c!"
+error:
+  mkdir-failure: "Failed to create directory §e%directory% (%path%)§c!"
+  file-copy-exception: "An error occurred while copying file §e%file%§c: §e%message%§c"

@@ -51,7 +51,7 @@ A powerful Minecraft plugin that converts configurations, items, and resources f
 | Plugin         | Items | Glyphs | Emojis | Sounds | Packs | Recipes | Languages |
 |----------------|-------|--------|--------|--------|-------|---------|-----------|
 | **Nexo**       | ✅     | ✅      | ✅      | ✅      | ✅     | ✅       | ✅         |
-| **ItemsAdder** | 🚧    | ✅      | 🚧     | ✅      | 🚧    | ✅       | ✅         |
+| **ItemsAdder** | 🚧    | ✅      | 🚧     | ✅      | ✅     | ✅       | ✅         |
 | **Oraxen**     | 🚧    | 🚧     | 🚧     | 🚧     | 🚧    | 🚧      | 🚧        |
 
 ✅ Fully Supported | 🚧 Work in Progress | ❌ Not Supported
@@ -332,7 +332,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 - **Issues**: [GitHub Issues](https://github.com/1robie/CraftEngineConverter/issues)
 - **Discord**: [Join our community](https://discord.gg/your-invite)
-- **Documentation**: [Wiki](https://github.com/1robie/CraftEngineConverter/wiki)
+- **Documentation**: [Wiki](https://1robie.gitbook.io/craftengineconverter)
 
 ---
 

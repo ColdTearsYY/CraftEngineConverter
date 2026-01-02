@@ -99,6 +99,7 @@
 
 ## ✅ Recently Completed
 
+- ItemsAdder pack conversion
 - ItemsAdder recipe conversion
 - ItemsAdder song conversion
 - ItemsAdder font conversion (no emojis yet)

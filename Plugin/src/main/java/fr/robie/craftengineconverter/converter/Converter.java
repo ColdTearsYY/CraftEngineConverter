@@ -4,6 +4,7 @@ import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.configuration.ConverterSettings;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
+import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
@@ -17,9 +18,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Converter extends YamlUtils {
     protected final CraftEngineConverter plugin;
@@ -141,6 +147,168 @@ public abstract class Converter extends YamlUtils {
         return builder.prefix(prefix).suffix(suffix).options(options).updateInterval(5000).build(this.plugin);
     }
 
+    protected int countFilesInDirectory(File directory) {
+        if (!directory.exists() || !directory.isDirectory()) {
+            return 0;
+        }
+
+        int count = 0;
+        File[] files = directory.listFiles();
+        if (files == null) return 0;
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                count += countFilesInDirectory(file);
+            } else if (file.isFile()) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    protected void copyAssetsFolder(File assetsFolder, File outputAssetsFolder, String packName,
+                                  BukkitProgressBar progress, ExecutorService executor,
+                                  CountDownLatch latch, AtomicReference<Exception> errorRef,
+                                  boolean useMultiThread) {
+        if (!assetsFolder.exists() || !assetsFolder.isDirectory()) {
+            Logger.debug("Assets folder not found for pack '" + packName + "' at: " + assetsFolder.getAbsolutePath());
+            return;
+        }
+
+        try {
+            copyDirectory(assetsFolder, outputAssetsFolder, assetsFolder, progress, executor, latch, errorRef, useMultiThread);
+        } catch (IOException e) {
+            Logger.info("Failed to copy assets from " + packName + " pack: " + e.getMessage(), LogType.ERROR);
+            errorRef.compareAndSet(null, e);
+        }
+    }
+
+    protected void copyDirectory(File source, File destination, File assetsRoot,
+                               BukkitProgressBar progress, ExecutorService executor,
+                               CountDownLatch latch, AtomicReference<Exception> errorRef,
+                               boolean useMultiThread) throws IOException {
+        if (!this.settings.dryRunEnabled() && !destination.exists() && !destination.mkdirs()) {
+            Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", destination.getName(), "path", destination.getAbsolutePath());
+            return;
+        }
+
+        File[] files = source.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            Path relativePath = assetsRoot.toPath().relativize(file.toPath());
+            String relativePathStr = relativePath.toString().replace("\\", "/");
+
+            String[] parts = relativePathStr.split("/", 2);
+            String namespace = parts[0];
+            String pathInNamespace = parts.length > 1 ? parts[1] : "";
+
+            String fullPath = namespace + ":" + pathInNamespace;
+
+            if (Configuration.isPathBlacklisted(fullPath)) {
+                if (file.isFile()) {
+                    progress.increment();
+                }
+                continue;
+            }
+
+            if (file.isFile()) {
+                String fullPathWithFile = namespace + ":" + pathInNamespace + "/" + file.getName();
+                if (Configuration.isPathBlacklisted(fullPathWithFile)) {
+                    progress.increment();
+                    continue;
+                }
+            }
+
+            PackMapping resolvedMapping = resolvePackMapping(namespace, pathInNamespace);
+
+            File targetFile;
+            if (resolvedMapping != null) {
+                String mappedFullPath = resolvedMapping.namespaceTarget() + "/" + resolvedMapping.targetPath();
+
+                if (file.isFile()) {
+                    targetFile = new File(destination, mappedFullPath + "/" + file.getName());
+                } else {
+                    targetFile = new File(destination, mappedFullPath);
+                }
+            } else {
+                targetFile = new File(destination, relativePathStr);
+            }
+
+            if (file.isDirectory()) {
+                if (!this.settings.dryRunEnabled() && !targetFile.exists() && !targetFile.mkdirs()) {
+                    Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", targetFile.getName(), "path", targetFile.getAbsolutePath());
+                }
+
+                if (resolvedMapping != null) {
+                    copyDirectoryContents(file, targetFile, progress, executor, latch, errorRef, useMultiThread);
+                } else {
+                    copyDirectory(file, destination, assetsRoot, progress, executor, latch, errorRef, useMultiThread);
+                }
+            } else {
+                copyFileWithProgress(progress, executor, latch, errorRef, useMultiThread, file, targetFile);
+            }
+        }
+    }
+
+    private void copyDirectoryContents(File source, File destination, BukkitProgressBar progress,
+                                       ExecutorService executor, CountDownLatch latch,
+                                       AtomicReference<Exception> errorRef, boolean useMultiThread) throws IOException {
+        if (!this.settings.dryRunEnabled() && !destination.exists() && !destination.mkdirs()) {
+            Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", destination.getName(), "path", destination.getAbsolutePath());
+            return;
+        }
+
+        File[] files = source.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            File targetFile = new File(destination, file.getName());
+
+            if (file.isDirectory()) {
+                copyDirectoryContents(file, targetFile, progress, executor, latch, errorRef, useMultiThread);
+            } else {
+                copyFileWithProgress(progress, executor, latch, errorRef, useMultiThread, file, targetFile);
+            }
+        }
+    }
+
+    private void copyFileWithProgress(BukkitProgressBar progress, ExecutorService executor, CountDownLatch latch, AtomicReference<Exception> errorRef, boolean useMultiThread, File file, File targetFile) throws IOException {
+        if (useMultiThread) {
+            executor.submit(() -> {
+                try {
+                    latch.await();
+                    if (!this.settings.dryRunEnabled() && !targetFile.getParentFile().exists()
+                            && !targetFile.getParentFile().mkdirs()) {
+                        Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", targetFile.getParentFile().getName(), "path", targetFile.getParentFile().getAbsolutePath());
+                    }
+                    copyFile(file, targetFile);
+                    progress.increment();
+                } catch (Exception e) {
+                    Logger.debug(Message.ERROR__FILE_COPY_EXCEPTION, LogType.ERROR, "file", file.getAbsolutePath(), "message", e.getMessage());
+                    errorRef.compareAndSet(null, e);
+                }
+            });
+        } else {
+            if (!this.settings.dryRunEnabled() && !targetFile.getParentFile().exists()
+                    && !targetFile.getParentFile().mkdirs()) {
+                Logger.debug("Failed to create parent directory for file: " + targetFile.getAbsolutePath(), LogType.ERROR);
+            }
+            copyFile(file, targetFile);
+            progress.increment();
+        }
+    }
+
+    private void copyFile(File source, File destination) throws IOException {
+        if (this.settings.dryRunEnabled()) return;
+        Files.copy(
+                source.toPath(),
+                destination.toPath(),
+                StandardCopyOption.REPLACE_EXISTING
+        );
+    }
+
     protected void generateCategorie(List<String> itemsIds, YamlConfiguration config, String fileName) {
         if (itemsIds.isEmpty()) return;
         ConfigurationSection categoriesSection = config.createSection("categories");
@@ -157,8 +325,8 @@ public abstract class Converter extends YamlUtils {
 
             if (!outputFile.getParentFile().exists()) {
                 if (!outputFile.getParentFile().mkdirs()) {
-                    Logger.debug("Failed to create output directory for "+directoryName+" file: " +
-                            outputFile.getParentFile().getAbsolutePath(), LogType.ERROR);
+                    Logger.debug(Message.ERROR__MKDIR_FAILURE,LogType.ERROR, "directory", outputFile.getParentFile().getName(),
+                            "path", outputFile.getParentFile().getAbsolutePath());
                 }
             }
 
@@ -175,12 +343,12 @@ public abstract class Converter extends YamlUtils {
                 if (file.isDirectory()) {
                     deleteDirectory(file);
                 } else if (!file.delete()){
-                    Logger.debug("Failed to delete file: " + file.getAbsolutePath(), LogType.ERROR);
+                    Logger.debug(Message.WARNING__FILE__DELETE_FAILURE, LogType.ERROR, "file", file.getName(), "path", file.getAbsolutePath());
                 }
             }
         }
         if (!directory.delete()){
-            Logger.debug("Failed to delete directory: " + directory.getAbsolutePath(), LogType.ERROR);
+            Logger.debug(Message.WARNING__FOLDER__DELETE_FAILURE, LogType.ERROR, "folder", directory.getName(), "path", directory.getAbsolutePath());
         }
     }
 

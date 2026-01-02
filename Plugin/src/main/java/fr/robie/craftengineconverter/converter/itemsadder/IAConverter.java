@@ -21,10 +21,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class ItemsAdderConverter extends Converter {
-    public ItemsAdderConverter(CraftEngineConverter plugin) {
+public class IAConverter extends Converter {
+    public IAConverter(CraftEngineConverter plugin) {
         super(plugin, "ItemsAdder");
     }
 
@@ -593,7 +594,6 @@ public class ItemsAdderConverter extends Converter {
             machines = List.of("FURNACE");
         }
 
-        // Créer une recette pour chaque machine
         for (int i = 0; i < machines.size(); i++) {
             String machine = machines.get(i);
             String cookingType = getCookingTypeFromMachine(machine);
@@ -755,7 +755,110 @@ public class ItemsAdderConverter extends Converter {
 
     @Override
     public CompletableFuture<Void> convertPack(boolean async, Optional<Player> player) {
-        return null;
+        return executeTask(async, () -> convertPackSync(player));
+    }
+
+    private void convertPackSync(Optional<Player> optionalPlayer){
+        ExecutorService executor = null;
+        try {
+            File inputFolder = new File("plugins/"+this.converterName+"/contents");
+            File outputPackFile = new File(this.plugin.getDataFolder(), "converted/"+converterName+"/CraftEngine/resources/craftengineconverter/resourcepack");
+
+            if (!inputFolder.exists() || !inputFolder.isDirectory()) {
+                Logger.debug("ItemsAdder contents folder not found: " + inputFolder.getAbsolutePath());
+                return;
+            }
+
+            if (outputPackFile.exists()){
+                deleteDirectory(outputPackFile);
+            }
+
+            if (!outputPackFile.mkdirs()) {
+                Logger.debug("Failed to create output folder: " + outputPackFile.getAbsolutePath(), LogType.ERROR);
+                return;
+            }
+
+            int totalFiles = 0;
+            List<String> blacklistedNamespacesList = List.of(".vscode", "_iainternal");
+            List<String> validMinecraftFolders = List.of("atlases","blockstates","equipment","font","items","lang","models","particles","post_effect","shaders","texts","textures","waypoint_style");
+            File[] listed = inputFolder.listFiles();
+            if (isNull(listed)) return;
+            for (File f : listed){
+                if (f.isDirectory() && !blacklistedNamespacesList.contains(f.getName().toLowerCase())){
+                    File[] listedFiles = f.listFiles();
+                    if (isNull(listedFiles)) continue;
+                    for (File subFile : listedFiles){
+                        if (subFile.isDirectory() && validMinecraftFolders.contains(subFile.getName().toLowerCase())){
+                            totalFiles += countFilesInDirectory(subFile);
+                        } else if (subFile.getName().equalsIgnoreCase("resourcepack")){
+                            File assetsDir = new File(subFile, "assets");
+                            totalFiles += countFilesInDirectory(assetsDir);
+                        }
+                    }
+                }
+            }
+            BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalFiles,
+                    "Converting ItemsAdder resource pack", "pack", ConverterOptions.PACKS);
+
+            progressBar.start();
+
+            int threadCount = Math.max(1, this.getSettings().threadCount());
+            boolean useMultiThread = threadCount > 1;
+
+            if (useMultiThread) {
+                executor = Executors.newFixedThreadPool(threadCount);
+            }
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<Exception> errorRef = new AtomicReference<>();
+
+            try {
+                File outputAssetsFolder = new File(outputPackFile, "assets");
+                File contentsFolder = listed.length > 0 ? listed[0].getParentFile() : null;
+
+                for (File namespaceDir : listed){
+                    if (namespaceDir.isDirectory() && !blacklistedNamespacesList.contains(namespaceDir.getName().toLowerCase())){
+                        File[] namespaceFiles = namespaceDir.listFiles();
+                        if (isNull(namespaceFiles)) continue;
+                        for (File f : namespaceFiles){
+                            String folderName = f.getName().toLowerCase();
+                            if (f.isDirectory() && validMinecraftFolders.contains(folderName)){
+                                File assetsRoot = contentsFolder != null ? contentsFolder : namespaceDir.getParentFile();
+                                copyDirectory(f, outputAssetsFolder, assetsRoot, progressBar, executor, latch, errorRef, useMultiThread);
+                            } else if (folderName.equals("resourcepack")){
+                                File assetsDir = new File(f, "assets");
+                                copyAssetsFolder(assetsDir, outputAssetsFolder, folderName, progressBar, executor, latch, errorRef,useMultiThread);
+                            }
+                        }
+                    }
+                }
+
+                if (useMultiThread){
+                    latch.countDown();
+                    executor.shutdown();
+                    if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+                        Logger.debug("Timeout while waiting for resource pack conversion tasks to finish", LogType.ERROR);
+                    }
+                }
+
+                if (errorRef.get() != null) {
+                    throw errorRef.get();
+                }
+
+            } finally {
+                progressBar.stop();
+                if (executor != null && !executor.isShutdown()){
+                    executor.shutdown();
+                }
+            }
+
+
+        } catch (Exception e) {
+            Logger.showException("An error occurred during ItemsAdder pack conversion", e);
+        } finally {
+            if (isNotNull(executor) && !executor.isShutdown()){
+                executor.shutdown();
+            }
+        }
     }
 
     protected int populateQueueIA(File baseDir, File currentDir, Queue<ConfigFile> toConvert, String requiredSectionName) {
