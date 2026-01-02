@@ -7,7 +7,6 @@ import fr.robie.craftengineconverter.converter.ItemConverter;
 import fr.robie.craftengineconverter.utils.FloatsUtils;
 import fr.robie.craftengineconverter.utils.enums.*;
 import fr.robie.craftengineconverter.utils.enums.ia.IADirectionalMode;
-import fr.robie.craftengineconverter.utils.enums.ia.IAFurnitureEntityType;
 import fr.robie.craftengineconverter.utils.enums.ia.IAModelsKeys;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import org.bukkit.Material;
@@ -245,13 +244,14 @@ public class IAItemsConverter extends ItemConverter {
         ConfigurationSection equipmentSection = this.iaItemSection.getConfigurationSection("equipment");
         if (isNotNull(equipmentSection)) {
             String assetId = equipmentSection.getString("id");
+            if (!isValidString(assetId)) return;
             assetId = namespaced(assetId,this.namespace);
             ConfigurationSection ceEquipableSection = this.isValidString(assetId) ? getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable") : getOrCreateSection(this.craftEngineItemUtils.getDataSection(),"equippable");
             if (isValidString(assetId)) {
                 ceEquipableSection.set("asset-id", assetId);
                 this.setAssetId(assetId);
             }
-            String slot = null;
+            String slot;
             if (this.itemId.endsWith("_helmet")){
                 slot = "head";
             } else if (this.itemId.endsWith("_chestplate")){
@@ -260,9 +260,24 @@ public class IAItemsConverter extends ItemConverter {
                 slot = "legs";
             } else if (this.itemId.endsWith("_boots")){
                 slot = "feet";
+            } else {
+                slot = equipmentSection.getString("slot");
             }
             if (isValidString(slot)){
                 ceEquipableSection.set("slot", slot);
+                ConfigurationSection slotAttributeModifiers = equipmentSection.getConfigurationSection("slot_attribute_modifiers");
+                if (isNotNull(slotAttributeModifiers)){
+                    ConfigurationSection attributeModifiers = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(), "minecraft:attribute_modifiers");
+                    List<Map<?, ?>> attributeModifiersMapList = attributeModifiers.getMapList("");
+                    Map<String, Object> attributeModifiersMap = new HashMap<>();
+                    attributeModifiersMap.put("type", "minecraft:armor");
+                    attributeModifiersMap.put("slot", slot);
+                    attributeModifiersMap.put("amount", slotAttributeModifiers.getDouble("armor",0f));
+                    attributeModifiersMap.put("operation", "add_value");
+                    attributeModifiersMap.put("id", UUID.randomUUID().toString());
+                    attributeModifiersMapList.add(attributeModifiersMap);
+                    this.craftEngineItemUtils.getComponentsSection().set("minecraft:attribute_modifiers", attributeModifiersMapList);
+                }
             }
         }
         ConfigurationSection specificPropertiesSection = this.iaItemSection.getConfigurationSection("specific_properties");
@@ -457,7 +472,7 @@ public class IAItemsConverter extends ItemConverter {
                 } else if (isBlock) {
                     BlockParent parent = null;
                     try {
-                        parent = BlockParent.valueOf(graphicsSection.getString("parent").toUpperCase());
+                        parent = BlockParent.valueOf(graphicsSection.getString("parent", "").toUpperCase());
                     } catch (Exception ignored){
                     }
                     if (isNotNull(parent)){
@@ -572,6 +587,16 @@ public class IAItemsConverter extends ItemConverter {
                             this.convertFurniture(furnitureSection, behavioursSection);
                         }
                     }
+                    case "fuel"->{
+                        ConfigurationSection fuelSection = behavioursSection.getConfigurationSection("fuel");
+                        if (isNotNull(fuelSection)){
+                            int burnTicks = fuelSection.getInt("burn_ticks", -1);
+                            if (burnTicks > 0){
+                                this.craftEngineItemUtils.getSettingsSection().set("fuel-time", burnTicks);
+                            }
+                            // machines fuel type not supported
+                        }
+                    }
                     default -> {
 
                     }
@@ -581,11 +606,6 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private void convertFurniture(ConfigurationSection furnitureSection, ConfigurationSection behavioursSection) {
-        IAFurnitureEntityType entityType = IAFurnitureEntityType.ITEM_DISPLAY;
-        try {
-            entityType = IAFurnitureEntityType.valueOf(furnitureSection.getString("entity","ITEM_DISPLAY").toUpperCase());
-        } catch (Exception ignored){
-        }
         Set<FurniturePlacement> placements = new HashSet<>();
         ConfigurationSection placeableSection = furnitureSection.getConfigurationSection("placeable_on");
         if (isNotNull(placeableSection)){
@@ -614,9 +634,9 @@ public class IAItemsConverter extends ItemConverter {
             ConfigurationSection displayTransformationSection = furnitureSection.getConfigurationSection("display_transformation");
             if (isNotNull(displayTransformationSection)){
                 try {
-                    transformType = Billboard.valueOf(displayTransformationSection.getString("transform","FIXED").toUpperCase());
+                    displayType = ItemDisplayType.valueOf(displayTransformationSection.getString("transform","FIXED").toUpperCase());
                 } catch (Exception exception){
-                    Logger.debug("[IAItemsConverter] Invalid billboard transform type for furniture item " + this.itemId+": " + displayTransformationSection.getString("transform"));
+                    Logger.debug("[IAItemsConverter] Unknown furniture display transform type for item "+this.itemId+": "+displayTransformationSection.getString("transform"));
                 }
                 ConfigurationSection translationSection = displayTransformationSection.getConfigurationSection("translation");
                 if (isNotNull(translationSection)){
@@ -666,7 +686,10 @@ public class IAItemsConverter extends ItemConverter {
             if (isNotNull(iaHitboxesSection)) {
                 parseItemsAdderHitboxes(iaHitboxesSection, hitboxes, sitHeight);
             }
-            ConfigurationSection ceFurnitureSection = getOrCreateSection(this.craftEngineItemUtils.getBehaviorSection(), "furniture");
+            ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
+            behaviorSection.set("type","furniture_item");
+            getOrCreateSection(behaviorSection, "settings").set("item", this.itemId);
+            ConfigurationSection ceFurnitureSection = getOrCreateSection(behaviorSection, "furniture");
             ConfigurationSection cePlacementSection = getOrCreateSection(ceFurnitureSection, "placement");
 
             for (FurniturePlacement furniturePlacement : placements){

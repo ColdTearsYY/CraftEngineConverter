@@ -2,6 +2,8 @@ package fr.robie.craftengineconverter.converter.itemsadder;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
+import fr.robie.craftengineconverter.common.configuration.Configuration;
+import fr.robie.craftengineconverter.common.enums.ArmorConverter;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.logger.LogType;
@@ -123,11 +125,45 @@ public class IAConverter extends Converter {
             }
             progressBar.increment();
         }
+        ConfigurationSection equipments = config.getConfigurationSection("equipments");
+        if (isNotNull(equipments)){
+            for (String equipmentId : equipments.getKeys(false)){
+                ConfigurationSection equipmentSection = equipments.getConfigurationSection(equipmentId);
+                if (isNull(equipmentSection)) continue;
+                String type = equipmentSection.getString("type","");
+                if (!type.equalsIgnoreCase("armor")) continue;
+                String layer1 = equipmentSection.getString("layer_1");
+                String layer2 = equipmentSection.getString("layer_2");
+                if (!isValidString(layer1) || !isValidString(layer2)) continue;
+                layer1 = cleanPath(layer1);
+                layer2 = cleanPath(layer2);
+                List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
+                Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(getOrCreateSection(convertedConfig, "equipments"), namespaced(equipmentId, namespace));
+                addPackMapping(namespace, "textures/"+layer1, namespace, "textures/entity/equipment/humanoid/");
+                addPackMapping(namespace, "textures/"+layer2, namespace, "textures/entity/equipment/humanoid_leggings/");
+                String layer1FileName = getFileName(layer1);
+                String layer2FileName = getFileName(layer2);
+                for (ArmorConverter converter : convertersToProcess){
+                    ConfigurationSection section = converterSections.get(converter);
+                    if (isNotNull(section)){
+                        String layer1Texture = converter.getTexturePath(namespace, "humanoid",layer1FileName);
+                        String layer2Texture = converter.getTexturePath(namespace, "humanoid_leggings",layer2FileName);
+                        ArmorConverter.addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
+                        ArmorConverter.addEquipmentTextures(section, "humanoid_leggings", Set.of(layer2Texture));
+                    }
+                }
+            }
+        }
         generateCategorie(itemsIds, convertedConfig, finalFileName);
         if (this.settings.dryRunEnabled()) return;
         saveConvertedConfig(convertedConfig, configFile, itemFile, outputFolder, "items","item");
     }
 
+    private String getFileName(@NotNull String path){
+        int lastIndexOf = path.lastIndexOf("/");
+        if (lastIndexOf == -1) return path;
+        return path.substring(lastIndexOf + 1);
+    }
 
     @Override
     public CompletableFuture<Void> convertEmojis(boolean async, Optional<Player> player) {
@@ -198,14 +234,14 @@ public class IAConverter extends Converter {
                 ceImageSection.set("file", namespaced(path, namespace));
             }
 
-            int scaleRatio = imageSection.getInt("scale_ratio", 1);
-            if (scaleRatio != 1){
-                ceImageSection.set("ascent", scaleRatio);
-            }
-
+            int scaleRatio = imageSection.getInt("scale_ratio", 0);
             int yPosition = imageSection.getInt("y_position", 0);
+
+            if (scaleRatio != 0){
+                ceImageSection.set("height", scaleRatio);
+            }
             if (yPosition != 0){
-                ceImageSection.set("height", yPosition);
+                ceImageSection.set("ascent", yPosition);
             }
 
             CraftEngineImageUtils.register(imageId, new ImageConversion(finalImageId, 0,0));

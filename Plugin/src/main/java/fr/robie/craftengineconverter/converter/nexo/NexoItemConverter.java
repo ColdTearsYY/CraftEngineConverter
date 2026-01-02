@@ -796,7 +796,7 @@ public class NexoItemConverter extends ItemConverter {
 
                     if (!equipmentLayers.isEmpty()){
                         List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
-                        Map<ArmorConverter, ConfigurationSection> converterSections = createArmorConverterSections(fileEquipementsSection, assetId);
+                        Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(fileEquipementsSection, assetId);
 
                         for (var layerTypeTuple : equipmentLayers.entrySet()) {
                             String layerType = layerTypeTuple.getKey();
@@ -822,10 +822,8 @@ public class NexoItemConverter extends ItemConverter {
                                         getConverter().addPackMapping(namespace, "textures/" + path + ".png", namespace, targetPath);
 
                                         for (ArmorConverter converter : convertersToProcess) {
-                                            String convertedPath = generateArmorTexturePath(converter, namespace, fileName, equipmentFolder);
-                                            if (isNotNull(convertedPath)) {
-                                                converterTextures.computeIfAbsent(converter, k -> new HashSet<>()).add(convertedPath);
-                                            }
+                                            String convertedPath = converter.getTexturePath(namespace, equipmentFolder,fileName);
+                                            converterTextures.computeIfAbsent(converter, k -> new HashSet<>()).add(convertedPath);
                                         }
                                     } else {
                                         // For other types (wolf, llama, horse, etc.)
@@ -850,7 +848,7 @@ public class NexoItemConverter extends ItemConverter {
                             for (Map.Entry<ArmorConverter, Set<String>> entry : converterTextures.entrySet()) {
                                 ConfigurationSection section = converterSections.get(entry.getKey());
                                 if (isNotNull(section) && !entry.getValue().isEmpty()) {
-                                    addEquipmentTextures(section, layerType, entry.getValue());
+                                    ArmorConverter.addEquipmentTextures(section, layerType, entry.getValue());
                                 }
                             }
                         }
@@ -876,7 +874,7 @@ public class NexoItemConverter extends ItemConverter {
 
                     if (isValidString(assetId)){
                         List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
-                        Map<ArmorConverter, ConfigurationSection> converterSections = createArmorConverterSections(fileEquipementsSection, assetId);
+                        Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(fileEquipementsSection, assetId);
 
                         String armorName = assetId.split(":", 2)[1];
                         String[] split = namespacedTexturePath.split(":",2);
@@ -902,13 +900,11 @@ public class NexoItemConverter extends ItemConverter {
                         for (ArmorConverter converter : convertersToProcess) {
                             ConfigurationSection section = converterSections.get(converter);
                             if (isNotNull(section)) {
-                                String layer1Texture = generateArmorTexturePath(converter, namespace, layer1FileName, "humanoid");
-                                String layer2Texture = generateArmorTexturePath(converter, namespace, layer2FileName, "humanoid_leggings");
+                                String layer1Texture = converter.getTexturePath(namespace, "humanoid",layer1FileName);
+                                String layer2Texture = converter.getTexturePath(namespace, "humanoid_leggings",layer2FileName);
 
-                                if (isNotNull(layer1Texture) && isNotNull(layer2Texture)) {
-                                    addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
-                                    addEquipmentTextures(section, "humanoid-leggings", Set.of(layer2Texture));
-                                }
+                                ArmorConverter.addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
+                                ArmorConverter.addEquipmentTextures(section, "humanoid-leggings", Set.of(layer2Texture));
                             }
                         }
 
@@ -1083,36 +1079,6 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     /**
-     * Creates equipment sections according to the conversion type (COMPONENT, TRIM, or BOTH)
-     *
-     * @param fileEquipementsSection Parent section for equipment
-     * @param assetId Armor asset ID
-     * @return Map associating each converter type with its configuration section
-     */
-    private Map<ArmorConverter, ConfigurationSection> createArmorConverterSections(
-            ConfigurationSection fileEquipementsSection,
-            String assetId) {
-
-        Map<ArmorConverter, ConfigurationSection> converterSections = new HashMap<>();
-
-        if (Configuration.armorConverterType == ArmorConverter.BOTH){
-            ConfigurationSection componentSection = getOrCreateSection(fileEquipementsSection, "$$>=1.21.2");
-            ConfigurationSection trimSection = getOrCreateSection(fileEquipementsSection, "$$<1.21.2");
-            converterSections.put(ArmorConverter.COMPONENT, getOrCreateSection(componentSection, assetId));
-            converterSections.put(ArmorConverter.TRIM, getOrCreateSection(trimSection, assetId));
-        } else {
-            ConfigurationSection assetIdSection = getOrCreateSection(fileEquipementsSection, assetId);
-            converterSections.put(Configuration.armorConverterType, assetIdSection);
-        }
-
-        for (Map.Entry<ArmorConverter, ConfigurationSection> entry : converterSections.entrySet()) {
-            entry.getValue().set("type", entry.getKey().name().toLowerCase());
-        }
-
-        return converterSections;
-    }
-
-    /**
      * Determines the asset-id from the itemId or texture
      *
      * @param packSection Nexo configuration section
@@ -1137,45 +1103,6 @@ public class NexoItemConverter extends ItemConverter {
         }
 
         return null;
-    }
-
-    /**
-     * Generates texture paths according to the converter type for humanoid layers
-     *
-     * @param converter Converter type (TRIM or COMPONENT)
-     * @param namespace Texture namespace
-     * @param fileName Texture file name
-     * @param equipmentFolder Equipment folder (humanoid, humanoid_leggings, etc.)
-     * @return The texture path formatted according to the type
-     */
-    private String generateArmorTexturePath(ArmorConverter converter, String namespace, String fileName, String equipmentFolder) {
-        return switch (converter) {
-            case TRIM -> namespace + ":entity/equipment/" + equipmentFolder + "/" + fileName;
-            case COMPONENT -> namespace + ":" + fileName;
-            default -> null;
-        };
-    }
-
-    @SuppressWarnings("unchecked")
-    private void addEquipmentTextures(ConfigurationSection assetIdSection, String layerKey, Set<String> texturesToAdd) {
-        Object existingObject = assetIdSection.get(layerKey);
-        Set<Map<String,Object>> textureList = new HashSet<>();
-        if (isNotNull(existingObject)) {
-            if (existingObject instanceof List<?>) {
-                List<Map<String, Object>> mapList = (List<Map<String, Object>>) (Object) assetIdSection.getMapList(layerKey);
-                textureList.addAll(mapList);
-            } else {
-                textureList.add(Map.of("texture", existingObject.toString()));
-            }
-        }
-        for (String texture : texturesToAdd){
-            textureList.add(Map.of("texture", texture));
-        }
-        if (textureList.size() == 1){
-            assetIdSection.set(layerKey, textureList.iterator().next().get("texture").toString());
-        } else {
-            assetIdSection.set(layerKey, new ArrayList<>(textureList));
-        }
     }
 
     private void buildBowModel(ConfigurationSection packSection) {

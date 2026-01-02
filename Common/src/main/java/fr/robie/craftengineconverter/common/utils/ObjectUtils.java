@@ -9,7 +9,6 @@ import java.util.List;
 
 public class ObjectUtils {
     @Contract("null -> null")
-    @Nullable
     protected String cleanPath(@Nullable String path) {
         if (path == null) return null;
         if (path.endsWith(".png")) {
@@ -21,7 +20,7 @@ public class ObjectUtils {
         return path;
     }
 
-    @Contract("!null -> true; null -> false")
+    @Contract("null -> false")
     public boolean isValidString(@Nullable String str){
         return str != null && !str.isBlank();
     }
@@ -36,7 +35,7 @@ public class ObjectUtils {
         return obj == null;
     }
 
-    @Contract("null -> null")
+    @Contract("!null -> !null; null -> null")
     protected @Nullable String namespaced(String path) {
         return namespaced(path, "minecraft");
     }

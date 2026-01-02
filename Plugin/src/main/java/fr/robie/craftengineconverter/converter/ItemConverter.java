@@ -171,13 +171,6 @@ public abstract class ItemConverter extends ObjectUtils {
         return equipementsSection;
     }
 
-    protected ConfigurationSection getOrCreateSection(ConfigurationSection parent, String key) {
-        if (parent.isConfigurationSection(key)) {
-            return parent.getConfigurationSection(key);
-        }
-        return parent.createSection(key);
-    }
-
     public boolean isExcludeFromInventory() {
         return this.excludeFromInventory;
     }
