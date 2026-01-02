@@ -1,0 +1,16 @@
+type: minecraft:condition
+property: minecraft:fishing_rod/cast
+on-false:
+  type: minecraft:model
+  path: "%default_model_path%"
+  generation:
+    parent: minecraft:item/fishing_rod
+    textures:
+      layer0: "%default_texture_path%"
+on-true:
+  type: minecraft:model
+  path: "%casting_model_path%"
+  generation:
+    parent: minecraft:item/fishing_rod
+    textures:
+      layer0: "%casting_texture_path%"

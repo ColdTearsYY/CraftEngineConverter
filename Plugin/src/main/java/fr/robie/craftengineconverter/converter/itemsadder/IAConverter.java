@@ -109,7 +109,8 @@ public class IAConverter extends Converter {
                         items.createSection(finalItemId),
                         this,
                         convertedConfig,
-                        section
+                        section,
+                        namespace
                 );
                 iaItemsConverter.convertItem();
 

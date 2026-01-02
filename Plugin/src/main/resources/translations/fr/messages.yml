@@ -73,3 +73,11 @@ warning:
     missing-template: "Le modèle §e%template_name%§c est manquant ! Veuillez le signaler au développeur du plugin."
     error-loading-template: "Une erreur est survenue lors du chargement du modèle §e%template_name%§c ! Veuillez le signaler au développeur du plugin."
     invalid-args-number: "Nombre d'arguments invalide pour le modèle %template_name%, doit être %2. %args_length% arguments reçus."
+  file:
+    delete-failure: "Échec de la suppression du fichier §e%file% (%path%)§c !"
+  folder:
+    delete-failure: "Échec de la suppression du dossier §e%folder% (%path%)§c !"
+
+error:
+  mkdir-failure: "Échec de la création du dossier §e%directory% (%path%)§c !"
+  file-copy-exception: "Une erreur est survenue lors de la copie du fichier §e%file%§c : §e%message%§c"

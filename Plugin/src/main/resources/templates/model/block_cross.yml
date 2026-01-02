@@ -1,0 +1,5 @@
+path: "%model_path%"
+generation:
+  parent: minecraft:block/cross
+  textures:
+    cross: "%texture_path%"

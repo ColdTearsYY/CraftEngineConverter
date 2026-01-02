@@ -4,7 +4,9 @@ import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
+import fr.robie.craftengineconverter.utils.enums.BlockParent;
 import fr.robie.craftengineconverter.utils.enums.IADirectionalMode;
+import fr.robie.craftengineconverter.utils.enums.IAModelsKeys;
 import fr.robie.craftengineconverter.utils.enums.Template;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import org.bukkit.Material;
@@ -13,17 +15,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class IAItemsConverter extends ItemConverter {
     private final ConfigurationSection iaItemSection;
+    private final String namespace;
 
-    public IAItemsConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig, ConfigurationSection iaItemSection) {
+    public IAItemsConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig, ConfigurationSection iaItemSection, String namespace) {
         super(itemId, craftEngineItemSection, converter, fileConfig);
         this.iaItemSection = iaItemSection;
+        this.namespace = namespace;
     }
 
     @Override
@@ -243,7 +244,7 @@ public class IAItemsConverter extends ItemConverter {
         ConfigurationSection equipmentSection = this.iaItemSection.getConfigurationSection("equipment");
         if (isNotNull(equipmentSection)) {
             String assetId = equipmentSection.getString("id");
-            assetId = namespaced(assetId);
+            assetId = namespaced(assetId,this.namespace);
             ConfigurationSection ceEquipableSection = this.isValidString(assetId) ? getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable") : getOrCreateSection(this.craftEngineItemUtils.getDataSection(),"equippable");
             if (isValidString(assetId)) {
                 ceEquipableSection.set("asset-id", assetId);
@@ -269,7 +270,7 @@ public class IAItemsConverter extends ItemConverter {
             if (isNotNull(armorSection)) {
                 String assetId = armorSection.getString("custom_armor");
                 if (isValidString(assetId)){
-                    assetId = namespaced(assetId);
+                    assetId = namespaced(assetId,this.namespace);
                     this.isValidString(assetId);
                     ConfigurationSection ceEquipableSection = getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable");
                     ceEquipableSection.set("asset-id", assetId);
@@ -298,7 +299,7 @@ public class IAItemsConverter extends ItemConverter {
                     case NONE -> {
                         String texturePath = getTexturePath(resourceSection);
                         if (isValidString(texturePath)){
-                            texturePath = namespaced(texturePath);
+                            texturePath = namespaced(texturePath,this.namespace);
                             Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", texturePath, "%texture_path%", texturePath);
                             this.craftEngineItemUtils.getGeneralSection().createSection("model",parsedTemplate);
                         }
@@ -314,17 +315,17 @@ public class IAItemsConverter extends ItemConverter {
                             String cleanedTexture = cleanPath(faceTexture);
                             if (isNotNull(cleanedTexture)){
                                 if (cleanedTexture.endsWith("_down")){
-                                    faceTextureMap.put(BlockFace.DOWN, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.DOWN, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_up")){
-                                    faceTextureMap.put(BlockFace.UP, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.UP, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_north")){
-                                    faceTextureMap.put(BlockFace.NORTH, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.NORTH, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_south")){
-                                    faceTextureMap.put(BlockFace.SOUTH, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.SOUTH, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_west")){
-                                    faceTextureMap.put(BlockFace.WEST, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.WEST, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_east")) {
-                                    faceTextureMap.put(BlockFace.EAST, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.EAST, namespaced(cleanedTexture,this.namespace));
                                 } else {
                                     Logger.debug("[IAItemsConverter] Invalid texture name " + faceTexture + " for directional mode ALL for item " + this.itemId);
                                     return;
@@ -370,17 +371,17 @@ public class IAItemsConverter extends ItemConverter {
                             String cleanedTexture = cleanPath(faceTexture);
                             if (isNotNull(cleanedTexture)){
                                 if (cleanedTexture.endsWith("_down")){
-                                    faceTextureMap.put(BlockFace.DOWN, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.DOWN, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_up")){
-                                    faceTextureMap.put(BlockFace.UP, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.UP, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_north")){
-                                    faceTextureMap.put(BlockFace.NORTH, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.NORTH, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_south")){
-                                    faceTextureMap.put(BlockFace.SOUTH, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.SOUTH, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_west")){
-                                    faceTextureMap.put(BlockFace.WEST, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.WEST, namespaced(cleanedTexture,this.namespace));
                                 } else if (cleanedTexture.endsWith("_east")) {
-                                    faceTextureMap.put(BlockFace.EAST, namespaced(cleanedTexture));
+                                    faceTextureMap.put(BlockFace.EAST, namespaced(cleanedTexture,this.namespace));
                                 } else {
                                     Logger.debug("[IAItemsConverter] Invalid texture name " + faceTexture + " for directional mode ALL for item " + this.itemId);
                                     return;
@@ -430,10 +431,129 @@ public class IAItemsConverter extends ItemConverter {
                         return;
                     }
 
-                    String namespacedModelPath = namespaced(modelPath);
+                    String namespacedModelPath = namespaced(modelPath,this.namespace);
                     Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_DEFAULT, "%model_path%", namespacedModelPath);
                     this.setSavedModelTemplates(parsedTemplate);
                     this.craftEngineItemUtils.getGeneralSection().createSection("model",parsedTemplate);
+                }
+            }
+        } else {
+            ConfigurationSection graphicsSection = this.iaItemSection.getConfigurationSection("graphics");
+            if (isNotNull(graphicsSection)){
+                String modelPath = graphicsSection.getString("model");
+                if (isValidString(modelPath)){
+                    modelPath = namespaced(modelPath, this.namespace);
+                    Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_DEFAULT, "%model_path%", modelPath);
+                    this.craftEngineItemUtils.getGeneralSection().createSection("model",parsedTemplate);
+                    return;
+                }
+                boolean isBlock = this.iaItemSection.contains("behaviours.block.placed_model.type");
+                String texturePath = graphicsSection.getString("texture");;
+                if (isValidString(texturePath) && !isBlock){
+                    texturePath = namespaced(texturePath,this.namespace);
+                    Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", texturePath, "%texture_path%", texturePath);
+                    this.craftEngineItemUtils.getGeneralSection().createSection("model",parsedTemplate);
+                } else if (isBlock) {
+                    BlockParent parent = null;
+                    try {
+                        parent = BlockParent.valueOf(graphicsSection.getString("parent").toUpperCase());
+                    } catch (Exception ignored){
+                    }
+                    if (isNotNull(parent)){
+                        String iconPath = graphicsSection.getString("icon");
+                        if (isValidString(iconPath)){
+                            iconPath = namespaced(iconPath,this.namespace);
+                            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", iconPath, "%texture_path%", iconPath));
+                        }
+                        switch (parent){
+                            case CROSS -> {
+                                String crossTexture = graphicsSection.getString("textures.cross", graphicsSection.getString("texture"));
+                                if (isValidString(crossTexture)){
+                                    crossTexture = namespaced(crossTexture,this.namespace);
+                                    ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
+                                    behaviorSection.set("type", "block_item");
+                                    ConfigurationSection blockSection = getOrCreateSection(behaviorSection, "block");
+
+                                    ConfigurationSection stateSection = getOrCreateSection(blockSection, "state");
+                                    stateSection.set("properties",InternalTemplateManager.parseTemplate(Template.BLOCK_STATE_PROPERTIES_STAGE));
+                                    stateSection.set("appearances",InternalTemplateManager.parseTemplate(Template.BLOCK_STATE_SAPLING_APPEARANCE, "%model%",
+                                            InternalTemplateManager.parseTemplate(Template.MODEL_CROSS, "%model_path%", crossTexture, "%texture_path%", crossTexture)
+                                            ));
+
+                                }
+                            }
+                            default -> Logger.debug("[IAItemsConverter] Block parent " + parent + " is not supported for item " + this.itemId+". Please open an issue to request support.");
+                        }
+                    } else {
+                        if (isValidString(texturePath)){
+                            texturePath = namespaced(texturePath,this.namespace);
+                            this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_CUBE_ALL, "%model_path%", texturePath, "%texture_path%", texturePath));
+                        }
+                    }
+                } else {
+                    ConfigurationSection texturesSection = graphicsSection.getConfigurationSection("textures");
+                    if (isNotNull(texturesSection)){
+                        Set<String> keys = texturesSection.getKeys(false);
+                        if (IAModelsKeys.BOW.containsAny(keys) && keys.size() == IAModelsKeys.BOW.getKeysCount()){
+                            this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_2D_BOW_SIMPLIFIED,
+                                    "%default_texture_path%", namespaced(texturesSection.getString("normal"),this.namespace),
+                                    "%pulling_0_texture_path%", namespaced(texturesSection.getString("pulling_0"),this.namespace),
+                                    "%pulling_1_texture_path%", namespaced(texturesSection.getString("pulling_1"),this.namespace),
+                                    "%pulling_2_texture_path%", namespaced(texturesSection.getString("pulling_2"),this.namespace)
+                            ));
+                        } else if (IAModelsKeys.FISHING_ROD.containsAny(keys) && keys.size() == IAModelsKeys.FISHING_ROD.getKeysCount()){
+                            this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_2D_FISHING_ROD_SIMPLIFIED,
+                                    "%default_texture_path%", namespaced(texturesSection.getString("normal"),this.namespace),
+                                    "%cast_texture_path%", namespaced(texturesSection.getString("cast"),this.namespace)
+                            ));
+                        } else if (IAModelsKeys.CROSSBOW.containsAny(keys) && keys.size() == IAModelsKeys.CROSSBOW.getKeysCount()){
+                            this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_2D_CROSSBOW_SIMPLIFIED,
+                                    "%default_texture_path%", namespaced(texturesSection.getString("normal"),this.namespace),
+                                    "%pulling_0_texture_path%", namespaced(texturesSection.getString("pulling_0"),this.namespace),
+                                    "%pulling_1_texture_path%", namespaced(texturesSection.getString("pulling_1"),this.namespace),
+                                    "%pulling_2_texture_path%", namespaced(texturesSection.getString("pulling_2"),this.namespace),
+                                    "%charged_rocket_texture_path%", namespaced(texturesSection.getString("rocket"),this.namespace),
+                                    "%charged_arrow_texture_path%", namespaced(texturesSection.getString("arrow"),this.namespace)
+                            ));
+                        }
+                    } else {
+                        ConfigurationSection modelsSection = graphicsSection.getConfigurationSection("models");
+                        if (isNotNull(modelsSection)){
+                            Set<String> keys = modelsSection.getKeys(false);
+                            if (IAModelsKeys.BOW.containsAny(keys) && keys.size() == IAModelsKeys.BOW.getKeysCount()){
+                                this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_3D_BOW,
+                                        "%default_model_path%", namespaced(modelsSection.getString("normal"),this.namespace),
+                                        "%pulling_0_model_path%", namespaced(modelsSection.getString("pulling_0"),this.namespace),
+                                        "%pulling_1_model_path%", namespaced(modelsSection.getString("pulling_1"),this.namespace),
+                                        "%pulling_2_model_path%", namespaced(modelsSection.getString("pulling_2"),this.namespace)
+                                ));
+                            } else if (IAModelsKeys.FISHING_ROD.containsAny(keys) && keys.size() == IAModelsKeys.FISHING_ROD.getKeysCount()){
+                                this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_3D_FISHING_ROD,
+                                        "%default_model_path%", namespaced(modelsSection.getString("normal"),this.namespace),
+                                        "%casting_model_path%", namespaced(modelsSection.getString("cast"),this.namespace)
+                                ));
+                            } else if (IAModelsKeys.CROSSBOW.containsAny(keys) && keys.size() == IAModelsKeys.CROSSBOW.getKeysCount()){
+                                this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_3D_CROSSBOW,
+                                        "%default_model_path%", namespaced(modelsSection.getString("normal"),this.namespace),
+                                        "%pulling_0_model_path%", namespaced(modelsSection.getString("pulling_0"),this.namespace),
+                                        "%pulling_1_model_path%", namespaced(modelsSection.getString("pulling_1"),this.namespace),
+                                        "%pulling_2_model_path%", namespaced(modelsSection.getString("pulling_2"),this.namespace),
+                                        "%charged_rocket_model_path%", namespaced(modelsSection.getString("rocket"),this.namespace),
+                                        "%charged_arrow_model_path%", namespaced(modelsSection.getString("arrow"),this.namespace)
+                                ));
+                            } else if (IAModelsKeys.TRIDENT.containsAny(keys) && keys.size() == IAModelsKeys.TRIDENT.getKeysCount()) {
+                                this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_TRIDENT,
+                                        "%model_path%", namespaced(modelsSection.getString("normal"), this.namespace),
+                                        "%throwing_model_path%", namespaced(modelsSection.getString("throwing"), this.namespace)
+                                ));
+                            } else if (IAModelsKeys.SHIELD.containsAny(keys) && keys.size() == IAModelsKeys.SHIELD.getKeysCount()) {
+                                this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_3D_SHIELD,
+                                        "%default_model_path%", namespaced(modelsSection.getString("normal"), this.namespace),
+                                        "%blocking_model_path%", namespaced(modelsSection.getString("blocking"), this.namespace)
+                                ));
+                            }
+                        }
+                    }
                 }
             }
         }

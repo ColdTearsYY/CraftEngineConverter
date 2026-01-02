@@ -978,7 +978,7 @@ public class NexoItemConverter extends ItemConverter {
                 String namespacedBlocking = namespaced(shieldBlockingModel);
                 String namespacedModel = namespaced(modelPath);
                 if (isValidString(namespacedModel)) {
-                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_SHIELD, "%blocking_model_path%",namespacedBlocking,"%default_model_path%",namespacedModel));
+                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_SHIELD, "%blocking_model_path%",namespacedBlocking,"%default_model_path%",namespacedModel));
                     return true;
                 }
             }
@@ -1008,7 +1008,7 @@ public class NexoItemConverter extends ItemConverter {
                 String namespacedCast = namespaced(castModel);
                 String namespacedModel = namespaced(modelPath);
                 if (isNotNull(namespacedModel)) {
-                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_FISHING_ROD, "%casting_model_path%", namespacedCast, "%default_model_path%", namespacedModel));
+                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_FISHING_ROD, "%casting_model_path%", namespacedCast, "%default_model_path%", namespacedModel));
                     return true;
                 }
             }
@@ -1184,7 +1184,7 @@ public class NexoItemConverter extends ItemConverter {
         String pulling2 = namespaced(notEmptyOrNull(pullingModels, 2) ? pullingModels.get(2) : packSection.getString("pulling_2_model"));
 
         if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)) {
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_BOW, "%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
+            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_BOW, "%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
         } else {
             Logger.debug("Failed to process bow model paths for item '" + this.itemId + "'. Skipping bow model conversion.", LogType.WARNING);
         }
@@ -1201,7 +1201,7 @@ public class NexoItemConverter extends ItemConverter {
         String pulling2 = namespaced(notEmptyOrNull(pullingModels, 2) ? pullingModels.get(2) : packSection.getString("pulling_2_model"));
 
         if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)){
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_CROSSBOW,"%charged_arrow_model_path%",arrowModel==null?pulling2:arrowModel,"%charged_firework_model_path%",fireworkModel==null?pulling2:fireworkModel,"%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
+            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_CROSSBOW,"%charged_arrow_model_path%",arrowModel==null?pulling2:arrowModel,"%charged_rocket_model_path%",fireworkModel==null?pulling2:fireworkModel,"%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
         } else {
             Logger.debug("Failed to process crossbow model paths for item '" + this.itemId + "'. Skipping crossbow model conversion.", LogType.WARNING);
         }

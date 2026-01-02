@@ -11,7 +11,7 @@ on-false:
     - when: rocket
       model:
         type: minecraft:model
-        path: "%charged_firework_model_path%"
+        path: "%charged_rocket_model_path%"
   fallback:
     type: minecraft:model
     path: "%default_model_path%"

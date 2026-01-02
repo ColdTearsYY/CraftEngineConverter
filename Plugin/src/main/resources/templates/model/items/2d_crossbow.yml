@@ -1,0 +1,56 @@
+type: minecraft:condition
+property: minecraft:using_item
+on-false:
+  type: minecraft:select
+  property: minecraft:charge_type
+  cases:
+    - when: arrow
+      model:
+        type: minecraft:model
+        path: "%charged_arrow_model_path%"
+        generation:
+          parent: minecraft:item/crossbow_arrow
+          textures:
+            layer0: "%charged_arrow_texture_path%"
+    - when: rocket
+      model:
+        type: minecraft:model
+        path: "%charged_rocket_model_path%"
+        generation:
+          parent: minecraft:item/crossbow_firework
+          textures:
+            layer0: "%charged_rocket_texture_path%"
+  fallback:
+    type: minecraft:model
+    path: "%default_model_path%"
+    generation:
+      parent: minecraft:item/crossbow
+      textures:
+        layer0: "%default_texture_path%"
+on-true:
+  type: minecraft:range_dispatch
+  property: minecraft:crossbow/pull
+  entries:
+    - model:
+        type: minecraft:model
+        path: "%pulling_1_model_path%"
+        generation:
+          parent: minecraft:item/crossbow_pulling_1
+          textures:
+            layer0: "%pulling_1_texture_path%"
+      threshold: 0.58
+    - model:
+        type: minecraft:model
+        path: "%pulling_2_model_path%"
+        generation:
+          parent: minecraft:item/crossbow_pulling_2
+          textures:
+            layer0: "%pulling_2_texture_path%"
+      threshold: 1.0
+  fallback:
+    type: minecraft:model
+    path: "%pulling_0_model_path%"
+    generation:
+      parent: minecraft:item/crossbow_pulling_0
+      textures:
+        layer0: "%pulling_0_texture_path%"

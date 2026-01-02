@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter.utils.enums;
 
 public enum TemplateType {
     BLOCK_APPEARANCE,
+    BLOCK_APPEARANCE_PROPERTIES,
     BLOCK,
     ITEM,
     LOOT_TABLE,

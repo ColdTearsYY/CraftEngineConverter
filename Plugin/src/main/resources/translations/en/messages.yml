@@ -76,6 +76,7 @@ warning:
     delete-failure: "Failed to delete file §e%file% (%path%)§c!"
   folder:
     delete-failure: "Failed to delete folder §e%folder% (%path%)§c!"
+
 error:
   mkdir-failure: "Failed to create directory §e%directory% (%path%)§c!"
   file-copy-exception: "An error occurred while copying file §e%file%§c: §e%message%§c"
