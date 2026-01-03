@@ -137,6 +137,9 @@ public class IAConverter extends Converter {
                 if (!isValidString(layer1) || !isValidString(layer2)) continue;
                 layer1 = cleanPath(layer1);
                 layer2 = cleanPath(layer2);
+                if (layer1.equals(layer2)){
+                    layer2 = layer2+"_2";
+                }
                 List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
                 Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(getOrCreateSection(convertedConfig, "equipments"), namespaced(equipmentId, namespace));
                 String layer1FileName = namespace+"_"+equipmentId+"_"+getFileName(layer1);

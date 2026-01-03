@@ -7,6 +7,7 @@ import fr.robie.craftengineconverter.converter.ItemConverter;
 import fr.robie.craftengineconverter.utils.FloatsUtils;
 import fr.robie.craftengineconverter.utils.enums.*;
 import fr.robie.craftengineconverter.utils.enums.ia.IADirectionalMode;
+import fr.robie.craftengineconverter.utils.enums.ia.IAEntityTypes;
 import fr.robie.craftengineconverter.utils.enums.ia.IAModelsKeys;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import org.bukkit.Material;
@@ -118,7 +119,7 @@ public class IAItemsConverter extends ItemConverter {
                 } else {
                     enchantName = enchantmentEntry;
                 }
-                ceEnchantSection.set(enchantName, enchantLevel);
+                ceEnchantSection.set(enchantName.toLowerCase(), enchantLevel);
             }
         }
     }
@@ -621,6 +622,12 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private void convertFurniture(ConfigurationSection furnitureSection, ConfigurationSection behavioursSection) {
+        IAEntityTypes entityType = IAEntityTypes.ITEM_FRAME;
+        try {
+            entityType = IAEntityTypes.valueOf(furnitureSection.getString("entity","ITEM_FRAME").toUpperCase());
+        } catch (Exception ignored){
+        }
+        boolean isBig = furnitureSection.getBoolean("small", true);
         Set<FurniturePlacement> placements = new HashSet<>();
         ConfigurationSection placeableSection = furnitureSection.getConfigurationSection("placeable_on");
         if (isNotNull(placeableSection)){
@@ -641,9 +648,12 @@ public class IAItemsConverter extends ItemConverter {
         }
         if (!placements.isEmpty()){
             Billboard transformType = Billboard.FIXED;
-            ItemDisplayType displayType = ItemDisplayType.FIXED;
+            ItemDisplayType displayType = ItemDisplayType.NONE;
 
-            FloatsUtils displayTranslation = new FloatsUtils(3,new float[]{0f,0.5f,0f});;
+            FloatsUtils displayTranslation = new FloatsUtils(3,new float[]{0f,0.5f,0f});
+            if (isBig){
+                displayTranslation.addValue(1,1f);
+            }
             FloatsUtils scale = new FloatsUtils(3, new float[]{1f,1f,1f});
 
             ConfigurationSection displayTransformationSection = furnitureSection.getConfigurationSection("display_transformation");
@@ -687,8 +697,18 @@ public class IAItemsConverter extends ItemConverter {
 
             List<Map<String,Object>> elements = new ArrayList<>();
             Map<String,Object> map = new HashMap<>();
+            if (entityType == IAEntityTypes.ITEM_FRAME){
+                map.put("type", "item_display");
+                int light = furnitureSection.getInt("light_level",-1);
+                if (light >= 0){
+                    map.put("brightness", Map.of("block-light", light));
+                }
+
+            }
             map.put("item", this.itemId);
-            map.put("display-transform", displayType.name());
+            if (displayType != ItemDisplayType.NONE) {
+                map.put("display-transform", displayType.name());
+            }
             map.put("billboard", transformType.name());
             map.put("translation", displayTranslation.toString());
             map.put("scale", scale.toString());

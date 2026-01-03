@@ -17,6 +17,11 @@ public class FloatsUtils {
         this.updated = true;
     }
 
+    public void addValue(int index, float value){
+        this.values[index] += value;
+        this.updated = true;
+    }
+
     public boolean isUpdated(){
         return this.updated;
     }
