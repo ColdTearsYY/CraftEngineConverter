@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.converter;
+package fr.robie.craftengineconverter.converter.settings;
 
 import fr.robie.craftengineconverter.common.configuration.ConverterSettings;
 
