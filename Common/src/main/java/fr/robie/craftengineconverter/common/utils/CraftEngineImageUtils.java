@@ -48,4 +48,8 @@ public class CraftEngineImageUtils {
         }
         return Optional.empty();
     }
+
+    public static void clearCache() {
+        imageConversionCache.clear();
+    }
 }

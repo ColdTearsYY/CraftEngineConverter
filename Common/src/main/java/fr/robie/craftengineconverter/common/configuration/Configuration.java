@@ -38,7 +38,8 @@ public class Configuration {
     public static boolean titleFormatting = true;
 
     // Tags options
-    public static boolean glyphTagEnabled = true;
+    public static boolean glyphTagEnabled = true; // Nexo glyph tag
+    public static boolean iaImageTagEnabled = true; // ItemsAdder image tag
     public static boolean placeholderAPITagEnabled = true;
 
     private static volatile Configuration instance;
@@ -276,7 +277,8 @@ public class Configuration {
         ACTION_BAR_FORMATTING("formatting.action-bar", true, v -> actionBarFormatting = (Boolean) v),
         PLUGIN_MESSAGE_FORMATTING("formatting.plugin-message", true, v -> pluginMessageFormatting = (Boolean) v),
         TITLE_FORMATTING("formatting.title", true, v -> titleFormatting = (Boolean) v),
-        GLYPH_TAG_ENABLED("tags.glyph.enabled", true, v -> glyphTagEnabled = (Boolean) v),
+        GLYPH_TAG_ENABLED("tags.nexo-glyph.enabled", true, v -> glyphTagEnabled = (Boolean) v),
+        IMAGE_TAG_ENABLED("tags.itemsadder-image.enabled", true, v -> iaImageTagEnabled = (Boolean) v),
         PLACEHOLDER_API_TAG_ENABLED("tags.placeholder-api.enabled", true, v -> placeholderAPITagEnabled = (Boolean) v),
         ALLOW_BLOCK_CONVERSION_PROPAGATION("allow-block-conversion-propagation", true, v -> allowBlockConversionPropagation = (Boolean) v),
         MAX_BLOCK_CONVERSION_PROPAGATION_DEPTH("max-block-conversion-propagation-depth", 64, v -> maxBlockConversionPropagationDepth = (Integer) v),

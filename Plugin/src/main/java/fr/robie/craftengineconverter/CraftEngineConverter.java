@@ -16,6 +16,7 @@ import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.manager.FoliaCompatibilityManager;
 import fr.robie.craftengineconverter.common.tag.ITagResolver;
+import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.itemsadder.IAConverter;
 import fr.robie.craftengineconverter.converter.nexo.NexoConverter;
@@ -150,6 +151,8 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         if (this.packetLoader != null){
             this.packetLoader.onDisable();
         }
+
+        CraftEngineImageUtils.clearCache();
 
         this.metrics.shutdown();
 

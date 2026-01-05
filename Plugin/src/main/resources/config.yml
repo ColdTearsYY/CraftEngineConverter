@@ -86,7 +86,9 @@ formatting:
   title: true
 
 tag:
-  glyph: # <glyph:old_name>
+  nexo-glyph: # <glyph:old_name>
+    enabled: true
+  itemsadder-image: # :old_name:
     enabled: true
   placeholder-api: # <placeholderapi:placeholder> or <papi:placeholder>
     enabled: true

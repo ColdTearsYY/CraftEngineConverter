@@ -6,6 +6,7 @@ import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import fr.robie.craftengineconverter.common.tag.TagProcessor;
 import fr.robie.craftengineconverter.hooks.placeholderapi.tag.PlaceholderAPITag;
 import fr.robie.craftengineconverter.tag.GlyphTagProcessor;
+import fr.robie.craftengineconverter.tag.IAImageTagProcessor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -19,6 +20,9 @@ public class TagResolver implements ITagResolver {
     public void initTagProcessors() {
         if (Configuration.glyphTagEnabled){
             this.tagProcessors.add(new GlyphTagProcessor());
+        }
+        if (Configuration.iaImageTagEnabled){
+            this.tagProcessors.add(new IAImageTagProcessor());
         }
         if (Plugins.PLACEHOLDER_API.isPresent()){
             this.tagProcessors.add(new PlaceholderAPITag());
