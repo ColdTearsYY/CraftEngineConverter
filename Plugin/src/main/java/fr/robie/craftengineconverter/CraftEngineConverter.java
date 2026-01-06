@@ -23,6 +23,7 @@ import fr.robie.craftengineconverter.converter.nexo.NexoConverter;
 import fr.robie.craftengineconverter.hooks.nexo.NexoBlockConverter;
 import fr.robie.craftengineconverter.hooks.nexo.NexoFurnitureConverter;
 import fr.robie.craftengineconverter.hooks.packetevent.PacketEventHook;
+import fr.robie.craftengineconverter.hooks.placeholderapi.PlaceholderAPIUtils;
 import fr.robie.craftengineconverter.loader.MessageLoader;
 import fr.robie.craftengineconverter.utils.TagResolver;
 import fr.robie.craftengineconverter.utils.command.CommandManager;
@@ -109,6 +110,10 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         registerConverter(new IAConverter(this));
 
         this.tagResolver.initTagProcessors();
+
+        if (Plugins.PLACEHOLDER_API.isEnabled()){
+            PlaceholderAPIUtils.registerExpansions(this);
+        }
 
         this.metrics = new Metrics(this, BSTAT_PLUGIN_ID);
 
