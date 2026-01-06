@@ -6,6 +6,7 @@ import fr.robie.craftengineconverter.common.packet.PacketContent;
 import fr.robie.craftengineconverter.common.packet.PacketProcessor;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class PacketEventsProcessor {
     public static final PacketProcessor<WrapperPlayServerSystemChatMessage> SYSTEM_CHAT_MESSAGE = new PacketProcessor<>() {
@@ -93,6 +94,24 @@ public class PacketEventsProcessor {
 
         @Override
         public @NotNull PacketContent<WrapperPlayServerBossBar> unpack(WrapperPlayServerBossBar container) {
+            Component internal = container.getTitle();
+            return new PacketContent<>(container, this, ComponentMeta.getPlainText(internal));
+        }
+    };
+
+    public static final PacketProcessor<WrapperPlayServerOpenWindow> OPEN_WINDOW = new PacketProcessor<>() {
+        @Override
+        public String name() {
+            return "OPEN_WINDOW";
+        }
+
+        @Override
+        public void edit(WrapperPlayServerOpenWindow container, Component component) {
+            container.setTitle(component);
+        }
+
+        @Override
+        public @NonNull PacketContent<WrapperPlayServerOpenWindow> unpack(WrapperPlayServerOpenWindow container) {
             Component internal = container.getTitle();
             return new PacketContent<>(container, this, ComponentMeta.getPlainText(internal));
         }

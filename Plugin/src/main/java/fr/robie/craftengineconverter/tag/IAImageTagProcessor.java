@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IAImageTagProcessor implements TagProcessor {
-    private static final Pattern IA_GUI_PATTERN = Pattern.compile(":([^s]+):");
+    private static final Pattern IA_GUI_PATTERN = Pattern.compile(":([^:]+):");
 
     @Override
     public String getTagName() {
@@ -43,12 +43,25 @@ public class IAImageTagProcessor implements TagProcessor {
             String fullMatch = matcher.group(0);
 
             result.append(input, lastEnd, matcher.start());
-
-            Optional<String> converted = CraftEngineImageUtils.convert(imageName);
-            if (converted.isPresent()){
-                result.append(converted.get());
+            if (imageName.startsWith("offset_")){
+                String substring = imageName.substring("offset_".length());
+                int finalOffset;
+                try {
+                    finalOffset = Integer.parseInt(substring);
+                    String offsetImage = CraftEngineImageUtils.createOffsetImage(finalOffset);
+                    result.append(offsetImage);
+                } catch (NumberFormatException e){
+                    result.append(fullMatch);
+                    lastEnd = matcher.end();
+                    continue;
+                }
             } else {
-                result.append(fullMatch);
+                Optional<String> converted = CraftEngineImageUtils.convert(imageName);
+                if (converted.isPresent()){
+                    result.append(converted.get());
+                } else {
+                    result.append(fullMatch);
+                }
             }
             lastEnd = matcher.end();
         }

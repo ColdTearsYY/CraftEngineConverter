@@ -36,6 +36,7 @@ public class Configuration {
     public static boolean actionBarFormatting = true;
     public static boolean pluginMessageFormatting = true;
     public static boolean titleFormatting = true;
+    public static boolean menuTitleFormatting = true;
 
     // Tags options
     public static boolean glyphTagEnabled = true; // Nexo glyph tag
@@ -277,6 +278,7 @@ public class Configuration {
         ACTION_BAR_FORMATTING("formatting.action-bar", true, v -> actionBarFormatting = (Boolean) v),
         PLUGIN_MESSAGE_FORMATTING("formatting.plugin-message", true, v -> pluginMessageFormatting = (Boolean) v),
         TITLE_FORMATTING("formatting.title", true, v -> titleFormatting = (Boolean) v),
+        MENU_TITLE_FORMATTING("formatting.menu-title", true, v -> menuTitleFormatting = (Boolean) v),
         GLYPH_TAG_ENABLED("tags.nexo-glyph.enabled", true, v -> glyphTagEnabled = (Boolean) v),
         IMAGE_TAG_ENABLED("tags.itemsadder-image.enabled", true, v -> iaImageTagEnabled = (Boolean) v),
         PLACEHOLDER_API_TAG_ENABLED("tags.placeholder-api.enabled", true, v -> placeholderAPITagEnabled = (Boolean) v),

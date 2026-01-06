@@ -4,12 +4,15 @@ import fr.robie.craftengineconverter.common.cache.SimpleCache;
 import fr.robie.craftengineconverter.common.records.ImageConversion;
 import net.momirealms.craftengine.bukkit.api.CraftEngineImages;
 import net.momirealms.craftengine.core.font.BitmapImage;
+import net.momirealms.craftengine.core.font.FontManager;
+import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 
 import java.util.Optional;
 
 public class CraftEngineImageUtils {
     private static final SimpleCache<String, ImageConversion> imageConversionCache = new SimpleCache<>();
+    private static final FontManager fontManager = CraftEngine.instance().fontManager();
 
     /**
      * Register an image name conversion from original to converted (with namespace)
@@ -47,6 +50,10 @@ public class CraftEngineImageUtils {
             }
         }
         return Optional.empty();
+    }
+
+    public static String createOffsetImage(int offset){
+         return fontManager.createMiniMessageOffsets(offset);
     }
 
     public static void clearCache() {

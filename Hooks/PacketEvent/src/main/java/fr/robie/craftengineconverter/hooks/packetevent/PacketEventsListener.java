@@ -43,6 +43,9 @@ public class PacketEventsListener extends PacketListenerAbstract {
         if (Configuration.bossBarFormatting){
             this.packetTypeProcessors.put(PacketType.Play.Server.BOSS_BAR, PacketEventsProcessor.BOSS_BAR);
         }
+        if (Configuration.menuTitleFormatting){
+            this.packetTypeProcessors.put(PacketType.Play.Server.OPEN_WINDOW, PacketEventsProcessor.OPEN_WINDOW);
+        }
 
         this.componentMeta = this.plugin.getMessageFormatter() instanceof ComponentMeta meta ? meta : new ComponentMeta();
         this.tagResolverUtils = this.plugin.getTagResolver();
@@ -71,12 +74,13 @@ public class PacketEventsListener extends PacketListenerAbstract {
             case SET_TITLE_SUBTITLE -> new WrapperPlayServerSetTitleSubtitle(event);
             case ACTION_BAR -> new WrapperPlayServerActionBar(event);
             case BOSS_BAR -> new WrapperPlayServerBossBar(event);
+            case OPEN_WINDOW -> new WrapperPlayServerOpenWindow(event);
             default -> null;
         };
 
         if (wrappedPacket == null) {
             return;
-        };
+        }
 
         final PacketContent<?> packet;
 
