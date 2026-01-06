@@ -56,6 +56,9 @@ command:
     threads:
       info: "§aUsing §e%threads%§a threads for conversion."
       error-too-many: "§cThe number of threads specified exceeds the number of available processors (%max%). Using the maximum available."
+  clear-files-cache:
+    description: "Clears the file cache used by the plugin. Add --all to clear all cached files else only stale files will be cleared."
+    complete: "§aCleared §e%cleared_files%§a files from the cache in §c%time%§a."
 
 messages:
   plugin:
@@ -81,4 +84,9 @@ warning:
 
 error:
   mkdir-failure: "Failed to create directory §e%directory% (%path%)§c!"
-  file-copy-exception: "An error occurred while copying file §e%file%§c: §e%message%§c"
+  file-operations:
+    timeout: "Timeout waiting for file operations to complete"
+    force-shutdown: "Forcing shutdown of file operation threads"
+  file:
+    copy-exception: "An error occurred while copying file §e%file%§c: §e%message%§c"
+    load-failure: "Unable to load file '%file%': file not found or invalid YAML format"

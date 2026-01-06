@@ -1,6 +1,8 @@
 package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
+import fr.robie.craftengineconverter.common.cache.FileCache;
+import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.configuration.ConverterSettings;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
@@ -32,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Converter extends YamlUtils {
     protected final CraftEngineConverter plugin;
+    protected final FileCache fileCache;
     protected final Plugins pluginType;
     protected final String converterName;
     protected final ConverterSettings settings;
@@ -40,6 +43,7 @@ public abstract class Converter extends YamlUtils {
     public Converter(CraftEngineConverter plugin, String converterName, Plugins pluginType) {
         super(plugin);
         this.plugin = plugin;
+        this.fileCache = plugin.getFileCache();
         this.converterName = converterName;
         this.pluginType = pluginType;
         this.settings = new BasicConverterSettings();
@@ -142,11 +146,12 @@ public abstract class Converter extends YamlUtils {
                 continue;
             }
 
-            try {
-                YamlConfiguration config = getConfig(itemFile);
-                toConvert.add(new ConfigFile(itemFile, baseDir, config));
-            } catch (Exception e) {
-                Logger.debug("Failed to load config file: " + fileName, LogType.ERROR);
+            Optional<FileCacheEntry> entry = this.fileCache.getEntry(itemFile.toPath());
+            if (entry.isPresent()) {
+                FileCacheEntry fileCacheEntry = entry.get();
+                toConvert.add(new ConfigFile(itemFile, baseDir, fileCacheEntry.getYamlConfiguration()));
+            } else {
+                Logger.info(Message.ERROR__FILE__LOAD_FAILURE, LogType.ERROR, "file", fileName);
             }
         }
     }
@@ -301,7 +306,7 @@ public abstract class Converter extends YamlUtils {
                     copyFile(file, targetFile);
                     progress.increment();
                 } catch (Exception e) {
-                    Logger.debug(Message.ERROR__FILE_COPY_EXCEPTION, LogType.ERROR, "file", file.getAbsolutePath(), "message", e.getMessage());
+                    Logger.debug(Message.ERROR__FILE__COPY_EXCEPTION, LogType.ERROR, "file", file.getAbsolutePath(), "message", e.getMessage());
                     errorRef.compareAndSet(null, e);
                 }
             });

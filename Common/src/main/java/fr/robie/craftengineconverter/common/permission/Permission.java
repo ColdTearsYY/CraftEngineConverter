@@ -4,6 +4,7 @@ public enum Permission {
     COMMAND_USE("Allows the user to use the main command of the plugin."),
     COMMAND_RELOAD("Allows the user to reload the plugin configuration."),
     COMMAND_CONVERT("Allows the user to convert assets for CraftEngine"),
+    COMMAND_CLEARFILESCACHE("Allows the user to clear the file cache used by the plugin."),
 
     NEXO_BLOCK_INTERACT_CONVERSION("Allows the user to convert Nexo blocks on interaction"),
     NEXO_FURNITURE_INTERACT_CONVERSION("Allows the user to convert Nexo furniture on interaction"),

@@ -11,6 +11,7 @@ public class CraftEngineConverterCommand extends VCommand {
         this.setPermission(Permission.COMMAND_USE);
         this.addSubCommand(new CraftEngineConverterCommandReload(craftEngineConverter));
         this.addSubCommand(new CraftEngineConverterCommandConvert(craftEngineConverter));
+        this.addSubCommand(new CraftEngineConverterCommandClearFilesCache(craftEngineConverter));
     }
 
     @Override

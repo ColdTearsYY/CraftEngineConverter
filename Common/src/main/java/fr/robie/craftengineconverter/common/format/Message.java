@@ -54,6 +54,9 @@ public enum Message {
     COMMAND__CONVERTER__THREADS__INFO("§aUsing §e%threads%§a threads for conversion."),
     COMMAND__CONVERTER__THREADS__ERROR_TOO_MANY("§cThe number of threads specified exceeds the number of available processors (%max%). Using the maximum available."),
 
+    COMMAND__CLEAR_FILES_CACHE__DESCRIPTION("Clears the file cache used by the plugin. Add --all to clear all cached files else only stale files will be cleared."),
+    COMMAND__CLEAR_FILES_CACHE__COMPLETE("§aCleared §e%cleared_files%§a files from the cache in §c%time%§a."),
+
 
     MESSAGE__PLUGIN__STARTUP("Enabling plugin ..."),
     MESSAGE__PLUGIN__STARTUP__COMPLETE("Plugin enabled in §c%time%§a!"),
@@ -71,7 +74,11 @@ public enum Message {
 
 
     ERROR__MKDIR_FAILURE("Failed to create directory §e%directory% (%path%)§c!"),
-    ERROR__FILE_COPY_EXCEPTION("An error occurred while copying file §e%file%§c: §e%message%§c"),
+    ERROR__FILE__COPY_EXCEPTION("An error occurred while copying file §e%file%§c: §e%message%§c"),
+    ERROR__FILE__LOAD_FAILURE("Unable to load file '%file%': file not found or invalid YAML format"),
+    ERROR__FILE_OPERATIONS__TIMEOUT("Timeout waiting for file operations to complete"),
+    ERROR__FILE_OPERATIONS__FORCE_SHUTDOWN("Forcing shutdown of file operation threads"),
+
     ;
 
     private List<String> messages;

@@ -2,10 +2,12 @@ package fr.robie.craftengineconverter.converter.itemsadder;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
+import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.ArmorConverter;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
 import fr.robie.craftengineconverter.common.enums.Plugins;
+import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
@@ -924,11 +926,16 @@ public class IAConverter extends Converter {
                 if (f.isDirectory()) {
                     count += addAllYmlFilesRecursively(f, baseDir, toConvert, requiredSectionName);
                 } else if (f.isFile() && f.getName().endsWith(".yml")) {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(f);
-                    ConfigurationSection itemsSection = config.getConfigurationSection(requiredSectionName);
-                    if (itemsSection != null) {
-                        toConvert.add(new ConfigFile(f, baseDir, config));
-                        count += itemsSection.getKeys(false).size();
+                    Optional<FileCacheEntry> entry = this.fileCache.getEntry(f.toPath());
+                    if (entry.isPresent()){
+                        YamlConfiguration config = entry.get().getYamlConfiguration();
+                        ConfigurationSection itemsSection = config.getConfigurationSection(requiredSectionName);
+                        if (itemsSection != null) {
+                            toConvert.add(new ConfigFile(f, baseDir, config));
+                            count += itemsSection.getKeys(false).size();
+                        }
+                    } else {
+                        Logger.info(Message.ERROR__FILE__LOAD_FAILURE,LogType.ERROR, "file", f.getName());
                     }
                 }
             }

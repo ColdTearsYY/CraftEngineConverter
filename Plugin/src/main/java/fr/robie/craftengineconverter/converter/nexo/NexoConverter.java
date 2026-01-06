@@ -2,8 +2,10 @@ package fr.robie.craftengineconverter.converter.nexo;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
+import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
 import fr.robie.craftengineconverter.common.enums.Plugins;
+import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
@@ -278,8 +280,6 @@ public class NexoConverter extends Converter {
     public CompletableFuture<Void> convertRecipes(boolean async, Optional<Player> player) {
         return executeTask(async, ()-> this.convertRecipesSync(player));
     }
-
-
 
     private void convertRecipesSync(Optional<Player> player) {
         File recipesFolder = new File("plugins/" + converterName + "/recipes");
@@ -598,20 +598,17 @@ public class NexoConverter extends Converter {
             if (file.isDirectory()) {
                 populateRecipeQueue(baseDir, file, toConvert);
             } else if (file.isFile() && file.getName().endsWith(".yml")) {
-                try {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-
+                Optional<FileCacheEntry> entry = this.fileCache.getEntry(file.toPath());
+                if (entry.isPresent()){
                     RecipeType recipeType = determineRecipeType(file, baseDir);
-
                     if (recipeType != null) {
-                        ConfigFile configFile = new ConfigFile(file, baseDir, config);
+                        ConfigFile configFile = new ConfigFile(file, baseDir, entry.get().getYamlConfiguration());
                         toConvert.computeIfAbsent(recipeType, k -> new ArrayList<>()).add(configFile);
-                        Logger.debug("Added recipe file: " + file.getName() + " as type: " + recipeType);
                     } else {
                         Logger.debug("Could not determine recipe type for: " + file.getAbsolutePath(), LogType.WARNING);
                     }
-                } catch (Exception e) {
-                    Logger.debug("Failed to load recipe file: " + file.getName() + " - " + e.getMessage(), LogType.ERROR);
+                } else {
+                    Logger.debug("Failed to load recipe file: Invalid YAML - " + file.getAbsolutePath(), LogType.WARNING);
                 }
             }
         }
@@ -1150,8 +1147,8 @@ public class NexoConverter extends Converter {
                     latch.countDown();
                     executor.shutdown();
                     if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
-                        Logger.debug("Timeout waiting for file operations to complete", LogType.ERROR);
-                        Logger.debug("Forcing shutdown of file operation threads", LogType.ERROR);
+                        Logger.debug(Message.ERROR__FILE_OPERATIONS__TIMEOUT, LogType.ERROR);
+                        Logger.debug(Message.ERROR__FILE_OPERATIONS__FORCE_SHUTDOWN, LogType.ERROR);
                     }
                 }
 

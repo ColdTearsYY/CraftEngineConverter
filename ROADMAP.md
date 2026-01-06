@@ -10,17 +10,11 @@
 
 ### Version 1.0.0 ()
 - [ ] Complete Nexo conversion (items, glyphs, emojis, images, languages, sounds, equipment, furniture, custom blocks, mechanics)
-- [ ] Replace Nexo block/ furniture with their CraftEngine equivalents
-- [ ] Full security audit passed
-- [ ] 80%+ test coverage
+- [x] Replace Nexo block/ furniture with their CraftEngine equivalents
+- [x] Replace ItemsAdder block/ furniture with their CraftEngine equivalents
 - [ ] Documentation complete
-
-### Version 1.1.0 (ItemsAdder Support)
-- [ ] Items, blocks converter
-- [ ] Resource pack migration
-- [ ] Documentation & examples
  
-### Version 1.2.0 (Oraxen Support)
+### Version 1.1.0 (Oraxen Support)
 - [ ] Items, blocks, furniture converter
 - [ ] Resource pack migration
 - [ ] Documentation & examples

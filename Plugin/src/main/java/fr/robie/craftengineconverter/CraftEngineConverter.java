@@ -6,6 +6,7 @@ import fr.robie.craftengineconverter.api.packet.PacketLoader;
 import fr.robie.craftengineconverter.command.CraftEngineConverterCommand;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
+import fr.robie.craftengineconverter.common.cache.FileCache;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.format.ClassicMeta;
@@ -54,6 +55,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final InternalTemplateManager templateManager = new InternalTemplateManager(this);
     private final ITagResolver tagResolver = new TagResolver();
     private final MessageLoader messageLoader = new MessageLoader(this);
+    private final FileCache fileCache = new FileCache();
     private MessageFormatter messageFormatter = new ClassicMeta();
     private Metrics metrics;
     private PacketLoader packetLoader;
@@ -163,6 +165,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         }
 
         CraftEngineImageUtils.clearCache();
+        this.fileCache.clearAll();
 
         this.metrics.shutdown();
 
@@ -184,6 +187,11 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
     private void registerListener(@NotNull Listener listener){
         this.getServer().getPluginManager().registerEvents(listener,this);
+    }
+
+    @Override
+    public FileCache getFileCache() {
+        return this.fileCache;
     }
 
     public CommandManager getCommandManager() {
