@@ -1151,6 +1151,7 @@ public class NexoItemConverter extends ItemConverter {
                     ConfigurationSection nexoCustomBlockSection = mechanicsSection.getConfigurationSection(mechanicsKey);
                     convertCustomBlockMechanic(nexoCustomBlockSection);
                 }
+                //TODO: convert energyblast mechanic
                 default -> {}
             }
         }

@@ -3,8 +3,8 @@ package fr.robie.craftengineconverter.common.utils;
 import fr.robie.craftengineconverter.common.cache.SimpleCache;
 import fr.robie.craftengineconverter.common.records.ImageConversion;
 import net.momirealms.craftengine.bukkit.api.CraftEngineImages;
-import net.momirealms.craftengine.core.font.BitmapImage;
 import net.momirealms.craftengine.core.font.FontManager;
+import net.momirealms.craftengine.core.font.Image;
 import net.momirealms.craftengine.core.plugin.CraftEngine;
 import net.momirealms.craftengine.core.util.Key;
 
@@ -44,7 +44,7 @@ public class CraftEngineImageUtils {
     public static Optional<String> convert(String originalName) {
         if (isRegistered(originalName)){
             ImageConversion imageConversion = getConverted(originalName);
-            BitmapImage bitmapImage = CraftEngineImages.byId(Key.of(imageConversion.convertedName()));
+            Image bitmapImage = CraftEngineImages.byId(Key.of(imageConversion.convertedName()));
             if (bitmapImage != null){
                 return Optional.of(bitmapImage.miniMessageAt(imageConversion.row(), imageConversion.column()));
             }

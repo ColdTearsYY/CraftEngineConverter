@@ -28,6 +28,7 @@ public class Configuration {
     public static boolean nexoEnableHook = true;
     public static boolean nexoEnableBlockInteractionConversion = true;
     public static boolean nexoEnableFurnitureInteractionConversion = true;
+    public static boolean nexoEnableChunkLoadConversion = false;
 
     public static boolean itemsAdderEnableHook = true;
     public static boolean itemsAdderImgPlaceholderAPISupport = true;
@@ -292,6 +293,7 @@ public class Configuration {
         NEXO_ENABLE_HOOK("nexo.enable-hook", true, v -> nexoEnableHook = (Boolean) v),
         NEXO_BLOCK_INTERACTION_CONVERSION("nexo.enable-block-interaction-conversion", true, v -> nexoEnableBlockInteractionConversion = (Boolean) v),
         NEXO_FURNITURE_INTERACTION_CONVERSION("nexo.enable-furniture-interaction-conversion", true, v -> nexoEnableFurnitureInteractionConversion = (Boolean) v),
+        NEXO_CHUNK_LOAD_CONVERSION("nexo.enable-chunk-load-conversion", false, v -> nexoEnableChunkLoadConversion = (Boolean) v),
         ITEMS_ADDER_ENABLE_HOOK("itemsadder.enable-hook", true, v -> itemsAdderEnableHook = (Boolean) v),
         ITEMS_ADDER_IMG_PLACEHOLDER_API_SUPPORT("itemsadder.img-placeholderapi-support", true, v -> itemsAdderImgPlaceholderAPISupport = (Boolean) v),
         ITEMS_ADDER_BLOCK_INTERACTION_CONVERSION("itemsadder.enable-block-interaction-conversion", true, v -> itemsAdderEnableBlockInteractionConversion = (Boolean) v),

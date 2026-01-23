@@ -3,6 +3,7 @@ package fr.robie.craftengineconverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.robie.craftengineconverter.api.packet.PacketLoader;
+import fr.robie.craftengineconverter.behavior.BehaviorRegister;
 import fr.robie.craftengineconverter.command.CraftEngineConverterCommand;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
@@ -25,8 +26,10 @@ import fr.robie.craftengineconverter.hooks.itemsadder.ItemsAdderBlockConverter;
 import fr.robie.craftengineconverter.hooks.itemsadder.ItemsAdderFurnitureConverter;
 import fr.robie.craftengineconverter.hooks.nexo.NexoBlockConverter;
 import fr.robie.craftengineconverter.hooks.nexo.NexoFurnitureConverter;
+import fr.robie.craftengineconverter.hooks.nexo.NexoWorldConverter;
 import fr.robie.craftengineconverter.hooks.packetevent.PacketEventHook;
 import fr.robie.craftengineconverter.hooks.placeholderapi.PlaceholderAPIUtils;
+import fr.robie.craftengineconverter.listener.WorldConverterManager;
 import fr.robie.craftengineconverter.loader.MessageLoader;
 import fr.robie.craftengineconverter.utils.TagResolver;
 import fr.robie.craftengineconverter.utils.command.CommandManager;
@@ -53,6 +56,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final CommandManager commandManager = new CommandManager(this);
     private final Gson gson = getGsonBuilder().create();
     private final InternalTemplateManager templateManager = new InternalTemplateManager(this);
+    private final WorldConverterManager worldConverterManager = new WorldConverterManager();
     private final ITagResolver tagResolver = new TagResolver();
     private final MessageLoader messageLoader = new MessageLoader(this);
     private final FileCache fileCache = new FileCache();
@@ -66,6 +70,11 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
     @Override
     public void onLoad() {
+        if (!Plugins.CRAFTENGINE.isPresent()){
+            Logger.info("CraftEngine plugin not found ! Disabling CraftEngineConverter ...");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         this.reloadConfig();
         if (Plugins.PACKET_EVENTS.isPresent()){
             Logger.info("[Hook] PacketEvents", LogType.SUCCESS);
@@ -78,6 +87,8 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         }
 
         this.commandManager.loadCommands();
+
+        BehaviorRegister.init();
     }
 
     @Override
@@ -86,11 +97,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
         long startTime = System.currentTimeMillis();
         Logger.info(Message.MESSAGE__PLUGIN__STARTUP);
-        if (!Plugins.CRAFTENGINE.isPresent()){
-            Logger.info("CraftEngine plugin not found ! Disabling CraftEngineConverter ...");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+
         if (!this.getDataFolder().exists() && !this.getDataFolder().mkdirs()){
             Logger.info("Unable to create plugin folder ! Disabling CraftEngineConverter ...",LogType.ERROR);
             getServer().getPluginManager().disablePlugin(this);
@@ -143,9 +150,12 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
             Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__DISABLED);
         }
 
+        this.registerListener(this.worldConverterManager);
+
         if (Plugins.NEXO.isEnabled() && Configuration.nexoEnableHook){
             this.registerListener(new NexoBlockConverter(this));
             this.registerListener(new NexoFurnitureConverter(this));
+            this.worldConverterManager.registerConverter(new NexoWorldConverter(this));
         }
         if (Plugins.ITEMS_ADDER.isEnabled() && Configuration.itemsAdderEnableHook){
             this.registerListener(new ItemsAdderBlockConverter(this));

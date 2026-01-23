@@ -45,4 +45,8 @@ public abstract class FurnitureConverter extends ObjectConverter {
     public void placeFurniture(String itemId, Location location) {
         this.plugin.getPlacementTracker().placeFurniture(itemId, location);
     }
+
+    public static boolean isRegisteredStatic(String itemId){
+        return CraftEngineFurniture.byId(Key.from(itemId)) != null;
+    }
 }

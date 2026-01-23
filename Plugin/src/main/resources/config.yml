@@ -132,6 +132,8 @@ nexo:
   # Require this permission to allow Nexo furniture interaction conversion : craftengineconverter.nexo.furniture.interact.conversion
   enable-furniture-interaction-conversion: true # When enabled, when you interact with a nexo furniture, it will convert the furniture to their CE equivalent
 
+  enable-chunk-load-conversion: false # When enabled, it will convert Nexo blocks/furnitures in loaded chunks to their CE equivalent (only furniture for the moment)
+
 itemsadder:
   enable-hook: true # Enable ItemsAdder integration if ItemsAdder is installed
   img-placeholderapi-support: true # Register a placeholder %img:old_name% to get the new image
