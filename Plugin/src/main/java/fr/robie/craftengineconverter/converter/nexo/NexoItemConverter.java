@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
+import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.ArmorConverter;
 import fr.robie.craftengineconverter.common.logger.LogType;
@@ -16,7 +17,11 @@ import fr.robie.craftengineconverter.utils.loots.CraftEngineItemLoot;
 import fr.robie.craftengineconverter.utils.loots.ItemLoot;
 import fr.robie.craftengineconverter.utils.loots.MinecraftItemLoot;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Instrument;
 import org.bukkit.Material;
+import org.bukkit.Note;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -1163,6 +1168,7 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection ceBehaviorSection = this.craftEngineItemUtils.getBehaviorSection();
         ceBehaviorSection.set("type", "block_item");
         String nexoCustomBlockType = nexoCustomBlockSection.getString("type","NOTEBLOCK");
+        int customVariation = nexoCustomBlockSection.getInt("custom_variation", -1);
         ConfigurationSection ceBlockSection = getOrCreateSection(ceBehaviorSection, "block");
         ConfigurationSection ceStateSection = getOrCreateSection(ceBlockSection, "state");
         String state;
@@ -1172,6 +1178,45 @@ public class NexoItemConverter extends ItemConverter {
             state = "tripwire";
         } else {
             state = "solid";
+            if (customVariation >= 0){
+                int notesPerInstrument = Note.Tone.TONES_COUNT * 2;
+                int variationsPerInstrument = notesPerInstrument * 2;
+
+                int instrumentIndex = (customVariation - 1) / variationsPerInstrument;
+                int noteIndex = ((customVariation - 1) % variationsPerInstrument) % notesPerInstrument;
+                boolean powered = ((customVariation - 1) % variationsPerInstrument) >= notesPerInstrument;
+
+                if (instrumentIndex == 0 && !powered) {
+                    noteIndex = noteIndex + 1;
+                }
+
+                int note = noteIndex;
+
+
+                Instrument instrument = Instrument.values()[instrumentIndex];
+                String instrumentName = switch (instrument) {
+                    case PIANO -> "harp";
+                    case BASS_DRUM -> "basedrum";
+                    case SNARE_DRUM -> "snare";
+                    case STICKS -> "hat";
+                    case BASS_GUITAR -> "bass";
+                    case FLUTE -> "flute";
+
+                    default -> instrument.name().toLowerCase();
+                };
+                String dataString = "[instrument="
+                        + instrumentName +
+                        ",note=" + note +
+                        ",powered=" + powered + "]";
+
+                try {
+                    BlockData blockData = Bukkit.createBlockData(Material.NOTE_BLOCK, dataString);
+                    BlockStatesMapper.getInstance().storeMapping(this.getConverter().getPluginType(), blockData, this.itemId);
+                } catch (IllegalArgumentException e) {
+                    Logger.debug("Failed to create BlockData for custom_variation '" + customVariation + "' for custom block item '" + this.itemId + "'. Skipping custom_variation conversion.", LogType.WARNING);
+                    e.printStackTrace();
+                }
+            }
         }
         ceStateSection.set("auto-state",state);
         ceStateSection.createSection("model", savedModel);

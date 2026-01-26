@@ -56,7 +56,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final CommandManager commandManager = new CommandManager(this);
     private final Gson gson = getGsonBuilder().create();
     private final InternalTemplateManager templateManager = new InternalTemplateManager(this);
-    private final WorldConverterManager worldConverterManager = new WorldConverterManager();
+    private final WorldConverterManager worldConverterManager = new WorldConverterManager(this.placementTracker);
     private final ITagResolver tagResolver = new TagResolver();
     private final MessageLoader messageLoader = new MessageLoader(this);
     private final FileCache fileCache = new FileCache();
@@ -237,6 +237,10 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
     public Collection<Converter> getConverters() {
         return Collections.unmodifiableCollection(this.converterMap.values());
+    }
+
+    public WorldConverterManager getWorldConverterManager() {
+        return this.worldConverterManager;
     }
 
     public Gson getGson() {

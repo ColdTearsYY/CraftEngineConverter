@@ -7,7 +7,7 @@ import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class CraftEngineConverterPlugin extends JavaPlugin {
-    protected CraftEnginePlacementTracker placementTracker;
+    protected CraftEnginePlacementTracker placementTracker = new CraftEnginePlacementTracker();
 
     public abstract FileCache getFileCache();
 
@@ -18,6 +18,6 @@ public abstract class CraftEngineConverterPlugin extends JavaPlugin {
     public abstract FoliaCompatibilityManager getFoliaCompatibilityManager();
 
     public CraftEnginePlacementTracker getPlacementTracker() {
-        return this.placementTracker != null ? this.placementTracker : (this.placementTracker = new CraftEnginePlacementTracker());
+        return this.placementTracker;
     }
 }

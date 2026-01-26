@@ -13,6 +13,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 
 public class NexoWorldConverter implements WorldConverter {
@@ -43,5 +44,10 @@ public class NexoWorldConverter implements WorldConverter {
             }
         }
         return false;
+    }
+
+    @Override
+    public @NotNull Plugins getPlugin() {
+        return Plugins.NEXO;
     }
 }

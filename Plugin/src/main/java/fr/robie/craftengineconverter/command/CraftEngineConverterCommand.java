@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.permission.Permission;
+import fr.robie.craftengineconverter.listener.WorldConverterManager;
 import fr.robie.craftengineconverter.utils.command.CommandType;
 import fr.robie.craftengineconverter.utils.command.VCommand;
 
@@ -17,6 +18,9 @@ public class CraftEngineConverterCommand extends VCommand {
     @Override
     protected CommandType perform(CraftEngineConverter plugin) {
         syntaxMessage();
+        WorldConverterManager worldConverterManager = plugin.getWorldConverterManager();
+        worldConverterManager.clearProcessedChunks();
+        worldConverterManager.executeChunck();
         return CommandType.SUCCESS;
     }
 }
