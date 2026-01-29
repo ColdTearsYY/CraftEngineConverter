@@ -426,6 +426,8 @@ public class NexoItemConverter extends ItemConverter {
                         assetId = assetId.substring(0,assetId.length()-keyToCheck.length());
                     }
                 }
+                if (!isValidString(slot))
+                    ceEquipableSection.set("slot", "chest");
             }
             ceEquipableSection.set("asset-id", assetId);
             this.setAssetId(assetId);
