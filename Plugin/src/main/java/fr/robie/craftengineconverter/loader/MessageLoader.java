@@ -22,7 +22,7 @@ public class MessageLoader extends ObjectUtils implements Manageable {
     private static final String VERSION_KEY = "version";
 
     private final CraftEngineConverterPlugin plugin;
-    private final int version = 0;
+    private final int version = 1;
 
     public MessageLoader(CraftEngineConverterPlugin plugin) {
         this.plugin = plugin;
