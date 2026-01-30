@@ -866,6 +866,67 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     @Override
+    public void convertAttackRangeComponent(){
+        ConfigurationSection attackRangeSection = this.nexoItemSection.getConfigurationSection("Components.attack_range");
+        if (isNull(attackRangeSection)) return;
+
+        ConfigurationSection ceAttackRangeSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"attack_range");
+
+        // Parse reach (can be "min..max" format or individual values)
+        String reach = attackRangeSection.getString("reach");
+        double minReach = 0.0;
+        double maxReach = 3.0;
+
+        if (isValidString(reach)) {
+            if (reach.contains("..")) {
+                String[] parts = reach.split("\\.\\.");
+                if (parts.length == 2) {
+                    try {
+                        minReach = Double.parseDouble(parts[0].trim());
+                        maxReach = Double.parseDouble(parts[1].trim());
+                    } catch (NumberFormatException e) {
+                        Logger.debug("Invalid reach format '" + reach + "' for item '" + this.itemId + "'. Using defaults.", LogType.WARNING);
+                    }
+                }
+            } else {
+                try {
+                    maxReach = Double.parseDouble(reach.trim());
+                } catch (NumberFormatException e) {
+                    Logger.debug("Invalid reach value '" + reach + "' for item '" + this.itemId + "'. Using defaults.", LogType.WARNING);
+                }
+            }
+        }
+
+        if (attackRangeSection.contains("min_reach")) {
+            minReach = attackRangeSection.getDouble("min_reach", 0.0);
+        }
+        if (attackRangeSection.contains("max_reach")) {
+            maxReach = attackRangeSection.getDouble("max_reach", 3.0);
+        }
+
+        if (minReach != 0.0) {
+            minReach = Math.max(0.0, Math.min(64.0, minReach));
+            ceAttackRangeSection.set("min_reach", minReach);
+        }
+        if (maxReach != 3.0) {
+            maxReach = Math.max(0.0, Math.min(64.0, maxReach));
+            ceAttackRangeSection.set("max_reach", maxReach);
+        }
+
+        double hitboxMargin = attackRangeSection.getDouble("hitbox_margin", 0.3);
+        if (hitboxMargin != 0.3) {
+            hitboxMargin = Math.max(0.0, Math.min(1.0, hitboxMargin));
+            ceAttackRangeSection.set("hitbox_margin", hitboxMargin);
+        }
+
+        double mobFactor = attackRangeSection.getDouble("mob_factor", 1.0);
+        if (mobFactor != 1.0) {
+            mobFactor = Math.max(0.0, Math.min(2.0, mobFactor));
+            ceAttackRangeSection.set("mob_factor", mobFactor);
+        }
+    }
+
+    @Override
     public void convertItemTexture() {
         ConfigurationSection packSection = this.nexoItemSection.getConfigurationSection("Pack");
         if (packSection == null) return;
