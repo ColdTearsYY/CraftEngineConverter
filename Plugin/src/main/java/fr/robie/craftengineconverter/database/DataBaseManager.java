@@ -10,18 +10,56 @@ import fr.robie.craftengineconverter.api.database.StorageType;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.database.migrations.WorldBlockConverterHistorical;
+import fr.robie.craftengineconverter.utils.TypedCache;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DataBaseManager implements StorageManager {
     private final CraftEngineConverterPlugin plugin;
     private boolean isEnabled = true;
     private RequestHelper requestHelper;
 
+    private final Map<Class<?>, TypedCache<?>> caches = new ConcurrentHashMap<>();
+
+    private static final int MAX_BATCH_SIZE = 250; // Max objects to process per batch
+    private static final long SAVE_INTERVAL_TICKS = 1200L; // 5 minutes (6000 ticks = 300 seconds) -> 1 min (1200 ticks = 60 seconds)
+
     public DataBaseManager(CraftEngineConverterPlugin plugin) {
         this.plugin = plugin;
+
+        // Initialize caches for different types
+
+        this.caches.put(BlockHistory.class, new TypedCache<>(BlockHistory.class,
+            batch -> this.requestHelper.insertMultiple("world_block_converter_historical", BlockHistory.class, batch),
+            MAX_BATCH_SIZE,
+            history -> history.getWorldName() + ":" +
+                       history.getChunkX() + ":" +
+                       history.getChunkZ() + ":" +
+                       history.getBlockX() + ":" +
+                       history.getBlockY() + ":" +
+                       history.getBlockZ()
+        ));
+
+    }
+
+    /**
+     * Gets a TypedCache for a specific type.
+     *
+     * @param clazz The class type
+     * @param <T> The type parameter
+     * @return The TypedCache instance
+     */
+    @SuppressWarnings("unchecked")
+    private <T> TypedCache<T> getCache(Class<T> clazz) {
+        TypedCache<?> cache = this.caches.get(clazz);
+        if (cache == null) {
+            throw new IllegalArgumentException("No cache defined for type: " + clazz.getName());
+        }
+        return (TypedCache<T>) cache;
     }
 
 
@@ -88,44 +126,60 @@ public class DataBaseManager implements StorageManager {
 
         MigrationManager.setDatabaseConfiguration(databaseConnection.getDatabaseConfiguration());
         MigrationManager.execute(databaseConnection, logger);
-    }
 
-    @Override
-    public void insertBlockHistory(BlockHistory blockHistory){
-        if (!this.isEnabled) return;
-        this.requestHelper.insert("world_block_converter_historical", schema -> {
-            schema.autoIncrement("id");
-            schema.string("world_name", blockHistory.world_name());
-            schema.bigInt("chunk_x", blockHistory.chunk_x());
-            schema.bigInt("chunk_z", blockHistory.chunk_z());
-            schema.bigInt("block_x", blockHistory.block_x());
-            schema.bigInt("block_y", blockHistory.block_y());
-            schema.bigInt("block_z", blockHistory.block_z());
-            schema.string("original_block", blockHistory.original_block());
-            schema.string("converted_block", blockHistory.converted_block());
-            schema.bool("reverted", blockHistory.reverted());
-        });
+        this.plugin.getFoliaCompatibilityManager().runTimerAsync(this::saveAll, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
     }
 
     /**
-     * Marks a block as reverted in the history.
+     * Saves all cached objects to database in batches.
+     * Processes up to MAX_BATCH_SIZE objects per type per execution.
+     */
+    private void saveAll(){
+        if (!this.isEnabled) return;
+
+        for (TypedCache<?> cache : this.caches.values()) {
+            cache.processBatch();
+        }
+    }
+
+    /**
+     * Adds a BlockHistory object to the cache for later batch insertion.
      *
-     * @param worldName The world name
-     * @param blockX The block X coordinate
-     * @param blockY The block Y coordinate
-     * @param blockZ The block Z coordinate
+     * @param blockHistory The BlockHistory to cache
      */
     @Override
-    public void markBlockAsReverted(String worldName, int blockX, int blockY, int blockZ) {
+    public void upsertBlockHistory(BlockHistory blockHistory){
         if (!this.isEnabled) return;
-        
+        getCache(BlockHistory.class).add(blockHistory);
+    }
+
+    /**
+     * Forces immediate save of all cached objects.
+     * Should be called during plugin shutdown.
+     */
+    @Override
+    public void close() {
+        if (!this.isEnabled) return;
+
+        for (TypedCache<?> cache : this.caches.values()) {
+            cache.flush();
+        }
+    }
+
+    @Override
+    public void markBlockAsReverted(BlockHistory blockHistory) {
+        if (!this.isEnabled) return;
+
         this.requestHelper.update("world_block_converter_historical", schema -> {
             schema.bool("reverted", true);
-            schema.where("world_name", worldName);
-            schema.where("block_x", blockX);
-            schema.where("block_y", blockY);
-            schema.where("block_z", blockZ);
+            schema.where("world_name", blockHistory.getWorldName());
+            schema.where("block_x", blockHistory.getBlockX());
+            schema.where("block_y", blockHistory.getBlockY());
+            schema.where("block_z", blockHistory.getBlockZ());
             schema.where("reverted", false);
+            if (blockHistory.getId() != null) {
+                schema.where("id", blockHistory.getId());
+            }
         });
     }
 
@@ -150,7 +204,7 @@ public class DataBaseManager implements StorageManager {
             table.orderByDesc("created_at");
         });
         
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.getFirst());
     }
 
     /**
@@ -194,6 +248,20 @@ public class DataBaseManager implements StorageManager {
             table.where("world_name", worldName);
             table.where("chunk_x", chunkX);
             table.where("chunk_z", chunkZ);
+            table.where("reverted", false);
+        });
+    }
+
+    /**
+     * Gets all non-reverted block conversions from the database.
+     *
+     * @return List of all active BlockHistory records
+     */
+    @Override
+    public java.util.List<BlockHistory> getAllActiveConversions() {
+        if (!this.isEnabled) return java.util.Collections.emptyList();
+        
+        return this.requestHelper.select("world_block_converter_historical", BlockHistory.class, table -> {
             table.where("reverted", false);
         });
     }

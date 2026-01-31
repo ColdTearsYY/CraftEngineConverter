@@ -3,6 +3,7 @@ package fr.robie.craftengineconverter.listener;
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.api.BlockHistory;
 import fr.robie.craftengineconverter.api.database.StorageManager;
+import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.CraftEnginePlacementTracker;
 import fr.robie.craftengineconverter.common.converter.WorldConverter;
@@ -37,12 +38,14 @@ public class WorldConverterManager implements Listener {
     private final CraftEnginePlacementTracker placementTracker;
     private final FoliaCompatibilityManager foliaCompatibilityManager;
     private final List<CompletableFuture<Void>> conversionTasks = new ArrayList<>();
-    private final StorageManager dataBaseManager;
+    private final StorageManager storageManager;
+    private final ServerProfile serverProfile;
 
     public WorldConverterManager(CraftEngineConverter plugin) {
         this.placementTracker = plugin.getPlacementTracker();
         this.foliaCompatibilityManager = plugin.getFoliaCompatibilityManager();
-        this.dataBaseManager = plugin.getStorageManager();
+        this.storageManager = plugin.getStorageManager();
+        this.serverProfile = plugin.getServerProfile();
     }
 
     @EventHandler
@@ -109,6 +112,18 @@ public class WorldConverterManager implements Listener {
             BlockStatesMapper blockStatesMapper = BlockStatesMapper.getInstance();
 
             for (BlockData blockData : blocksToCheck) {
+                Location loc = blockData.location();
+                boolean alreadyConverted = this.serverProfile.isBlockConverted(
+                    loc.getWorld().getName(),
+                    loc.getBlockX(),
+                    loc.getBlockY(),
+                    loc.getBlockZ()
+                );
+
+                if (alreadyConverted) {
+                    continue;
+                }
+
                 for (var worldConverter : this.converters){
                     Plugins plugin = worldConverter.getPlugin();
                     String ceEquivalent = blockStatesMapper.getCeEquivalent(plugin, blockData.blockData());
@@ -133,9 +148,10 @@ public class WorldConverterManager implements Listener {
                             try {
                                 this.placementTracker.placeBlock(conversion.ceEquivalent(), conversion.location());
                                 
-                                if (this.dataBaseManager.isEnabled()) {
+                                if (this.storageManager.isEnabled()) {
                                     Location loc = conversion.location();
                                     BlockHistory history = new BlockHistory(
+                                            null,
                                             loc.getWorld().getName(),
                                             loc.getChunk().getX(),
                                             loc.getChunk().getZ(),
@@ -146,7 +162,7 @@ public class WorldConverterManager implements Listener {
                                             conversion.ceEquivalent(),
                                             false
                                     );
-                                    this.dataBaseManager.insertBlockHistory(history);
+                                    this.serverProfile.addBlockHistory(history);
                                 }
                             } catch (Exception e) {
                                 Logger.showException("error placing converted block at " + conversion.location(), e);
@@ -249,7 +265,13 @@ public class WorldConverterManager implements Listener {
      */
     public void cancelAllConversions() {
         for (CompletableFuture<Void> task : this.conversionTasks) {
-            task.cancel(true);
+            if (task != null) {
+                try {
+                    task.cancel(true);
+                } catch (Exception e) {
+                    Logger.showException("Error while cancelling a conversion task", e);
+                }
+            }
         }
         this.conversionTasks.clear();
     }

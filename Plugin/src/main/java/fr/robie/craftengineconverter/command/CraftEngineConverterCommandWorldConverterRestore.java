@@ -3,6 +3,7 @@ package fr.robie.craftengineconverter.command;
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.api.BlockHistory;
 import fr.robie.craftengineconverter.api.database.StorageManager;
+import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.logger.Logger;
@@ -16,7 +17,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
@@ -32,6 +33,7 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
     @Override
     protected CommandType perform(CraftEngineConverter plugin) {
         StorageManager dataBaseManager = this.plugin.getStorageManager();
+        ServerProfile serverProfile = this.plugin.getServerProfile();
 
         if (!dataBaseManager.isEnabled()) {
             message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__DATABASE_DISABLED);
@@ -40,7 +42,8 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
 
         boolean confirm = this.containFlag("--confirm");
 
-        long activeConversions = dataBaseManager.getActiveConversions();
+        // Get active conversions count from cache instead of database
+        int activeConversions = serverProfile.getActiveBlockCount();
 
         if (activeConversions == 0) {
             message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__CONFIRM,
@@ -61,36 +64,34 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
         AtomicInteger restoredCount = new AtomicInteger(0);
         AtomicInteger totalCount = new AtomicInteger(0);
 
-        // Process all worlds
-        for (World world : Bukkit.getWorlds()) {
-            String worldName = world.getName();
+        Collection<BlockHistory> allHistory = serverProfile.getAllActiveConversions();
 
-            // Get all chunks in the world
-            for (org.bukkit.Chunk chunk : world.getLoadedChunks()) {
-                int chunkX = chunk.getX();
-                int chunkZ = chunk.getZ();
+        for (BlockHistory history : allHistory) {
+            totalCount.incrementAndGet();
 
-                // Get all block history for this chunk
-                List<BlockHistory> chunkHistory = dataBaseManager.getChunkHistory(worldName, chunkX, chunkZ);
+            World world = Bukkit.getWorld(history.getWorldName());
+            if (world == null) {
+                continue;
+            }
 
-                for (BlockHistory history : chunkHistory) {
-                    totalCount.incrementAndGet();
+            org.bukkit.Chunk chunk = world.getChunkAt(history.getChunkX(), history.getChunkZ());
+            if (!chunk.isLoaded()) {
+                chunk.load();
+            }
 
-                    Location location = new Location(
-                            world,
-                            history.block_x(),
-                            history.block_y(),
-                            history.block_z()
-                    );
+            Location location = new Location(
+                    world,
+                    history.getBlockX(),
+                    history.getBlockY(),
+                    history.getBlockZ()
+            );
 
-                    try {
-                        restoreBlock(location, history);
-                        dataBaseManager.markBlockAsReverted(worldName, history.block_x(), history.block_y(), history.block_z());
-                        restoredCount.incrementAndGet();
-                    } catch (Exception e) {
-                        Logger.showException("Failed to restore block at " + location, e);
-                    }
-                }
+            try {
+                restoreBlock(location, history);
+                serverProfile.markBlockAsReverted(history);
+                restoredCount.incrementAndGet();
+            } catch (Exception e) {
+                Logger.showException("Failed to restore block at " + location, e);
             }
         }
 
@@ -113,22 +114,18 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
     private void restoreBlock(Location location, BlockHistory history) {
         Block block = location.getBlock();
 
-        // Remove CraftEngine block if present
         if (CraftEngineBlocks.isCustomBlock(block)) {
-            // Set to air first to clear the CraftEngine block
             CraftEngineBlocks.remove(block);
 
         }
 
-        // Parse and restore the original block data
         try {
-            org.bukkit.block.data.BlockData blockData = Bukkit.createBlockData(history.original_block());
+            org.bukkit.block.data.BlockData blockData = Bukkit.createBlockData(history.getOriginalBlock());
             block.setBlockData(blockData, false);
         } catch (Exception e) {
-            Logger.showException("Failed to parse block data: " + history.original_block(), e);
-            // Fallback: try to extract just the material name
+            Logger.showException("Failed to parse block data: " + history.getOriginalBlock(), e);
             try {
-                String materialName = history.original_block().split("\\[")[0];
+                String materialName = history.getOriginalBlock().split("\\[")[0];
                 Material material = Material.matchMaterial(materialName);
                 if (material != null) {
                     block.setType(material, false);

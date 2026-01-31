@@ -1,9 +1,8 @@
 package fr.robie.craftengineconverter;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import fr.robie.craftengineconverter.api.database.StorageManager;
 import fr.robie.craftengineconverter.api.packet.PacketLoader;
+import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.behavior.BehaviorRegister;
 import fr.robie.craftengineconverter.command.CraftEngineConverterCommand;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
@@ -24,6 +23,7 @@ import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.itemsadder.IAConverter;
 import fr.robie.craftengineconverter.converter.nexo.NexoConverter;
 import fr.robie.craftengineconverter.database.DataBaseManager;
+import fr.robie.craftengineconverter.database.ServerProfileManager;
 import fr.robie.craftengineconverter.hooks.itemsadder.ItemsAdderBlockConverter;
 import fr.robie.craftengineconverter.hooks.itemsadder.ItemsAdderFurnitureConverter;
 import fr.robie.craftengineconverter.hooks.nexo.NexoBlockConverter;
@@ -42,7 +42,6 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -55,9 +54,9 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final Map<String, Converter> converterMap = new HashMap<>();
 
     private final StorageManager storageManager = new DataBaseManager(this);
+    private final ServerProfile serverProfile = new ServerProfileManager(this);
     private final FoliaCompatibilityManager foliaCompatibilityManager = new FoliaCompatibilityManager(this);
     private final CommandManager commandManager = new CommandManager(this);
-    private final Gson gson = getGsonBuilder().create();
     private final InternalTemplateManager templateManager = new InternalTemplateManager(this);
     private final WorldConverterManager worldConverterManager = new WorldConverterManager(this);
     private final ITagResolver tagResolver = new TagResolver();
@@ -113,6 +112,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         this.reloadMessages();
 
         this.storageManager.loadDatabase();
+        this.serverProfile.load();
 
         this.templateManager.loadTemplates();
 
@@ -185,6 +185,10 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         this.fileCache.clearAll();
         this.worldConverterManager.cancelAllConversions();
 
+        if (this.storageManager != null){
+            this.storageManager.close();
+        }
+
         this.metrics.shutdown();
 
         this.commandManager.disableCommands();
@@ -254,14 +258,14 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     public StorageManager getStorageManager() {
         return this.storageManager;
     }
-
-    public Gson getGson() {
-        return this.gson;
-    }
-
-    private GsonBuilder getGsonBuilder() {
-        return new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().serializeNulls()
-                .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.VOLATILE);
+    
+    /**
+     * Gets the ServerProfile for cache access.
+     *
+     * @return The ServerProfile instance
+     */
+    public ServerProfile getServerProfile() {
+        return this.serverProfile;
     }
 
     public void reloadConfig(){
