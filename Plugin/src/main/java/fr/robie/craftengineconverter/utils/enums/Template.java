@@ -9,6 +9,7 @@ public enum Template {
     BLOCK_MODEL("templates/model/block_model", TemplateType.BLOCK),
 
     MODEL_ITEM_GENERATED("templates/model/item_generated"),
+    MODEL_ITEM_HANDHELD("templates/model/item_handheld"),
 
     MODEL_3D_CROSSBOW("templates/model/items/3d_crossbow"),
     MODEL_2D_CROSSBOW("templates/model/items/2d_crossbow"),

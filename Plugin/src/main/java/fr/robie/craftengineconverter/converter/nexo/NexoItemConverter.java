@@ -1260,6 +1260,9 @@ public class NexoItemConverter extends ItemConverter {
             case "item/generated" -> buildGeneratedModel(packSection, "minecraft:item/generated", Template.MODEL_ITEM_GENERATED);
             case "block/cube_all" -> buildGeneratedModel(packSection, "minecraft:block/cube_all", Template.MODEL_CUBE_ALL);
             case "block/cube_top" -> buildCubeTopModel(packSection);
+            case "item/handheld" -> buildGeneratedModel(packSection, "minecraft:item/handheld", Template.MODEL_ITEM_HANDHELD);
+
+            default -> Logger.info(parentModel+" parent_model for item '"+this.itemId+"' is not supported yet. Skipping texture conversion. Please report to the developer to add support for this parent_model.", LogType.WARNING);
         }
     }
 
