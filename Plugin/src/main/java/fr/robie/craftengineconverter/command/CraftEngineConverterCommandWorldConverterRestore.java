@@ -17,7 +17,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
@@ -64,43 +66,58 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
         AtomicInteger restoredCount = new AtomicInteger(0);
         AtomicInteger totalCount = new AtomicInteger(0);
 
-        Collection<BlockHistory> allHistory = serverProfile.getAllActiveConversions();
+        Collection<BlockHistory> allHistory = new ArrayList<>(serverProfile.getAllActiveConversions());
 
-        for (BlockHistory history : allHistory) {
-            totalCount.incrementAndGet();
+        final int BATCH_SIZE = 50;
 
-            World world = Bukkit.getWorld(history.getWorldName());
-            if (world == null) {
-                continue;
-            }
+        for (int i = 0; i < allHistory.size(); i += BATCH_SIZE) {
+            final int end = Math.min(i + BATCH_SIZE, allHistory.size());
+            final List<BlockHistory> batch = new ArrayList<>(allHistory).subList(i, end);
+            final long tickDelay = i / BATCH_SIZE;
 
-            org.bukkit.Chunk chunk = world.getChunkAt(history.getChunkX(), history.getChunkZ());
-            if (!chunk.isLoaded()) {
-                chunk.load();
-            }
+            plugin.getFoliaCompatibilityManager().runLater(() -> {
+                for (BlockHistory history : batch) {
+                    totalCount.incrementAndGet();
 
-            Location location = new Location(
-                    world,
-                    history.getBlockX(),
-                    history.getBlockY(),
-                    history.getBlockZ()
-            );
+                    World world = Bukkit.getWorld(history.getWorldName());
+                    if (world == null) {
+                        continue;
+                    }
 
-            try {
-                restoreBlock(location, history);
-                serverProfile.markBlockAsReverted(history);
-                restoredCount.incrementAndGet();
-            } catch (Exception e) {
-                Logger.showException("Failed to restore block at " + location, e);
-            }
+                    org.bukkit.Chunk chunk = world.getChunkAt(history.getChunkX(), history.getChunkZ());
+                    if (!chunk.isLoaded()) {
+                        chunk.load();
+                    }
+
+                    Location location = new Location(
+                            world,
+                            history.getBlockX(),
+                            history.getBlockY(),
+                            history.getBlockZ()
+                    );
+
+                    try {
+                        restoreBlock(location, history);
+                        serverProfile.markBlockAsReverted(history);
+                        restoredCount.incrementAndGet();
+                    } catch (Exception e) {
+                        Logger.showException("Failed to restore block at " + location, e);
+                    }
+                }
+            }, tickDelay);
         }
 
-        long endTime = System.currentTimeMillis();
+        long totalDelayTicks = (long) Math.ceil((double) allHistory.size() / BATCH_SIZE);
 
-        message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__COMPLETE,
-                "restored", restoredCount.get(),
-                "total", totalCount.get(),
-                "time", TimerBuilder.formatTimeAuto(endTime - startTime));
+        plugin.getFoliaCompatibilityManager().runLater(() -> {
+
+            long endTime = System.currentTimeMillis();
+
+            message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__COMPLETE,
+                    "restored", restoredCount.get(),
+                    "total", totalCount.get(),
+                    "time", TimerBuilder.formatTimeAuto(endTime - startTime));
+        }, totalDelayTicks + 1);
 
         return CommandType.SUCCESS;
     }
