@@ -465,7 +465,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertEnchantableComponent() {
         int maxEnchantableLevel = this.nexoItemSection.getInt("Components.enchantable", -1);
         if (maxEnchantableLevel >= 0) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:enchantable", maxEnchantableLevel);
+            this.craftEngineItemUtils.getComponentsSection().set("minecraft:enchantable", Map.of("value", maxEnchantableLevel));
         }
     }
 
