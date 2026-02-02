@@ -60,13 +60,23 @@ command:
   clear-files-cache:
     description: "Efface le cache de fichiers utilisé par le plugin. Ajoutez --all pour effacer tous les fichiers mis en cache, sinon seuls les fichiers obsolètes seront effacés."
     complete: "§aEffacé §e%cleared_files%§a fichiers du cache en §c%time%§a."
-  world-converter-clear:
-    force-stopping: "§eOption --force détectée. Arrêt de la conversion du monde en cours..."
-    already-running: "§cUne conversion du monde est déjà en cours. Utilisez --force pour annuler la conversion actuelle et en démarrer une nouvelle."
-    complete: "§aConversion du monde terminée ! Traité §e%chunks%§a chunks avec §e%blocks%§a blocs convertis en §c%time%§a."
-    start: "§aDébut de la conversion du monde pour §e%chunks%§a chunks..."
-    description: "Convertit les blocs du monde d'autres plugins au format CraftEngine."
   world-converter:
+    clear-cached-chunks:
+      description: "Efface le cache des chunks traités pour le convertisseur de monde."
+      complete: "§aEffacé §e%chunks%§a chunks traités du cache en §c%time%§a."
+    restore:
+      description: "Restaure les blocs convertis à leur état d'origine."
+      start: "§aDébut de la restauration des blocs..."
+      single:
+        success: "§aBloc restauré à §e%x%§a, §e%y%§a, §e%z%§a à son état d'origine."
+        not-found: "§cAucun historique de conversion trouvé pour le bloc à §e%x%§a, §e%y%§a, §e%z%§a."
+        already-reverted: "§eBloc à §e%x%§a, §e%y%§a, §e%z%§a déjà restauré."
+      all:
+        confirm: "§eCeci restaurera §c%blocks%§e blocs convertis. Utilisez §a--confirm§e pour continuer."
+        start: "§aDébut de la restauration de §e%blocks%§a blocs..."
+        complete: "§aRestauré §e%restored%§a/§e%total%§a blocs en §c%time%§a."
+      database-disabled: "§cLa base de données n'est pas activée. La restauration des blocs nécessite l'historique en base de données."
+
 
 messages:
   plugin:

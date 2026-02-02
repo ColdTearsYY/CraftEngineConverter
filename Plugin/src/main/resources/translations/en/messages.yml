@@ -65,9 +65,22 @@ command:
     complete: "§aWorld conversion completed! Processed §e%chunks%§a chunks with §e%blocks%§a blocks converted in §c%time%§a."
     already-running: "§cA world conversion is already running. Use --force to cancel the current conversion and start a new one."
     force-stopping: "§eForce flag detected. Stopping ongoing world conversion..."
-    clear:
-      complete: "§aCleared §e%chunks%§a processed chunks from cache in §c%time%§a."
+    clear-cached-chunks:
       description: "Clears the processed chunks cache for world converter."
+      complete: "§aCleared §e%chunks%§a processed chunks from cache in §c%time%§a."
+    restore:
+      description: "Restores converted blocks to their original state."
+      start: "§aStarting block restoration..."
+      single:
+        success: "§aRestored block at §e%x%§a, §e%y%§a, §e%z%§a to original state."
+        not-found: "§cNo conversion history found for block at §e%x%§a, §e%y%§a, §e%z%§a."
+        already-reverted: "§eBlock at §e%x%§a, §e%y%§a, §e%z%§a was already reverted."
+      all:
+        confirm: "§eThis will restore §c%blocks%§e converted blocks. Use §a--confirm§e to proceed."
+        start: "§aStarting restoration of §e%blocks%§a blocks..."
+        complete: "§aRestored §e%restored%§a/§e%total%§a blocks in §c%time%§a."
+      database-disabled: "§cDatabase is not enabled. Block restoration requires database history."
+
 
 messages:
   plugin:
