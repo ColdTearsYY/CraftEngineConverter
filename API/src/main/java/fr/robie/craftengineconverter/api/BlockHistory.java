@@ -1,7 +1,13 @@
+/**
+ * Represents the history record for a single block conversion in the world.
+ * Stores original and converted block data, coordinates, and revert state.
+ * Used for restoration and tracking of conversion history.
+ */
 package fr.robie.craftengineconverter.api;
 
 import fr.maxlego08.sarah.Column;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class BlockHistory {
     @Column(value = "id", autoIncrement = true)
@@ -25,6 +31,20 @@ public class BlockHistory {
     @Column("reverted")
     private final Boolean reverted;
 
+    /**
+     * Constructs a new BlockHistory record.
+     *
+     * @param id Unique database identifier for the record.
+     * @param world_name Name of the world containing this block.
+     * @param chunk_x X coordinate of the chunk.
+     * @param chunk_z Z coordinate of the chunk.
+     * @param block_x X coordinate of the block.
+     * @param block_y Y coordinate of the block.
+     * @param block_z Z coordinate of the block.
+     * @param original_block Block type before conversion.
+     * @param converted_block Block type after conversion.
+     * @param reverted Whether the block was reverted to its original state.
+     */
     public BlockHistory(Long id, @NotNull String world_name, Integer chunk_x, Integer chunk_z, Integer block_x, Integer block_y, Integer block_z, @NotNull String original_block, @NotNull String converted_block, Boolean reverted) {
         this.id = id;
         this.world_name = world_name;
@@ -38,46 +58,84 @@ public class BlockHistory {
         this.reverted = reverted;
     }
 
+    /**
+     * Gets the unique database ID for this record.
+     * @return Record ID, or null if not persisted yet.
+     */
+    @Nullable
     public Long getId() {
-        return id;
+        return this.id;
     }
 
+    /**
+     * @return World name for this block conversion (never null).
+     */
     @NotNull
     public String getWorldName() {
-        return world_name;
+        return this.world_name;
     }
 
+    /**
+     * @return Chunk X coordinate of the block's chunk.
+     */
+    @Nullable
     public Integer getChunkX() {
-        return chunk_x;
+        return this.chunk_x;
     }
 
+    /**
+     * @return Chunk Z coordinate of the block's chunk.
+     */
+    @Nullable
     public Integer getChunkZ() {
-        return chunk_z;
+        return this.chunk_z;
     }
 
+    /**
+     * @return X coordinate of the block.
+     */
+    @Nullable
     public Integer getBlockX() {
-        return block_x;
+        return this.block_x;
     }
 
+    /**
+     * @return Y coordinate of the block.
+     */
+    @Nullable
     public Integer getBlockY() {
-        return block_y;
+        return this.block_y;
     }
 
+    /**
+     * @return Z coordinate of the block.
+     */
+    @Nullable
     public Integer getBlockZ() {
-        return block_z;
+        return this.block_z;
     }
 
+    /**
+     * @return Block type before conversion.
+     */
     @NotNull
     public String getOriginalBlock() {
-        return original_block;
+        return this.original_block;
     }
 
+    /**
+     * @return Block type after conversion.
+     */
     @NotNull
     public String getConvertedBlock() {
-        return converted_block;
+        return this.converted_block;
     }
 
+    /**
+     * @return True if reverted, false if not, null if unknown.
+     */
+    @Nullable
     public Boolean isReverted() {
-        return reverted;
+        return this.reverted;
     }
 }

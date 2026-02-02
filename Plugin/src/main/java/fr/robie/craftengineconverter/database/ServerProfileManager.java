@@ -7,6 +7,7 @@ import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -141,7 +142,7 @@ public class ServerProfileManager implements ServerProfile {
     }
 
     @Override
-    public void markBlockAsReverted(BlockHistory history) {
+    public void markBlockAsReverted(@NonNull BlockHistory history) {
         String key = createCacheKey(
             history.getWorldName(),
             history.getChunkX(),
@@ -160,7 +161,7 @@ public class ServerProfileManager implements ServerProfile {
      * @return Collection of all active BlockHistory records in the cache
      */
     @Override
-    public Collection<BlockHistory> getAllActiveConversions() {
+    public @NonNull Collection<BlockHistory> getAllActiveConversions() {
         return this.activeBlockCache.values();
     }
 }

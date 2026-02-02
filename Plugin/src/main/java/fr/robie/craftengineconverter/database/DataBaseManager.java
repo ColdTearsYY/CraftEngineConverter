@@ -12,6 +12,7 @@ import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.database.migrations.WorldBlockConverterHistorical;
 import fr.robie.craftengineconverter.utils.TypedCache;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.util.Map;
@@ -148,7 +149,7 @@ public class DataBaseManager implements StorageManager {
      * @param blockHistory The BlockHistory to cache
      */
     @Override
-    public void upsertBlockHistory(BlockHistory blockHistory){
+    public void upsertBlockHistory(@NonNull BlockHistory blockHistory){
         if (!this.isEnabled) return;
         getCache(BlockHistory.class).add(blockHistory);
     }
@@ -167,7 +168,7 @@ public class DataBaseManager implements StorageManager {
     }
 
     @Override
-    public void markBlockAsReverted(BlockHistory blockHistory) {
+    public void markBlockAsReverted(@NonNull BlockHistory blockHistory) {
         if (!this.isEnabled) return;
 
         this.requestHelper.update("world_block_converter_historical", schema -> {
@@ -193,7 +194,7 @@ public class DataBaseManager implements StorageManager {
      * @return Optional containing the most recent BlockHistory if found
      */
     @Override
-    public Optional<BlockHistory> getBlockHistory(String worldName, int blockX, int blockY, int blockZ) {
+    public @NonNull Optional<BlockHistory> getBlockHistory(@NonNull String worldName, int blockX, int blockY, int blockZ) {
         if (!this.isEnabled) return Optional.empty();
         
         var results = this.requestHelper.select("world_block_converter_historical", BlockHistory.class, table -> {
@@ -217,7 +218,7 @@ public class DataBaseManager implements StorageManager {
      * @return true if the block is converted and not reverted
      */
     @Override
-    public boolean isBlockConverted(String worldName, int blockX, int blockY, int blockZ) {
+    public boolean isBlockConverted(@NonNull String worldName, int blockX, int blockY, int blockZ) {
         if (!this.isEnabled) return false;
         
         var results = this.requestHelper.select("world_block_converter_historical", BlockHistory.class, table -> {
@@ -241,7 +242,7 @@ public class DataBaseManager implements StorageManager {
      * @return List of BlockHistory records for the chunk
      */
     @Override
-    public java.util.List<BlockHistory> getChunkHistory(String worldName, int chunkX, int chunkZ) {
+    public java.util.@NonNull List<BlockHistory> getChunkHistory(@NonNull String worldName, int chunkX, int chunkZ) {
         if (!this.isEnabled) return java.util.Collections.emptyList();
         
         return this.requestHelper.select("world_block_converter_historical", BlockHistory.class, table -> {
@@ -258,7 +259,7 @@ public class DataBaseManager implements StorageManager {
      * @return List of all active BlockHistory records
      */
     @Override
-    public java.util.List<BlockHistory> getAllActiveConversions() {
+    public java.util.@NonNull List<BlockHistory> getAllActiveConversions() {
         if (!this.isEnabled) return java.util.Collections.emptyList();
         
         return this.requestHelper.select("world_block_converter_historical", BlockHistory.class, table -> {
