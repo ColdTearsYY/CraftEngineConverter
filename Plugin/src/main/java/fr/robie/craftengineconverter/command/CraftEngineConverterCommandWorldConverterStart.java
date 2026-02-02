@@ -56,7 +56,7 @@ public class CraftEngineConverterCommandWorldConverterStart extends VCommand {
             totalChunks += world.getLoadedChunks().length;
         }
 
-        BukkitProgressBar.Builder builder = new BukkitProgressBar.Builder(totalChunks).options(Configuration.worldConverterProgressBarOptions).prefix("World Converter:").suffix("chunks");
+        BukkitProgressBar.Builder builder = new BukkitProgressBar.Builder(totalChunks).options(Configuration.worldConverterProgressBarOptions).prefix("World Converter:").suffix("chunks").updateInterval(5000);
         if (this.player != null) {
             builder.player(this.player);
             builder.showBar(false);
