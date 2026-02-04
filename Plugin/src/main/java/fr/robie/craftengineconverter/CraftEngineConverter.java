@@ -264,6 +264,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
      *
      * @return The ServerProfile instance
      */
+    @Override
     public ServerProfile getServerProfile() {
         return this.serverProfile;
     }

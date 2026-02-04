@@ -79,6 +79,7 @@ command:
         confirm: "§eThis will restore §c%count%§e converted blocks/entities. Use §a--confirm§e to proceed."
         start: "§aStarting restoration of §e%count%§a blocks/entities..."
         complete: "§aRestored §e%restored%§a/§e%total%§a blocks/entities in §c%time%§a."
+        none: "§eThere are no converted blocks or entities to restore."
       database-disabled: "§cDatabase is not enabled. Restoration requires database history."
 
 

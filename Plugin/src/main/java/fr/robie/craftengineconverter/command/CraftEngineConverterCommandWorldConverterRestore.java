@@ -47,25 +47,27 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
 
         boolean confirm = this.containFlag("--confirm");
 
-        // Get active conversions count from cache instead of database
         int activeBlockConversions = serverProfile.getActiveBlockCount();
         int activeEntityConversions = serverProfile.getActiveEntityCount();
         int totalActiveConversions = activeBlockConversions + activeEntityConversions;
 
         if (totalActiveConversions == 0) {
-            message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__CONFIRM,
-                    "blocks", 0);
+            message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__NONE);
             return CommandType.SUCCESS;
         }
 
         if (!confirm) {
             message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__CONFIRM,
-                    "blocks", totalActiveConversions);
+                    "count", totalActiveConversions,
+                    "blocks", activeBlockConversions,
+                    "entities", activeEntityConversions);
             return CommandType.SUCCESS;
         }
 
         message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__START,
-                "blocks", totalActiveConversions);
+                "count", totalActiveConversions,
+                "blocks", activeBlockConversions,
+                "entities", activeEntityConversions);
 
         long startTime = System.currentTimeMillis();
         AtomicInteger restoredBlockCount = new AtomicInteger(0);
@@ -163,7 +165,11 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
 
             message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__RESTORE__ALL__COMPLETE,
                     "restored", restoredBlockCount.get() + restoredEntityCount.get(),
+                    "restored_blocks", restoredBlockCount.get(),
+                    "restored_entities", restoredEntityCount.get(),
                     "total", totalBlockCount.get() + totalEntityCount.get(),
+                    "total_blocks", totalBlockCount.get(),
+                    "total_entities", totalEntityCount.get(),
                     "time", TimerBuilder.formatTimeAuto(endTime - startTime));
         }, totalDelayTicks + 1);
 

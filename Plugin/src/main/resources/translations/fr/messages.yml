@@ -75,6 +75,7 @@ command:
         confirm: "§eCeci restaurera §c%count%§e blocs/entités convertis. Utilisez §a--confirm§e pour continuer."
         start: "§aDébut de la restauration de §e%count%§a blocs/entités..."
         complete: "§aRestauré §e%restored%§a/§e%total%§a blocs/entités en §c%time%§a."
+        none: "§eAucun bloc ou entité converti à restaurer."
       database-disabled: "§cLa base de données n'est pas activée. La restauration nécessite l'historique en base de données."
 
 

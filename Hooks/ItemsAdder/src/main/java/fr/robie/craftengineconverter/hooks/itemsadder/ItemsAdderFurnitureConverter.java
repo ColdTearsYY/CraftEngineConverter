@@ -34,7 +34,7 @@ public class ItemsAdderFurnitureConverter extends FurnitureConverter implements 
         Entity bukkitEntity = event.getBukkitEntity();
         CustomFurniture.remove(bukkitEntity,false);
         Location location = bukkitEntity.getLocation();
-        this.placeFurniture(newName, location.add(0, -0.5, 0));
+        this.placeFurniture(newName, location.add(0, -0.5, 0), null);
         event.setCancelled(true);
 
         if (Configuration.allowBlockConversionPropagation && Configuration.maxBlockConversionPropagationDepth > 1) {
@@ -43,15 +43,6 @@ public class ItemsAdderFurnitureConverter extends FurnitureConverter implements 
             ConversionCounter counter = new ConversionCounter(Configuration.maxBlockConversionPropagationDepth - 1);
             executeFurnitureConversion(location, processed, counter);
         }
-    }
-
-    @Override
-    public Location getExactEntityLocation(Location location) {
-        Entity furnitureEntityAt = getFurnitureEntityAt(location);
-        if (furnitureEntityAt != null){
-            return furnitureEntityAt.getLocation();
-        }
-        return location; // Fallback to the original location if no furniture entity is found /!\ if the furniture is rotated it's reset it to the original rotation 45°
     }
 
     @Override
@@ -72,7 +63,7 @@ public class ItemsAdderFurnitureConverter extends FurnitureConverter implements 
     }
 
     @Nullable
-    private Entity getFurnitureEntityAt(Location location){
+    public Entity getFurnitureEntityAt(Location location){
         Collection<Entity> entities = location.getNearbyEntities(1, 1, 1);
         for (Entity entity : entities) {
             if (CustomFurniture.byAlreadySpawned(entity) != null) {

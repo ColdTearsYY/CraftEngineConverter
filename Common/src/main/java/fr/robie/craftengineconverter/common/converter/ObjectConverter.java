@@ -1,11 +1,13 @@
 package fr.robie.craftengineconverter.common.converter;
 
+import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 
 public abstract class ObjectConverter {
     protected final CraftEngineConverterPlugin plugin;
+    protected final ServerProfile serverProfile;
     protected final Plugins pluginType;
     protected final PluginNameMapper nameMapper;
     protected final int[][] ADJACENT_OFFSETS = {
@@ -19,6 +21,7 @@ public abstract class ObjectConverter {
 
     public ObjectConverter(CraftEngineConverterPlugin plugin, Plugins pluginType) {
         this.plugin = plugin;
+        this.serverProfile = plugin.getServerProfile();
         this.pluginType = pluginType;
         this.nameMapper = PluginNameMapper.getInstance();
     }

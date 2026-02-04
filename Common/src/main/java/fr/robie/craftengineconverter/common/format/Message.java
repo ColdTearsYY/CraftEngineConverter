@@ -74,6 +74,7 @@ public enum Message {
     COMMAND__WORLD_CONVERTER__RESTORE__ALL__CONFIRM("§eThis will restore §c%count%§e converted blocks/entities. Use §a--confirm§e to proceed."),
     COMMAND__WORLD_CONVERTER__RESTORE__ALL__START("§aStarting restoration of §e%count%§a blocks/entities..."),
     COMMAND__WORLD_CONVERTER__RESTORE__ALL__COMPLETE("§aRestored §e%restored%§a/§e%total%§a blocks/entities in §c%time%§a."),
+    COMMAND__WORLD_CONVERTER__RESTORE__ALL__NONE("§eThere are no converted blocks or entities to restore."),
     COMMAND__WORLD_CONVERTER__RESTORE__DATABASE_DISABLED("§cDatabase is not enabled. Restoration requires database history."),
 
 

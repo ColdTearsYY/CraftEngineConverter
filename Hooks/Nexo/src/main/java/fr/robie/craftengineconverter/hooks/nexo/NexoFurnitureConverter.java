@@ -1,17 +1,21 @@
 package fr.robie.craftengineconverter.hooks.nexo;
 
+import com.google.gson.Gson;
 import com.nexomc.nexo.api.NexoFurniture;
 import com.nexomc.nexo.api.events.furniture.NexoFurnitureInteractEvent;
 import com.nexomc.nexo.mechanics.furniture.FurnitureMechanic;
+import fr.robie.craftengineconverter.api.EntityHistory;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.converter.FurnitureConverter;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,9 +36,10 @@ public class NexoFurnitureConverter extends FurnitureConverter implements Listen
             return;
         }
         ItemDisplay baseEntity = event.getBaseEntity();
+        String entityNBT = baseEntity.getAsString();
         NexoFurniture.remove(baseEntity);
         Location location = baseEntity.getLocation();
-        this.placeFurniture(newName, location.add(0, -0.5, 0));
+        this.placeFurniture(newName, location.add(0, -0.5, 0), entityNBT);
         event.setCancelled(true);
 
         if (Configuration.allowBlockConversionPropagation && Configuration.maxBlockConversionPropagationDepth > 1) {
@@ -46,14 +51,27 @@ public class NexoFurnitureConverter extends FurnitureConverter implements Listen
     }
 
     @Override
-    public Location getExactEntityLocation(Location location) {
+    public Entity getFurnitureEntityAt(Location location) {
         Collection<ItemDisplay> nearbyEntitiesByType = location.getNearbyEntitiesByType(ItemDisplay.class, 1);
         for (ItemDisplay entity : nearbyEntitiesByType) {
             if (NexoFurniture.isFurniture(entity)) {
-                return entity.getLocation();
+                return entity;
             }
         }
-        return location; // Fallback to the original location if no furniture entity is found /!\ if the furniture is rotated it's reset it to the original rotation 45°
+        return null;
+    }
+
+    public void placeFurniture(String itemId, Location location,@Nullable String entityNBT) {
+        EntityHistory entityHistory = null;
+        if (entityNBT != null){
+            Location duplicateLocation = location.clone().add(0, 0.5, 0);
+            String locationJson = new Gson().toJson(duplicateLocation.serialize());
+            entityHistory = new EntityHistory(null, locationJson, entityNBT, false);
+        }
+        this.plugin.getPlacementTracker().placeFurniture(itemId, location);
+        if (entityHistory != null){
+            this.serverProfile.addEntityHistory(entityHistory);
+        }
     }
 
     @Override

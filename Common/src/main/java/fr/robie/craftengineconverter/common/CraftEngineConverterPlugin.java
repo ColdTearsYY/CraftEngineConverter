@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.common;
 
+import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.common.cache.FileCache;
 import fr.robie.craftengineconverter.common.format.MessageFormatter;
 import fr.robie.craftengineconverter.common.manager.FoliaCompatibilityManager;
@@ -20,4 +21,6 @@ public abstract class CraftEngineConverterPlugin extends JavaPlugin {
     public CraftEnginePlacementTracker getPlacementTracker() {
         return this.placementTracker;
     }
+
+    public abstract ServerProfile getServerProfile();
 }

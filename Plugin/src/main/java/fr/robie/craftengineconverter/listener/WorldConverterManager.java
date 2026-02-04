@@ -179,7 +179,6 @@ public class WorldConverterManager implements Listener {
                                             loc.getBlockY(),
                                             loc.getBlockZ(),
                                             conversion.originalBlock(),
-                                            conversion.ceEquivalent(),
                                             false
                                     );
                                     this.serverProfile.addBlockHistory(history);

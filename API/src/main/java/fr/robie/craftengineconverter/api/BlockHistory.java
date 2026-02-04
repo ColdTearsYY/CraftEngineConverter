@@ -26,8 +26,6 @@ public class BlockHistory {
     private final Integer block_z;
     @Column("original_block")
     private final String original_block;
-    @Column("converted_block")
-    private final String converted_block;
     @Column("reverted")
     private final Boolean reverted;
 
@@ -42,10 +40,9 @@ public class BlockHistory {
      * @param block_y Y coordinate of the block.
      * @param block_z Z coordinate of the block.
      * @param original_block Block type before conversion.
-     * @param converted_block Block type after conversion.
      * @param reverted Whether the block was reverted to its original state.
      */
-    public BlockHistory(Long id, @NotNull String world_name, Integer chunk_x, Integer chunk_z, Integer block_x, Integer block_y, Integer block_z, @NotNull String original_block, @NotNull String converted_block, Boolean reverted) {
+    public BlockHistory(Long id, @NotNull String world_name, Integer chunk_x, Integer chunk_z, Integer block_x, Integer block_y, Integer block_z, @NotNull String original_block, Boolean reverted) {
         this.id = id;
         this.world_name = world_name;
         this.chunk_x = chunk_x;
@@ -54,7 +51,6 @@ public class BlockHistory {
         this.block_y = block_y;
         this.block_z = block_z;
         this.original_block = original_block;
-        this.converted_block = converted_block;
         this.reverted = reverted;
     }
 
@@ -121,14 +117,6 @@ public class BlockHistory {
     @NotNull
     public String getOriginalBlock() {
         return this.original_block;
-    }
-
-    /**
-     * @return Block type after conversion.
-     */
-    @NotNull
-    public String getConvertedBlock() {
-        return this.converted_block;
     }
 
     /**
