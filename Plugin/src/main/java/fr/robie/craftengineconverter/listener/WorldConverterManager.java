@@ -208,9 +208,10 @@ public class WorldConverterManager implements Listener {
      * Execute chunk conversion with custom throttling.
      *
      * @param chunksPerTick Number of chunks to process per tick (recommended: 5-20)
-     * @param progressBar
+     * @param progressBar Progress bar to update
+     * @return CompletableFuture that completes when all chunks are scheduled for processing
      */
-    public void executeChunckWithThrottling(int chunksPerTick, BukkitProgressBar progressBar) {
+    public CompletableFuture<Void> executeChunckWithThrottling(int chunksPerTick, BukkitProgressBar progressBar) {
         List<World> worlds = Bukkit.getServer().getWorlds();
         List<Chunk> allChunks = new ArrayList<>();
 
@@ -218,18 +219,24 @@ public class WorldConverterManager implements Listener {
             allChunks.addAll(List.of(world.getLoadedChunks()));
         }
 
+        List<CompletableFuture<Void>> schedulingFutures = new ArrayList<>();
+
         for (int i = 0; i < allChunks.size(); i += chunksPerTick) {
             final int batchEnd = Math.min(i + chunksPerTick, allChunks.size());
             final List<Chunk> batch = allChunks.subList(i, batchEnd);
 
             long tickDelay = (i / chunksPerTick);
 
-            this.foliaCompatibilityManager.runLater(() -> {
+            CompletableFuture<Void> scheduledTask = this.foliaCompatibilityManager.runLaterComplatable(() -> {
                 for (Chunk chunk : batch) {
                     processChunk(chunk, progressBar);
                 }
             }, tickDelay);
+
+            schedulingFutures.add(scheduledTask);
         }
+
+        return CompletableFuture.allOf(schedulingFutures.toArray(new CompletableFuture[0]));
     }
 
     public void registerConverter(WorldConverter converter){

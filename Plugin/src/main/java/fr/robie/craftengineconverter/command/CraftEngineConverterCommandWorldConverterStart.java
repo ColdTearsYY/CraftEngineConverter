@@ -71,9 +71,9 @@ public class CraftEngineConverterCommandWorldConverterStart extends VCommand {
 
         worldConverterManager.clearProcessedChunks();
 
-        worldConverterManager.executeChunckWithThrottling(chunksPerTick, progressBar);
+        CompletableFuture<Void> schedulingFuture = worldConverterManager.executeChunckWithThrottling(chunksPerTick, progressBar);
 
-        this.currentConversion = worldConverterManager.awaitAllConversions();
+        this.currentConversion = schedulingFuture.thenCompose(v -> worldConverterManager.awaitAllConversions());
         this.currentConversion.thenRun(() -> {
             long endTime = System.currentTimeMillis();
             int processedChunks = worldConverterManager.getProcessedChunksCount();

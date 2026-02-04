@@ -21,7 +21,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.EntitySnapshot;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -76,13 +75,13 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
         AtomicInteger totalEntityCount = new AtomicInteger(0);
 
         // Restore blocks
-        Collection<BlockHistory> allHistory = new ArrayList<>(serverProfile.getAllActiveConversions());
+        List<BlockHistory> allHistory = new ArrayList<>(serverProfile.getAllActiveConversions());
 
         final int BATCH_SIZE = 50;
 
         for (int i = 0; i < allHistory.size(); i += BATCH_SIZE) {
             final int end = Math.min(i + BATCH_SIZE, allHistory.size());
-            final List<BlockHistory> batch = new ArrayList<>(allHistory).subList(i, end);
+            final List<BlockHistory> batch = allHistory.subList(i, end);
             final long tickDelay = i / BATCH_SIZE;
 
             plugin.getFoliaCompatibilityManager().runLater(() -> {
@@ -117,11 +116,11 @@ public class CraftEngineConverterCommandWorldConverterRestore extends VCommand {
             }, tickDelay);
         }
 
-        Collection<EntityHistory> allEntityHistory = new ArrayList<>(serverProfile.getAllActiveEntityConversions());
+        List<EntityHistory> allEntityHistory = new ArrayList<>(serverProfile.getAllActiveEntityConversions());
 
         for (int i = 0; i < allEntityHistory.size(); i += BATCH_SIZE) {
             final int end = Math.min(i + BATCH_SIZE, allEntityHistory.size());
-            final List<EntityHistory> batch = new ArrayList<>(allEntityHistory).subList(i, end);
+            final List<EntityHistory> batch = allEntityHistory.subList(i, end);
             final long tickDelay = (allHistory.size() / BATCH_SIZE) + (i / BATCH_SIZE);
 
             plugin.getFoliaCompatibilityManager().runLater(() -> {
