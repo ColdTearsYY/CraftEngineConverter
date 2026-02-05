@@ -1,0 +1,64 @@
+name: Build  
+  
+on:  
+  workflow_dispatch:  
+    inputs:  
+      plugin:  
+        description: 'Plugin to convert'  
+        required: false  
+        default: 'itemsadder'  
+        type: choice  
+        options:  
+          - itemsadder  
+          - nexo  
+      type:  
+        description: 'Conversion type'  
+        required: false  
+        default: 'ALL'  
+        type: choice  
+        options:  
+          - ALL  
+          - ITEMS  
+          - RECIPES  
+          - SOUNDS  
+          - IMAGES  
+          - LANGUAGES  
+          - PACKS  
+      dryrun:  
+        description: 'Dry run (no files written)'  
+        required: false  
+        default: false  
+        type: boolean  
+      threads:  
+        description: 'Thread count for pack conversion'  
+        required: false  
+        default: '1'  
+        type: string  
+  
+jobs:  
+  build:  
+    runs-on: ubuntu-latest  
+    steps:  
+      - name: Checkout  
+        uses: actions/checkout@v4  
+  
+      - name: Set up JDK 21  
+        uses: actions/setup-java@v4  
+        with:  
+          java-version: 21  
+          distribution: temurin  
+  
+      - name: Cache Maven  
+        uses: actions/cache@v4  
+        with:  
+          path: ~/.m2  
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}  
+  
+      - name: Build with Maven  
+        run: mvn -B clean package --file pom.xml  
+  
+      - name: Upload JAR  
+        uses: actions/upload-artifact@v4  
+        with:  
+          name: CraftEngineConverter-JAR  
+          path: Plugin/target/*.jar
