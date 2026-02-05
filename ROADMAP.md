@@ -1,6 +1,6 @@
 # 🗺️ ROADMAP - CraftEngineConverter
 
-> **Last Updated:** January 6, 2026
+> **Last Updated:** February 5, 2026
 > **Project Status:** 🟢 Active Development
 > **This file serves as the main project roadmap and development tracker.**
 
@@ -9,7 +9,7 @@
 ## 🚀 Roadmap
 
 ### Version 1.0.0 ()
-- [ ] Complete Nexo conversion (items, glyphs, emojis, images, languages, sounds, equipment, furniture, custom blocks, mechanics)
+- [ ] Complete Nexo conversion (items, glyphs, emojis, images, languages, sounds, equipment, furniture, custom blocks, mechanics, new components: attack_charge, use effects, damage type, kinetic, swing animation, minimum attack charge, painting variant, piercing)
 - [x] Replace Nexo block/ furniture with their CraftEngine equivalents
 - [x] Replace ItemsAdder block/ furniture with their CraftEngine equivalents
 - [ ] Documentation complete
@@ -66,8 +66,8 @@
 - [ ] Conversion profiles (save/load)
 - [ ] Better console output (colors, formatting)
 - [x] Progress bars for long operations
-- [ ] Optimize async conversion (thread pools)
-- [ ] Progress tracking for large conversions
+- [x] Optimize async conversion (thread pools)
+- [x] Progress tracking for large conversions
 - [ ] Cache frequently accessed configs
 - [ ] Batch file operations
 
@@ -93,6 +93,14 @@
 
 ## ✅ Recently Completed
 
+- World conversion engine (chunk & entity processing, async, progress tracking)
+- Block restoration feature (with batch, error handling, and DB migration)
+- Entity restoration in world converter
+- Handheld item model & improved texture conversion
+- Nexo: new components (attack charge, use effects, damage type, swing animation, piercing, kinetic, painting variant)
+- Progress bar improvements & tracking for large conversions
+- Improved config reloads, cache flush, and logging/messages
+- Elytra default slot fix
 - ItemsAdder interaction conversion (blocks/furniture)
 - ItemsAdder image placeholder support
 - ItemsAdder basic furniture conversion
