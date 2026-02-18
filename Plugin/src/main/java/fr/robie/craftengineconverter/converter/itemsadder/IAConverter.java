@@ -6,6 +6,7 @@ import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.ArmorConverter;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
+import fr.robie.craftengineconverter.common.enums.NmsVersion;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.logger.LogType;
@@ -121,7 +122,9 @@ public class IAConverter extends Converter {
                 if (!iaItemsConverter.isExcludeFromInventory()){
                     itemsIds.add(finalItemId);
                 }
-                PluginNameMapper.getInstance().storeMapping(Plugins.ITEMS_ADDER, itemId, finalItemId);
+                PluginNameMapper pluginNameMapper = PluginNameMapper.getInstance();
+                pluginNameMapper.storeMapping(Plugins.ITEMS_ADDER, itemId, finalItemId);
+                pluginNameMapper.storeMapping(Plugins.ITEMS_ADDER, finalItemId, finalItemId);
             } catch (Exception e) {
                 Logger.showException("Failed to convert ItemsAdder item: " + itemId + " in file: " + fileName, e);
             }
@@ -772,8 +775,13 @@ public class IAConverter extends Converter {
             return mappedId;
         }
 
+        String itemReferenceLowerCase = itemReference.toLowerCase();
+        if (itemReferenceLowerCase.equalsIgnoreCase("iron_chain") && NmsVersion.nmsVersion.isAtMost(NmsVersion.V_1_21_8)) {
+            return "minecraft:chain";
+        }
+
         Logger.debug("[ItemsAdderConverter] Could not convert item reference: " + itemReference + " for recipe: " + recipeId + " in file: " + fileName);
-        return itemReference;
+        return itemReferenceLowerCase;
     }
 
     private void convertRecipeResult(ConfigurationSection iaRecipe, ConfigurationSection ceRecipe,
