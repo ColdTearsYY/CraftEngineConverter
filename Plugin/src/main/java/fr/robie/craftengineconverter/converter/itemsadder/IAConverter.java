@@ -842,7 +842,22 @@ public class IAConverter extends Converter {
                             totalFiles += countFilesInDirectory(subFile);
                         } else if (subFile.getName().equalsIgnoreCase("resourcepack")){
                             File assetsDir = new File(subFile, "assets");
-                            totalFiles += countFilesInDirectory(assetsDir);
+                            if (assetsDir.exists()) {
+                                totalFiles += countFilesInDirectory(assetsDir);
+                            } else {
+                                File[] subDirs = subFile.listFiles();
+                                if (subDirs != null) {
+                                    for (File potentialNamespace : subDirs) {
+                                        if (!potentialNamespace.isDirectory()) continue;
+                                        File[] namespaceFolders = potentialNamespace.listFiles();
+                                        if (namespaceFolders == null) continue;
+                                        boolean looksLikeNamespace = Arrays.stream(namespaceFolders).anyMatch(nf -> nf.isDirectory() && validMinecraftFolders.contains(nf.getName().toLowerCase()));
+                                        if (looksLikeNamespace) {
+                                            totalFiles += countFilesInDirectory(potentialNamespace);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -876,7 +891,22 @@ public class IAConverter extends Converter {
                                 copyDirectory(f, outputAssetsFolder, assetsRoot, progressBar, executor, latch, errorRef, useMultiThread);
                             } else if (folderName.equals("resourcepack")){
                                 File assetsDir = new File(f, "assets");
-                                copyAssetsFolder(assetsDir, outputAssetsFolder, folderName, progressBar, executor, latch, errorRef,useMultiThread);
+                                if (assetsDir.exists()) {
+                                    copyAssetsFolder(assetsDir, outputAssetsFolder, folderName, progressBar, executor, latch, errorRef, useMultiThread);
+                                } else {
+                                    File[] subDirs = f.listFiles();
+                                    if (subDirs != null) {
+                                        for (File potentialNamespace : subDirs) {
+                                            if (!potentialNamespace.isDirectory()) continue;
+                                            File[] namespaceFolders = potentialNamespace.listFiles();
+                                            if (namespaceFolders == null) continue;
+                                            boolean looksLikeNamespace = Arrays.stream(namespaceFolders).anyMatch(nf -> nf.isDirectory() && validMinecraftFolders.contains(nf.getName().toLowerCase()));
+                                            if (looksLikeNamespace) {
+                                                copyDirectory(potentialNamespace, outputAssetsFolder, f, progressBar, executor, latch, errorRef, useMultiThread);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
