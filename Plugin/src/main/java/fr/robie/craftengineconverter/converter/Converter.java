@@ -31,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public abstract class Converter extends YamlUtils {
     protected final CraftEngineConverter plugin;
@@ -106,31 +107,6 @@ public abstract class Converter extends YamlUtils {
         addPackMapping(namespaceSource, originalPath, namespaceTarget, targetPath, null);
     }
 
-    public PackMapping resolvePackMapping(@NotNull String namespaceSource, @NotNull String originalPath){
-        List<PackMapping> mappings = this.packMappings.get(namespaceSource);
-        if (mappings == null) return null;
-
-        PackMapping bestMatch = null;
-        int bestMatchLength = -1;
-
-        for (PackMapping mapping : mappings) {
-            if (mapping.matches(originalPath)) {
-                int matchLength = mapping.originalPath().length();
-                if (matchLength > bestMatchLength) {
-                    bestMatchLength = matchLength;
-                    bestMatch = mapping;
-                }
-            }
-        }
-
-        if (bestMatch != null) {
-            String resolvedPath = bestMatch.apply(originalPath);
-            return new PackMapping(namespaceSource, originalPath, bestMatch.namespaceTarget(), resolvedPath, bestMatch.newName());
-        }
-
-        return null;
-    }
-
     protected void populateQueue(File baseDir, File currentDir, Queue<ConfigFile> toConvert) {
         File[] files = currentDir.listFiles();
         if (files == null) return;
@@ -203,9 +179,9 @@ public abstract class Converter extends YamlUtils {
     }
 
     protected void copyDirectory(File source, File destination, File assetsRoot,
-                               BukkitProgressBar progress, ExecutorService executor,
-                               CountDownLatch latch, AtomicReference<Exception> errorRef,
-                               boolean useMultiThread) throws IOException {
+                                 BukkitProgressBar progress, ExecutorService executor,
+                                 CountDownLatch latch, AtomicReference<Exception> errorRef,
+                                 boolean useMultiThread) throws IOException {
         if (!this.settings.dryRunEnabled() && !destination.exists() && !destination.mkdirs()) {
             Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", destination.getName(), "path", destination.getAbsolutePath());
             return;
@@ -225,9 +201,7 @@ public abstract class Converter extends YamlUtils {
             String fullPath = namespace + ":" + pathInNamespace;
 
             if (Configuration.isPathBlacklisted(fullPath)) {
-                if (file.isFile()) {
-                    progress.increment();
-                }
+                if (file.isFile()) progress.increment();
                 continue;
             }
 
@@ -239,37 +213,66 @@ public abstract class Converter extends YamlUtils {
                 }
             }
 
-            PackMapping resolvedMapping = resolvePackMapping(namespace, pathInNamespace);
+            List<PackMapping> resolvedMappings = resolveAllPackMappings(namespace, pathInNamespace);
 
-            File targetFile;
-            if (resolvedMapping != null) {
-                String mappedFullPath = resolvedMapping.namespaceTarget() + "/" + resolvedMapping.targetPath();
+            if (!resolvedMappings.isEmpty()) {
+                for (PackMapping resolvedMapping : resolvedMappings) {
+                    String mappedFullPath = resolvedMapping.namespaceTarget() + "/" + resolvedMapping.targetPath();
 
-                if (file.isFile()) {
-                    // Use newName if provided, otherwise use original file name
-                    String fileName = resolvedMapping.newName() != null ? resolvedMapping.newName() : file.getName();
-                    targetFile = new File(destination, mappedFullPath + "/" + fileName);
-                } else {
-                    targetFile = new File(destination, mappedFullPath);
+                    File targetFile;
+                    if (file.isFile()) {
+                        String fileName = resolvedMapping.newName() != null ? resolvedMapping.newName() : file.getName();
+                        targetFile = new File(destination, mappedFullPath + "/" + fileName);
+                    } else {
+                        targetFile = new File(destination, mappedFullPath);
+                    }
+
+                    if (file.isDirectory()) {
+                        if (!this.settings.dryRunEnabled() && !targetFile.exists() && !targetFile.mkdirs()) {
+                            Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", targetFile.getName(), "path", targetFile.getAbsolutePath());
+                        }
+                        copyDirectoryContents(file, targetFile, progress, executor, latch, errorRef, useMultiThread);
+                    } else {
+                        copyFileWithProgress(progress, executor, latch, errorRef, useMultiThread, file, targetFile);
+                    }
                 }
             } else {
-                targetFile = new File(destination, relativePathStr);
-            }
-
-            if (file.isDirectory()) {
-                if (!this.settings.dryRunEnabled() && !targetFile.exists() && !targetFile.mkdirs()) {
-                    Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", targetFile.getName(), "path", targetFile.getAbsolutePath());
-                }
-
-                if (resolvedMapping != null) {
-                    copyDirectoryContents(file, targetFile, progress, executor, latch, errorRef, useMultiThread);
-                } else {
+                File targetFile = new File(destination, relativePathStr);
+                if (file.isDirectory()) {
+                    if (!this.settings.dryRunEnabled() && !targetFile.exists() && !targetFile.mkdirs()) {
+                        Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", targetFile.getName(), "path", targetFile.getAbsolutePath());
+                    }
                     copyDirectory(file, destination, assetsRoot, progress, executor, latch, errorRef, useMultiThread);
+                } else {
+                    copyFileWithProgress(progress, executor, latch, errorRef, useMultiThread, file, targetFile);
                 }
-            } else {
-                copyFileWithProgress(progress, executor, latch, errorRef, useMultiThread, file, targetFile);
             }
         }
+    }
+
+    public List<PackMapping> resolveAllPackMappings(@NotNull String namespaceSource, @NotNull String originalPath) {
+        List<PackMapping> mappings = this.packMappings.get(namespaceSource);
+        if (mappings == null) return Collections.emptyList();
+
+        int bestMatchLength = -1;
+        List<PackMapping> bestMatches = new ArrayList<>();
+
+        for (PackMapping mapping : mappings) {
+            if (mapping.matches(originalPath)) {
+                int matchLength = mapping.originalPath().length();
+                if (matchLength > bestMatchLength) {
+                    bestMatchLength = matchLength;
+                    bestMatches.clear();
+                    bestMatches.add(mapping);
+                } else if (matchLength == bestMatchLength) {
+                    bestMatches.add(mapping);
+                }
+            }
+        }
+
+        return bestMatches.stream()
+                .map(m -> new PackMapping(namespaceSource, originalPath, m.namespaceTarget(), m.apply(originalPath), m.newName()))
+                .collect(Collectors.toList());
     }
 
     private void copyDirectoryContents(File source, File destination, BukkitProgressBar progress,
