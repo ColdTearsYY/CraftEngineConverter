@@ -853,7 +853,8 @@ public class IAConverter extends Converter {
             }
 
             int totalFiles = 0;
-            List<String> blacklistedNamespacesList = List.of(".vscode", "_iainternal");
+            List<String> blacklistedNamespacesList = new ArrayList<>(List.of(".vscode"));
+            blacklistedNamespacesList.addAll(Configuration.itemsAdderBlackListedContentFoldersNamespaces);
             List<String> validMinecraftFolders = List.of("atlases","blockstates","equipment","font","items","lang","models","particles","post_effect","shaders","texts","textures","waypoint_style");
             File[] listed = inputFolder.listFiles();
             if (isNull(listed)) return;

@@ -12,7 +12,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class Configuration {
@@ -37,6 +39,7 @@ public class Configuration {
     public static boolean itemsAdderImgPlaceholderAPISupport = true;
     public static boolean itemsAdderEnableBlockInteractionConversion = true;
     public static boolean itemsAdderEnableFurnitureInteractionConversion = true;
+    public static Set<String> itemsAdderBlackListedContentFoldersNamespaces = new HashSet<>();
 
     // WorldConverter options
 
@@ -317,6 +320,14 @@ public class Configuration {
         ITEMS_ADDER_IMG_PLACEHOLDER_API_SUPPORT("itemsadder.img-placeholderapi-support", true, v -> itemsAdderImgPlaceholderAPISupport = (Boolean) v),
         ITEMS_ADDER_BLOCK_INTERACTION_CONVERSION("itemsadder.enable-block-interaction-conversion", true, v -> itemsAdderEnableBlockInteractionConversion = (Boolean) v),
         ITEMS_ADDER_FURNITURE_INTERACTION_CONVERSION("itemsadder.enable-furniture-interaction-conversion", true, v -> itemsAdderEnableFurnitureInteractionConversion = (Boolean) v),
+        ITEMS_ADDER_BLACKLISTED_CONTENT_FOLDERS_NAMESPACES("itemsadder.blacklisted-content-folders-namespaces", new ArrayList<>(), v -> {
+            itemsAdderBlackListedContentFoldersNamespaces.clear();
+            if (v instanceof List<?>) {
+                @SuppressWarnings("unchecked")
+                List<String> namespaces = (List<String>) v;
+                itemsAdderBlackListedContentFoldersNamespaces.addAll(namespaces);
+            }
+        }),
         BLOCK_STATE_LIMIT_TYPE("block-state-limit.type", "PLUGIN", v -> {
             try {
                 String string = (String) v;
