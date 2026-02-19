@@ -93,6 +93,8 @@ public enum Message {
     WARNING__FOLDER__DELETE_FAILURE("Failed to delete folder §e%folder% (%path%)§c!"),
 
 
+    ERROR__CACHE__NULL_RESULT("Cache returned null for path: §e%path%§c"),
+    ERROR__CACHE__EXCEPTION("An error occurred while accessing the cache for path: §e%path%§c. Error: §e%message%§c"),
     ERROR__MKDIR_FAILURE("Failed to create directory §e%directory% (%path%)§c!"),
     ERROR__FILE__COPY_EXCEPTION("An error occurred while copying file §e%file%§c: §e%message%§c"),
     ERROR__FILE__LOAD_FAILURE("Unable to load file '%file%': file not found or invalid YAML format"),

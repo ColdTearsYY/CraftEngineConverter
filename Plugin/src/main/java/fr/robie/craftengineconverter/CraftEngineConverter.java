@@ -7,7 +7,6 @@ import fr.robie.craftengineconverter.behavior.BehaviorRegister;
 import fr.robie.craftengineconverter.command.CraftEngineConverterCommand;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
-import fr.robie.craftengineconverter.common.cache.FileCache;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.format.ClassicMeta;
@@ -16,6 +15,7 @@ import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.format.MessageFormatter;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.common.manager.FileCacheManager;
 import fr.robie.craftengineconverter.common.manager.FoliaCompatibilityManager;
 import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
@@ -61,7 +61,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final WorldConverterManager worldConverterManager = new WorldConverterManager(this);
     private final ITagResolver tagResolver = new TagResolver();
     private final MessageLoader messageLoader = new MessageLoader(this);
-    private final FileCache fileCache = new FileCache();
+    private final FileCacheManager fileCache = new FileCacheManager();
     private MessageFormatter messageFormatter = new ClassicMeta();
     private Metrics metrics;
     private PacketLoader packetLoader;
@@ -182,7 +182,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         }
 
         CraftEngineImageUtils.clearCache();
-        this.fileCache.clearAll();
+        FileCacheManager.invalidateAllCaches();
         this.worldConverterManager.cancelAllConversions();
 
         if (this.storageManager != null){
@@ -213,7 +213,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     }
 
     @Override
-    public FileCache getFileCache() {
+    public FileCacheManager getFileCache() {
         return this.fileCache;
     }
 

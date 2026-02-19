@@ -1,17 +1,15 @@
 package fr.robie.craftengineconverter.common.cache;
 
-import org.bukkit.configuration.file.YamlConfiguration;
-
 import java.io.File;
 
-public class FileCacheEntry {
+public class FileCacheEntry<T> {
     private final long lastModified;
     private final File file;
-    private final YamlConfiguration yamlConfiguration;
+    private final T data;
 
-    public FileCacheEntry(File file, YamlConfiguration yamlConfiguration) {
+    public FileCacheEntry(File file, T data) {
         this.file = file;
-        this.yamlConfiguration = yamlConfiguration;
+        this.data = data;
         this.lastModified = file.lastModified();
     }
 
@@ -20,11 +18,11 @@ public class FileCacheEntry {
     }
 
     public File getFile() {
-        return file;
+        return this.file;
     }
 
-    public YamlConfiguration getYamlConfiguration() {
-        return yamlConfiguration;
+    public T getData() {
+        return this.data;
     }
 
     public long getLastModified() {

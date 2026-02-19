@@ -1,7 +1,6 @@
 package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.common.cache.FileCache;
 import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.configuration.ConverterSettings;
@@ -10,6 +9,7 @@ import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.common.manager.FileCacheManager;
 import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.converter.settings.BasicConverterSettings;
 import fr.robie.craftengineconverter.utils.ConfigFile;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 public abstract class Converter extends YamlUtils {
     protected final CraftEngineConverter plugin;
-    protected final FileCache fileCache;
+    protected final FileCacheManager fileCache;
     protected final Plugins pluginType;
     protected final String converterName;
     protected final ConverterSettings settings;
@@ -122,10 +122,10 @@ public abstract class Converter extends YamlUtils {
                 continue;
             }
 
-            Optional<FileCacheEntry> entry = this.fileCache.getEntry(itemFile.toPath());
+            Optional<FileCacheEntry<YamlConfiguration>> entry = this.fileCache.getEntry(itemFile.toPath());
             if (entry.isPresent()) {
-                FileCacheEntry fileCacheEntry = entry.get();
-                toConvert.add(new ConfigFile(itemFile, baseDir, fileCacheEntry.getYamlConfiguration()));
+                FileCacheEntry<YamlConfiguration> fileCacheEntry = entry.get();
+                toConvert.add(new ConfigFile(itemFile, baseDir, fileCacheEntry.getData()));
             } else {
                 Logger.info(Message.ERROR__FILE__LOAD_FAILURE, LogType.ERROR, "file", fileName);
             }
@@ -138,7 +138,7 @@ public abstract class Converter extends YamlUtils {
             builder.player(optionalPlayer.get());
             builder.showBar(false);
         }
-        return builder.prefix(prefix).suffix(suffix).options(options).updateInterval(5000).build(this.plugin);
+        return builder.prefix(prefix).suffix(suffix).options(options).build(this.plugin);
     }
 
     protected int countFilesInDirectory(File directory) {
@@ -373,6 +373,13 @@ public abstract class Converter extends YamlUtils {
         if (!directory.delete()){
             Logger.debug(Message.WARNING__FOLDER__DELETE_FAILURE, LogType.ERROR, "folder", directory.getName(), "path", directory.getAbsolutePath());
         }
+    }
+
+
+
+    @FunctionalInterface
+    public interface JsonFileVisitor {
+        void visit(File namespaceDir, File jsonFile) throws Exception;
     }
 
     public record PackMapping(String namespaceSource, String originalPath, String namespaceTarget, String targetPath, String newName){

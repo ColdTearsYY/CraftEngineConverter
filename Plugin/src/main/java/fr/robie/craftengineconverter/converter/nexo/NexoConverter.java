@@ -13,6 +13,7 @@ import fr.robie.craftengineconverter.common.records.ImageConversion;
 import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.utils.ConfigFile;
+import fr.robie.craftengineconverter.utils.JsonFileValidator;
 import fr.robie.craftengineconverter.utils.SnakeUtils;
 import fr.robie.craftengineconverter.utils.enums.RecipeType;
 import org.bukkit.configuration.ConfigurationSection;
@@ -598,11 +599,11 @@ public class NexoConverter extends Converter {
             if (file.isDirectory()) {
                 populateRecipeQueue(baseDir, file, toConvert);
             } else if (file.isFile() && file.getName().endsWith(".yml")) {
-                Optional<FileCacheEntry> entry = this.fileCache.getEntry(file.toPath());
+                Optional<FileCacheEntry<YamlConfiguration>> entry = this.fileCache.getEntry(file.toPath());
                 if (entry.isPresent()){
                     RecipeType recipeType = determineRecipeType(file, baseDir);
                     if (recipeType != null) {
-                        ConfigFile configFile = new ConfigFile(file, baseDir, entry.get().getYamlConfiguration());
+                        ConfigFile configFile = new ConfigFile(file, baseDir, entry.get().getData());
                         toConvert.computeIfAbsent(recipeType, k -> new ArrayList<>()).add(configFile);
                     } else {
                         Logger.debug("Could not determine recipe type for: " + file.getAbsolutePath(), LogType.WARNING);
@@ -1070,7 +1071,7 @@ public class NexoConverter extends Converter {
         return count;
     }
 
-    private void convertPackSync(Optional<Player> player) {
+    private void convertPackSync(Optional<Player> optionalPlayer) {
         ExecutorService executor = null;
         try {
             File inputPackFile = new File("plugins/" + converterName + "/pack");
@@ -1109,7 +1110,7 @@ public class NexoConverter extends Converter {
                 }
             }
 
-            BukkitProgressBar progress = createProgressBar(player, totalFiles, "Converting Nexo resource pack", "files", ConverterOptions.PACKS);
+            BukkitProgressBar progress = createProgressBar(optionalPlayer, totalFiles, "Converting Nexo resource pack", "files", ConverterOptions.PACKS);
 
             progress.start();
 
@@ -1160,6 +1161,10 @@ public class NexoConverter extends Converter {
                     executor.shutdownNow();
                 }
             }
+
+            JsonFileValidator jsonFileValidator = new JsonFileValidator(this.plugin, outputPackFile, optionalPlayer);
+            jsonFileValidator.validateAllJsonFiles();
+
         } catch (Exception e) {
             Logger.showException("Error during Nexo pack conversion", e);
         } finally {

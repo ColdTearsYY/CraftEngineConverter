@@ -16,6 +16,7 @@ import fr.robie.craftengineconverter.common.records.ImageConversion;
 import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.utils.ConfigFile;
+import fr.robie.craftengineconverter.utils.JsonFileValidator;
 import fr.robie.craftengineconverter.utils.SnakeUtils;
 import fr.robie.craftengineconverter.utils.enums.ia.IARecipesTypes;
 import org.bukkit.Material;
@@ -956,6 +957,9 @@ public class IAConverter extends Converter {
                 }
             }
 
+            JsonFileValidator jsonFileValidator = new JsonFileValidator(this.plugin, outputPackFile, optionalPlayer);
+            jsonFileValidator.validateAllJsonFiles();
+
 
         } catch (Exception e) {
             Logger.showException("An error occurred during ItemsAdder pack conversion", e);
@@ -989,9 +993,9 @@ public class IAConverter extends Converter {
                 if (f.isDirectory()) {
                     count += addAllYmlFilesRecursively(f, baseDir, toConvert, requiredSectionName);
                 } else if (f.isFile() && f.getName().endsWith(".yml")) {
-                    Optional<FileCacheEntry> entry = this.fileCache.getEntry(f.toPath());
+                    Optional<FileCacheEntry<YamlConfiguration>> entry = this.fileCache.getEntry(f.toPath());
                     if (entry.isPresent()){
-                        YamlConfiguration config = entry.get().getYamlConfiguration();
+                        YamlConfiguration config = entry.get().getData();
                         ConfigurationSection itemsSection = config.getConfigurationSection(requiredSectionName);
                         if (itemsSection != null) {
                             toConvert.add(new ConfigFile(f, baseDir, config));

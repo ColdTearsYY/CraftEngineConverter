@@ -265,7 +265,7 @@ public class BukkitProgressBar extends ObjectUtils {
         protected ProgressColor progressColor = ProgressColor.GREEN;
         protected ProgressColor emptyColorCode = ProgressColor.DARK_GRAY;
         protected ProgressColor percentColor = ProgressColor.YELLOW;
-        protected long updateIntervalTicks = 1000; // 1 second default
+        protected long updateIntervalTicks = 5000;
         protected boolean autoStop = true;
         protected Player player = null;
 

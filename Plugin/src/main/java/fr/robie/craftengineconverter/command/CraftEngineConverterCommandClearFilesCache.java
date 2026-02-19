@@ -2,8 +2,8 @@ package fr.robie.craftengineconverter.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
-import fr.robie.craftengineconverter.common.cache.FileCache;
 import fr.robie.craftengineconverter.common.format.Message;
+import fr.robie.craftengineconverter.common.manager.FileCacheManager;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import fr.robie.craftengineconverter.utils.command.CommandType;
 import fr.robie.craftengineconverter.utils.command.VCommand;
@@ -21,7 +21,7 @@ public class CraftEngineConverterCommandClearFilesCache extends VCommand {
     protected CommandType perform(CraftEngineConverter plugin) {
         boolean clearAll = this.containFlag("--all");
         long startTime = System.currentTimeMillis();
-        FileCache fileCache = this.plugin.getFileCache();
+        FileCacheManager fileCache = this.plugin.getFileCache();
         int clearedFiles;
         if (clearAll){
             clearedFiles = fileCache.size();
