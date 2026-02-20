@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.converter.itemsadder;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
+import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
 import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
@@ -68,8 +69,9 @@ public class IAConverter extends Converter {
         BukkitProgressBar progressBar = createProgressBar(player, totalItems, "Converting ItemsAdder items", "items", ConverterOptions.ITEMS);
         progressBar.start();
 
-        PluginNameMapper.getInstance().clearMappingsForPlugin(Plugins.ITEMS_ADDER);
-        
+        PluginNameMapper.getInstance().clearMappingsForPlugin(this.pluginType);
+        BlockStatesMapper.getInstance().clearMappingsForPlugin(this.pluginType);
+
         try {
             processItemFiles(toConvert, outputFolder, progressBar);
         } catch (Exception e) {

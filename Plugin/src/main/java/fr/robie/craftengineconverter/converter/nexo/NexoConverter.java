@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
+import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
 import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
 import fr.robie.craftengineconverter.common.enums.ConverterOptions;
@@ -76,7 +77,8 @@ public class NexoConverter extends Converter {
 
         progress.start();
 
-        PluginNameMapper.getInstance().clearMappingsForPlugin(Plugins.NEXO);
+        PluginNameMapper.getInstance().clearMappingsForPlugin(this.pluginType);
+        BlockStatesMapper.getInstance().clearMappingsForPlugin(this.pluginType);
 
         try {
             processConfigs(toConvert, outputBase, progress);
