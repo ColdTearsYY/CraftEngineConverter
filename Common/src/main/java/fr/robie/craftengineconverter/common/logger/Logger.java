@@ -69,8 +69,12 @@ public class Logger extends TextFormatter {
         getLogger().logDebug(message.getMessage(), type, args);
     }
 
-    public static void showException(String errorName,Throwable throwable) {
+    public static void showException(String errorName, Throwable throwable) {
         getLogger().logException(errorName, throwable);
+    }
+
+    public static void showException(Message message, Throwable throwable, Object... args) {
+        getLogger().logException(message.getMessage(), throwable, args);
     }
 
     public String getPrefix() {
@@ -91,9 +95,9 @@ public class Logger extends TextFormatter {
         }
     }
 
-    public void logException(String errorName, Throwable throwable){
+    public void logException(String errorName, Throwable throwable, Object... args) {
         if (!Configuration.enableDebug) return;
-        this.log("An exception occurred while " + errorName + ":", LogType.ERROR);
+        this.log("An exception occurred while " + parseText(errorName, args) + ":", LogType.ERROR);
         this.log("Exception error message: " + throwable.getMessage(), LogType.ERROR);
         this.log("Please check the stack trace below for more details. If you don't understand the issue report it to the developer.",LogType.ERROR);
         this.log("------------------- Stack Trace ------------------",LogType.ERROR);
