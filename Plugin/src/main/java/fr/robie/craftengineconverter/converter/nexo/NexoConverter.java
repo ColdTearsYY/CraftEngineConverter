@@ -1159,6 +1159,7 @@ public class NexoConverter extends Converter {
                 }
 
             } finally {
+                this.packMappings.clear();
                 progress.stop();
                 if (executor != null && !executor.isShutdown()) {
                     executor.shutdownNow();
@@ -1169,7 +1170,7 @@ public class NexoConverter extends Converter {
             jsonFileValidator.validateAllJsonFiles();
 
         } catch (Exception e) {
-            Logger.showException("Error during Nexo pack conversion", e);
+            Logger.showException(Message.ERROR__PACK_CONVERSION__EXCEPTION, e, "plugin", converterName);
         } finally {
             if (executor != null && !executor.isShutdown()) {
                 executor.shutdownNow();

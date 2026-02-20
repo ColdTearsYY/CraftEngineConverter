@@ -945,7 +945,8 @@ public class IAConverter extends Converter {
                     latch.countDown();
                     executor.shutdown();
                     if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
-                        Logger.debug("Timeout while waiting for resource pack conversion tasks to finish", LogType.ERROR);
+                        Logger.debug(Message.ERROR__FILE_OPERATIONS__TIMEOUT, LogType.ERROR);
+                        Logger.debug(Message.ERROR__FILE_OPERATIONS__FORCE_SHUTDOWN, LogType.ERROR);
                     }
                 }
 
@@ -954,6 +955,7 @@ public class IAConverter extends Converter {
                 }
 
             } finally {
+                this.packMappings.clear();
                 progressBar.stop();
                 if (executor != null && !executor.isShutdown()){
                     executor.shutdown();
@@ -963,9 +965,8 @@ public class IAConverter extends Converter {
             JsonFileValidator jsonFileValidator = new JsonFileValidator(this.plugin, outputPackFile, optionalPlayer);
             jsonFileValidator.validateAllJsonFiles();
 
-
         } catch (Exception e) {
-            Logger.showException("An error occurred during ItemsAdder pack conversion", e);
+            Logger.showException(Message.ERROR__PACK_CONVERSION__EXCEPTION, e, "plugin", converterName);
         } finally {
             if (isNotNull(executor) && !executor.isShutdown()){
                 executor.shutdown();
