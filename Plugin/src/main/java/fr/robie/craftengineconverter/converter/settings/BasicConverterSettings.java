@@ -45,6 +45,4 @@ public class BasicConverterSettings implements ConverterSettings {
         this.threadCount = threadCount;
         return this;
     }
-
-
 }

@@ -94,7 +94,7 @@ public class IAConverter extends Converter {
         YamlConfiguration config = configFile.config();
 
         YamlConfiguration convertedConfig = new YamlConfiguration();
-        String finalFileName = fileName.replace(".yml","");
+        String finalFileName = fileName.replace(".yml", "");
         String namespace = config.getString("info.namespace", finalFileName);
         ConfigurationSection items = convertedConfig.createSection("items");
         ConfigurationSection originalItems = config.getConfigurationSection("items");
@@ -104,9 +104,9 @@ public class IAConverter extends Converter {
         }
 
         List<String> itemsIds = new ArrayList<>();
-        for (String itemId : originalItems.getKeys(false)){
+        for (String itemId : originalItems.getKeys(false)) {
             ConfigurationSection section = originalItems.getConfigurationSection(itemId);
-            if (isNull(section)){
+            if (isNull(section)) {
                 Logger.debug("[ItemsAdderConverter] Skipped item (no section): " + itemId + " in file: " + fileName);
                 progressBar.increment();
                 continue;
@@ -123,7 +123,7 @@ public class IAConverter extends Converter {
                 );
                 iaItemsConverter.convertItem();
 
-                if (!iaItemsConverter.isExcludeFromInventory()){
+                if (!iaItemsConverter.isExcludeFromInventory()) {
                     itemsIds.add(finalItemId);
                 }
                 PluginNameMapper pluginNameMapper = PluginNameMapper.getInstance();
@@ -134,44 +134,60 @@ public class IAConverter extends Converter {
             }
             progressBar.increment();
         }
-        ConfigurationSection equipments = config.getConfigurationSection("equipments");
-        if (isNotNull(equipments)){
-            for (String equipmentId : equipments.getKeys(false)){
-                ConfigurationSection equipmentSection = equipments.getConfigurationSection(equipmentId);
-                if (isNull(equipmentSection)) continue;
-                String type = equipmentSection.getString("type","");
+
+        convertArmorSection(config.getConfigurationSection("equipments"), convertedConfig, namespace, true);
+        convertArmorSection(config.getConfigurationSection("armors_rendering"), convertedConfig, namespace, false);
+
+        generateCategorie(itemsIds, convertedConfig, finalFileName);
+        if (this.settings.dryRunEnabled()) return;
+        saveConvertedConfig(convertedConfig, configFile, itemFile, outputFolder, "items", "item");
+    }
+
+    private void convertArmorSection(ConfigurationSection armorSection, YamlConfiguration convertedConfig, String namespace, boolean requireArmorType) {
+        if (isNull(armorSection)) return;
+
+        for (String equipmentId : armorSection.getKeys(false)) {
+            ConfigurationSection equipmentSection = armorSection.getConfigurationSection(equipmentId);
+            if (isNull(equipmentSection)) continue;
+
+            if (requireArmorType) {
+                String type = equipmentSection.getString("type", "");
                 if (!type.equalsIgnoreCase("armor")) continue;
-                String layer1 = equipmentSection.getString("layer_1");
-                String layer2 = equipmentSection.getString("layer_2");
-                if (!isValidString(layer1) || !isValidString(layer2)) continue;
-                layer1 = cleanPath(layer1);
-                layer2 = cleanPath(layer2);
-                if (layer1.equals(layer2)){
-                    layer2 = layer2+"_2";
-                }
-                List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
-                Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(getOrCreateSection(convertedConfig, "equipments"), namespaced(equipmentId, namespace));
-                String layer1FileName = namespace+"_"+equipmentId+"_"+getFileName(layer1);
-                String layer2FileName = namespace+"_"+equipmentId+"_"+getFileName(layer2);
-                addPackMapping(namespace, "textures/"+layer1+".png", namespace, "textures/entity/equipment/humanoid/",layer1FileName+".png");
-                addPackMapping(namespace, "textures/"+layer2+".png", namespace, "textures/entity/equipment/humanoid_leggings/",layer2FileName+".png");
-                for (ArmorConverter converter : convertersToProcess){
-                    ConfigurationSection section = converterSections.get(converter);
-                    if (isNotNull(section)){
-                        String layer1Texture = converter.getTexturePath(namespace, "humanoid",layer1FileName);
-                        String layer2Texture = converter.getTexturePath(namespace, "humanoid_leggings",layer2FileName);
-                        ArmorConverter.addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
-                        ArmorConverter.addEquipmentTextures(section, "humanoid_leggings", Set.of(layer2Texture));
-                    }
+            }
+
+            String layer1 = equipmentSection.getString("layer_1");
+            String layer2 = equipmentSection.getString("layer_2");
+            if (!isValidString(layer1) || !isValidString(layer2)) continue;
+
+            layer1 = cleanPath(layer1);
+            layer2 = cleanPath(layer2);
+            if (layer1.equals(layer2)) {
+                layer2 = layer2 + "_2";
+            }
+
+            List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
+            Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(
+                    getOrCreateSection(convertedConfig, "equipments"), namespaced(equipmentId, namespace));
+
+            String layer1FileName = namespace + "_" + equipmentId + "_" + getFileName(layer1);
+            String layer2FileName = namespace + "_" + equipmentId + "_" + getFileName(layer2);
+
+            addPackMapping(namespace, "textures/" + layer1 + ".png", namespace, "textures/entity/equipment/humanoid/", layer1FileName + ".png");
+            addPackMapping(namespace, "textures/" + layer2 + ".png", namespace, "textures/entity/equipment/humanoid_leggings/", layer2FileName + ".png");
+
+            for (ArmorConverter converter : convertersToProcess) {
+                ConfigurationSection section = converterSections.get(converter);
+                if (isNotNull(section)) {
+                    String layer1Texture = converter.getTexturePath(namespace, "humanoid", layer1FileName);
+                    String layer2Texture = converter.getTexturePath(namespace, "humanoid_leggings", layer2FileName);
+                    ArmorConverter.addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
+                    ArmorConverter.addEquipmentTextures(section, "humanoid_leggings", Set.of(layer2Texture));
                 }
             }
         }
-        generateCategorie(itemsIds, convertedConfig, finalFileName);
-        if (this.settings.dryRunEnabled()) return;
-        saveConvertedConfig(convertedConfig, configFile, itemFile, outputFolder, "items","item");
     }
 
-    private String getFileName(@NotNull String path){
+    private String getFileName(@NotNull String path) {
         int lastIndexOf = path.lastIndexOf("/");
         if (lastIndexOf == -1) return path;
         return path.substring(lastIndexOf + 1);
