@@ -1,8 +1,10 @@
 package fr.robie.craftengineconverter.converter.itemsadder;
 
-import fr.robie.craftengineconverter.common.configuration.Configuration;
+import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
+import fr.robie.craftengineconverter.common.enums.ComponentFlag;
 import fr.robie.craftengineconverter.common.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.common.enums.Plugins;
+import fr.robie.craftengineconverter.common.items.*;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
@@ -13,10 +15,16 @@ import fr.robie.craftengineconverter.utils.enums.ia.IAEntityTypes;
 import fr.robie.craftengineconverter.utils.enums.ia.IAModelsKeys;
 import fr.robie.craftengineconverter.utils.enums.ia.IAPlacedModelTypes;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemFlag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,21 +43,19 @@ public class IAItemsConverter extends ItemConverter {
     @Override
     public void convertMaterial(){
         ConfigurationSection resourceSection = this.iaItemSection.getConfigurationSection("resource");
-        Material material = Configuration.defaultMaterial;
         if (isNotNull(resourceSection)){
             try {
-                material = Material.valueOf(resourceSection.getString("material").toUpperCase());
+                this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(resourceSection.getString("material","").toUpperCase()));
             } catch (Exception ignored) {
             }
         }
-        this.craftEngineItemUtils.setMaterial(material);
     }
 
     @Override
     public void convertItemName(){
         String itemName = this.iaItemSection.getString("name", this.iaItemSection.getString("display_name"));
         if (isValidString(itemName)){
-            this.craftEngineItemUtils.setItemName(itemName);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName));
         }
     }
 
@@ -57,7 +63,7 @@ public class IAItemsConverter extends ItemConverter {
     public void convertLore(){
         List<String> lore = this.iaItemSection.getStringList("lore");
         if (!lore.isEmpty()){
-            this.craftEngineItemUtils.setLore(lore);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new LoreConfiguration(lore));
         }
     }
 
@@ -65,7 +71,7 @@ public class IAItemsConverter extends ItemConverter {
     public void convertDyedColor(){
         Object color = this.iaItemSection.get("graphics.color");
         if (isNotNull(color)){
-            this.craftEngineItemUtils.getDataSection().set("dyed-color", color);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new DyedColorConfiguration(color));
         }
     }
 
@@ -75,7 +81,7 @@ public class IAItemsConverter extends ItemConverter {
         if (isNotNull(durabilitySection)){
             boolean unbreakable = durabilitySection.getBoolean("unbreakable", false);
             if (unbreakable){
-                this.craftEngineItemUtils.getDataSection().set("unbreakable", true);
+                this.craftEngineItemsConfiguration.addItemConfiguration(new UnbreakableConfiguration(true));
             }
         }
     }
@@ -84,7 +90,15 @@ public class IAItemsConverter extends ItemConverter {
     public void convertItemFlags(){
         List<String> itemFlags = this.iaItemSection.getStringList("item_flags");
         if (!itemFlags.isEmpty()){
-            this.craftEngineItemUtils.getDataSection().set("hide-tooltip", itemFlags);
+            List<ComponentFlag> convertedFlags = new ArrayList<>();
+            for (String flag : itemFlags){
+                try {
+                    ItemFlag bukkitFlag = ItemFlag.valueOf(flag.toUpperCase());
+                    convertedFlags.add(BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag));
+                } catch (Exception ignored){
+                }
+            }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipConfiguration(convertedFlags));
         }
     }
 
@@ -92,8 +106,31 @@ public class IAItemsConverter extends ItemConverter {
     public void convertAttributeModifiers(){
         ConfigurationSection attributesSection = this.iaItemSection.getConfigurationSection("attribute_modifiers");
         if (isNotNull(attributesSection)) {
-            List<Map<String, Object>> ceAttributes = new ArrayList<>();
-            //TODO: implement attribute modifiers conversion from ItemsAdder to CraftEngine
+            List<AttributeModifier> attributeModifiers = new ArrayList<>();
+
+            for (String equipmentSlot : attributesSection.getKeys(false)) {
+                ConfigurationSection slotSection = attributesSection.getConfigurationSection(equipmentSlot);
+                if (isNull(slotSection)) continue;
+                AttributeModifier.Slot slot;
+                try {
+                    slot = AttributeModifier.Slot.valueOf(equipmentSlot.toUpperCase());
+                } catch (Exception e) {
+                    Logger.debug("[IAItemsConverter] Invalid equipment slot " + equipmentSlot + " for attribute modifiers for item " + this.itemId);
+                    continue;
+                }
+                for (String attributeKey : slotSection.getKeys(false)) {
+                    try {
+                        Attribute attribute = Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(attributeKey));
+                        int amount = slotSection.getInt(attributeKey);
+                        attributeModifiers.add(new AttributeModifier(attribute.name(), slot, null, amount, AttributeModifier.Operation.ADD_VALUE, null));
+                    } catch (Exception e) {
+                        Logger.debug("[IAItemsConverter] Invalid attribute " + attributeKey + " for attribute modifiers for item " + this.itemId);
+                    }
+                }
+            }
+
+            if (!attributeModifiers.isEmpty())
+                this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(attributeModifiers));
         }
     }
 
@@ -101,15 +138,17 @@ public class IAItemsConverter extends ItemConverter {
     public void convertEnchantments(){
         ConfigurationSection enchantsSection = this.iaItemSection.getConfigurationSection("enchants");
         if (isNotNull(enchantsSection)){
+            EnchantmentConfiguration enchantmentConfiguration = new EnchantmentConfiguration();
             for (String enchantmentKey : enchantsSection.getKeys(false)){
                 int enchantLevel = enchantsSection.getInt(enchantmentKey, 1);
-                ConfigurationSection ceEnchantSection = getOrCreateSection(this.craftEngineItemUtils.getDataSection(), "enchantment");
-                ceEnchantSection.set(enchantmentKey, enchantLevel);
+                enchantmentConfiguration.addEnchantment(enchantmentKey, enchantLevel);
             }
+            if (enchantmentConfiguration.hasEnchantments())
+                this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
         }
         List<String> enchantments = this.iaItemSection.getStringList("enchants");
         if (!enchantments.isEmpty()){
-            ConfigurationSection ceEnchantSection = getOrCreateSection(this.craftEngineItemUtils.getDataSection(), "enchantment");
+            EnchantmentConfiguration enchantmentConfiguration = new EnchantmentConfiguration();
             for (String enchantmentEntry : enchantments){
                 String enchantName;
                 int enchantLevel = 1;
@@ -123,8 +162,10 @@ public class IAItemsConverter extends ItemConverter {
                 } else {
                     enchantName = enchantmentEntry;
                 }
-                ceEnchantSection.set(enchantName.toLowerCase(), enchantLevel);
+                enchantmentConfiguration.addEnchantment(enchantName, enchantLevel);
             }
+            if (enchantmentConfiguration.hasEnchantments())
+                this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
         }
     }
 
@@ -134,7 +175,7 @@ public class IAItemsConverter extends ItemConverter {
         if (isNotNull(resourceSection)){
             int customModelData = resourceSection.getInt("custom_model_data", resourceSection.getInt("model_id", 0));
             if (customModelData != 0){
-                this.craftEngineItemUtils.getGeneralSection().set("custom-model-data", customModelData);
+                this.craftEngineItemsConfiguration.addItemConfiguration(new CustomModelDataConfiguration(customModelData));
             }
         }
     }
@@ -143,7 +184,7 @@ public class IAItemsConverter extends ItemConverter {
     public void convertItemModel(){
         String itemModel = this.iaItemSection.getString("item_model");
         if (isValidString(itemModel)){
-            this.craftEngineItemUtils.getComponentsSection().set("item_model", itemModel);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemModelConfiguration(itemModel));
         }
     }
 
@@ -151,14 +192,14 @@ public class IAItemsConverter extends ItemConverter {
     public void convertMaxStackSize(){
         int maxStackSize = this.iaItemSection.getInt("max_stack_size", -1);
         if (maxStackSize > 0){
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:max_stack_size", maxStackSize);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new MaxStackSizeConfiguration(maxStackSize));
         }
     }
 
     @Override
     public void convertEnchantmentGlintOverride(){
         if (this.iaItemSection.getBoolean("glint", false)){
-            this.craftEngineItemUtils.enableEnchantmentGlint();
+            this.craftEngineItemsConfiguration.addItemConfiguration(new EnchantmentGlintOverrideConfiguration(true));
         }
     }
 
@@ -173,7 +214,7 @@ public class IAItemsConverter extends ItemConverter {
         if (isNotNull(durability)){
             int maxDamage = durability.getInt("max_durability", -1);
             if (maxDamage > 0){
-                this.craftEngineItemUtils.getDataSection().set("max-damage", maxDamage);
+                this.craftEngineItemsConfiguration.addItemConfiguration(new MaxDamageConfiguration(maxDamage));
             }
         }
     }
@@ -187,8 +228,10 @@ public class IAItemsConverter extends ItemConverter {
                 boolean glow = glowSection.getBoolean("enabled", false);
                 if (glow){
                     String color = glowSection.getString("color");
-                    if (isValidString(color)){
-                        this.craftEngineItemUtils.getSettingsSection().set("glow-color", color.toLowerCase());
+                    try {
+                        this.craftEngineItemsConfiguration.addItemConfiguration(new GlowDropColor(DyeColor.valueOf(color.toLowerCase())));
+                    } catch (Exception e){
+                        Logger.debug("[IAItemsConverter] Invalid glow drop color " + color + " for item " + this.itemId);
                     }
                 }
             }

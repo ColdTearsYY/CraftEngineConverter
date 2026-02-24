@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.converter;
 
+import fr.robie.craftengineconverter.common.CraftEngineItemsConfiguration;
 import fr.robie.craftengineconverter.common.utils.ObjectUtils;
 import fr.robie.craftengineconverter.utils.enums.Template;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
@@ -20,6 +21,8 @@ public abstract class ItemConverter extends ObjectUtils {
     protected boolean excludeFromInventory = false;
     protected YamlConfiguration fileConfig;
     protected String assetId;
+
+    protected CraftEngineItemsConfiguration craftEngineItemsConfiguration = new CraftEngineItemsConfiguration();
 
     public ItemConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig) {
         this.itemId = itemId;
@@ -185,6 +188,10 @@ public abstract class ItemConverter extends ObjectUtils {
             return this.fileConfig.createSection("equipments");
         }
         return equipementsSection;
+    }
+
+    public CraftEngineItemsConfiguration getCraftEngineItemsConfiguration() {
+        return this.craftEngineItemsConfiguration;
     }
 
     public boolean isExcludeFromInventory() {

@@ -122,6 +122,7 @@ public class IAConverter extends Converter {
                         namespace
                 );
                 iaItemsConverter.convertItem();
+                iaItemsConverter.getCraftEngineItemsConfiguration().serialize(convertedConfig, "items." + finalItemId, items.getConfigurationSection(finalItemId));
 
                 if (!iaItemsConverter.isExcludeFromInventory()) {
                     itemsIds.add(finalItemId);
