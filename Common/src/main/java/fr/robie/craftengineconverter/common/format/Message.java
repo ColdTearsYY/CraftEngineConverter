@@ -103,7 +103,8 @@ public enum Message {
     ERROR__JSON__MALFORMED_AUTO_FIXED("Malformed JSON detected in §e%file%§c, auto-fixed."),
     ERROR__JSON__LOAD_FAILURE("Unable to load JSON file '%file%': file not found or invalid JSON format"),
 
-    ERROR__PACK_CONVERSION__EXCEPTION("An error occurred during pack conversion for plugin §e%plugin%§c")
+    ERROR__PACK_CONVERSION__EXCEPTION("An error occurred during pack conversion for plugin §e%plugin%§c"),
+    ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c")
     ;
 
     private List<String> messages;

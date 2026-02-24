@@ -4,6 +4,7 @@ import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
 import fr.robie.craftengineconverter.common.enums.ComponentFlag;
 import fr.robie.craftengineconverter.common.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.common.enums.Plugins;
+import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.items.*;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.converter.Converter;
@@ -231,7 +232,7 @@ public class IAItemsConverter extends ItemConverter {
                     try {
                         this.craftEngineItemsConfiguration.addItemConfiguration(new GlowDropColor(DyeColor.valueOf(color.toLowerCase())));
                     } catch (Exception e){
-                        Logger.debug("[IAItemsConverter] Invalid glow drop color " + color + " for item " + this.itemId);
+                        Logger.debug(Message.ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR,"converter", "IAItemsConverter", "item", this.itemId, "color", color, "valid_colors", Arrays.toString(DyeColor.values()));
                     }
                 }
             }
@@ -244,9 +245,8 @@ public class IAItemsConverter extends ItemConverter {
         if (isNotNull(dropSection)){
             boolean showName = dropSection.getBoolean("show_name", true);
             if (!showName){
-                this.craftEngineItemUtils.getSettingsSection().set("drop-display", true);
+                this.craftEngineItemsConfiguration.addItemConfiguration(new DropDisplayConfiguration(false));
             }
-
         }
     }
 
@@ -259,7 +259,7 @@ public class IAItemsConverter extends ItemConverter {
     public void convertToolTipStyle(){
         String toolTipStyle = this.iaItemSection.getString("tooltip_style");
         if (isValidString(toolTipStyle)){
-            this.craftEngineItemUtils.getDataSection().set("tooltip-style", toolTipStyle);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new TooltipStyleConfiguration(toolTipStyle));
         }
     }
 
@@ -269,14 +269,8 @@ public class IAItemsConverter extends ItemConverter {
         if (isNotNull(consumableSection)){
             int nutrition = consumableSection.getInt("nutrition", -1);
             float saturation = (float) consumableSection.getDouble("saturation", -1.0);
-            if (nutrition > 0 || saturation > 0){
-                ConfigurationSection foodSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(), "minecraft:food");
-                if (nutrition > 0){
-                    foodSection.set("nutrition", nutrition);
-                }
-                if (saturation > 0) {
-                    foodSection.set("saturation", saturation);
-                }
+            if (nutrition >= 0 && saturation >= 0){
+                this.craftEngineItemsConfiguration.addItemConfiguration(new FoodConfiguration(nutrition, saturation));
             }
         }
     }
@@ -284,7 +278,9 @@ public class IAItemsConverter extends ItemConverter {
     @Override
     public void convertJukeboxPlayable() {
         String song = this.iaItemSection.getString("jukebox_disc.song", this.iaItemSection.getString("behaviours.music_disc.song.name"));
-        this.craftEngineItemUtils.setJukeboxPlayable(song);
+        if (isValidString(song)){
+            this.craftEngineItemsConfiguration.addItemConfiguration(new JukeboxPlayableConfiguration(song));
+        }
     }
 
     @Override
