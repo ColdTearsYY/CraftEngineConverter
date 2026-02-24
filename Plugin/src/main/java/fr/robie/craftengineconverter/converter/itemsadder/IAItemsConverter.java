@@ -17,6 +17,7 @@ import fr.robie.craftengineconverter.utils.enums.ia.IAModelsKeys;
 import fr.robie.craftengineconverter.utils.enums.ia.IAPlacedModelTypes;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import net.momirealms.craftengine.core.attribute.AttributeModifier;
+import net.momirealms.craftengine.core.entity.EquipmentSlot;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -285,77 +286,94 @@ public class IAItemsConverter extends ItemConverter {
 
     @Override
     public void convertEquipable() {
+        convertEquipmentSection();
+        convertSpecificPropertiesArmorSection();
+    }
+
+    private void convertEquipmentSection() {
         ConfigurationSection equipmentSection = this.iaItemSection.getConfigurationSection("equipment");
-        if (isNotNull(equipmentSection)) {
-            String assetId = equipmentSection.getString("id");
-            if (!isValidString(assetId)) return;
-            assetId = namespaced(assetId,this.namespace);
-            ConfigurationSection ceEquipableSection = this.isValidString(assetId) ? getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable") : getOrCreateSection(this.craftEngineItemUtils.getDataSection(),"equippable");
-            if (isValidString(assetId)) {
-                ceEquipableSection.set("asset-id", assetId);
-                this.setAssetId(assetId);
-            }
-            String slot;
-            if (this.itemId.endsWith("_helmet")){
-                slot = "head";
-            } else if (this.itemId.endsWith("_chestplate")){
-                slot = "chest";
-            } else if (this.itemId.endsWith("_leggings")){
-                slot = "legs";
-            } else if (this.itemId.endsWith("_boots")){
-                slot = "feet";
-            } else {
-                slot = equipmentSection.getString("slot");
-                if (!isValidString(slot)){
-                    Material material = this.craftEngineItemUtils.getMaterial();
-                    String materialName = material.name();
-                    if (materialName.endsWith("_HELMET") || materialName.endsWith("_SKULL") || materialName.endsWith("_HAT")){
-                        slot = "head";
-                    } else if (materialName.endsWith("_CHESTPLATE") || materialName.endsWith("_ELYTRA")){
-                        slot = "chest";
-                    } else if (materialName.endsWith("_LEGGINGS")){
-                        slot = "legs";
-                    } else if (materialName.endsWith("_BOOTS")){
-                        slot = "feet";
-                    } else {
-                        slot = null;
-                    }
-                }
-            }
-            if (isValidString(slot)){
-                ceEquipableSection.set("slot", slot);
-                ConfigurationSection slotAttributeModifiers = equipmentSection.getConfigurationSection("slot_attribute_modifiers");
-                if (isNotNull(slotAttributeModifiers)){
-                    ConfigurationSection attributeModifiers = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(), "minecraft:attribute_modifiers");
-                    List<Map<?, ?>> attributeModifiersMapList = attributeModifiers.getMapList("");
-                    Map<String, Object> attributeModifiersMap = new HashMap<>();
-                    attributeModifiersMap.put("type", "minecraft:armor");
-                    attributeModifiersMap.put("slot", slot);
-                    attributeModifiersMap.put("amount", slotAttributeModifiers.getDouble("armor",0f));
-                    attributeModifiersMap.put("operation", "add_value");
-                    attributeModifiersMap.put("id", UUID.randomUUID().toString());
-                    attributeModifiersMapList.add(attributeModifiersMap);
-                    this.craftEngineItemUtils.getComponentsSection().set("minecraft:attribute_modifiers", attributeModifiersMapList);
-                }
-            }
-        }
+        if (!isNotNull(equipmentSection)) return;
+
+        String assetId = equipmentSection.getString("id");
+        if (!isValidString(assetId)) return;
+
+        assetId = namespaced(assetId, this.namespace);
+        EquipmentSlot equipmentSlot = resolveEquipmentSlot(equipmentSection);
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new EquipableConfiguration(assetId, equipmentSlot));
+        applySlotAttributeModifiers(equipmentSection, equipmentSlot);
+    }
+
+    private EquipmentSlot resolveEquipmentSlot(ConfigurationSection equipmentSection) {
+        EquipmentSlot fromItemId = getEquipmentSlotFromSuffix(this.itemId.toLowerCase(), false);
+        if (fromItemId != null) return fromItemId;
+
+        String slot = equipmentSection.getString("slot");
+        if (isValidString(slot)) return null;
+
+        return getEquipmentSlotFromSuffix(this.craftEngineItemUtils.getMaterial().name(), true);
+    }
+
+    private EquipmentSlot getEquipmentSlotFromSuffix(String name, boolean uppercase) {
+        String upString = uppercase ? name.toUpperCase() : name;
+        if (upString.endsWith(uppercase ? "_HELMET" : "_helmet") || upString.endsWith("_SKULL") || upString.endsWith("_HAT")) return EquipmentSlot.HEAD;
+        if (upString.endsWith(uppercase ? "_CHESTPLATE" : "_chestplate") || upString.endsWith("_ELYTRA")) return EquipmentSlot.CHEST;
+        if (upString.endsWith(uppercase ? "_LEGGINGS" : "_leggings")) return EquipmentSlot.LEGS;
+        if (upString.endsWith(uppercase ? "_BOOTS" : "_boots")) return EquipmentSlot.FEET;
+        return null;
+    }
+
+    private void applySlotAttributeModifiers(ConfigurationSection equipmentSection, EquipmentSlot equipmentSlot) {
+        if (equipmentSlot == null) return;
+
+        ConfigurationSection slotAttributeModifiers = equipmentSection.getConfigurationSection("slot_attribute_modifiers");
+        if (!isNotNull(slotAttributeModifiers)) return;
+
+        AttributeModifier.Slot attributeSlot = toAttributeSlot(equipmentSlot);
+        if (attributeSlot == null) return;
+
+        double armor = slotAttributeModifiers.getDouble("armor", 0.0);
+        AttributeModifier modifier = new AttributeModifier("minecraft:armor", attributeSlot, null, armor, AttributeModifier.Operation.ADD_VALUE, null);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(List.of(modifier)));
+    }
+
+    private AttributeModifier.Slot toAttributeSlot(EquipmentSlot equipmentSlot) {
+        return switch (equipmentSlot) {
+            case HEAD -> AttributeModifier.Slot.HEAD;
+            case CHEST -> AttributeModifier.Slot.CHEST;
+            case LEGS -> AttributeModifier.Slot.LEGS;
+            case FEET -> AttributeModifier.Slot.FEET;
+            default -> null;
+        };
+    }
+
+    private void convertSpecificPropertiesArmorSection() {
         ConfigurationSection specificPropertiesSection = this.iaItemSection.getConfigurationSection("specific_properties");
-        if (isNotNull(specificPropertiesSection)) {
-            ConfigurationSection armorSection = specificPropertiesSection.getConfigurationSection("armor");
-            if (isNotNull(armorSection)) {
-                String assetId = armorSection.getString("custom_armor");
-                if (isValidString(assetId)){
-                    assetId = namespaced(assetId,this.namespace);
-                    this.isValidString(assetId);
-                    ConfigurationSection ceEquipableSection = getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable");
-                    ceEquipableSection.set("asset-id", assetId);
-                    this.setAssetId(assetId);
-                    String slot = armorSection.getString("slot");
-                    if (isValidString(slot)){
-                        ceEquipableSection.set("slot", slot);
-                    }
-                }
-            }
+        if (!isNotNull(specificPropertiesSection)) return;
+
+        ConfigurationSection armorSection = specificPropertiesSection.getConfigurationSection("armor");
+        if (!isNotNull(armorSection)) return;
+
+        String assetId = armorSection.getString("custom_armor");
+        if (!isValidString(assetId)) return;
+
+        assetId = namespaced(assetId, this.namespace);
+        this.isValidString(assetId);
+
+        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(), "equippable");
+        this.setAssetId(assetId);
+
+        EquipmentSlot equipmentSlot = parseEquipmentSlot(armorSection.getString("slot"));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new EquipableConfiguration(assetId, equipmentSlot));
+    }
+
+    private EquipmentSlot parseEquipmentSlot(String slot) {
+        if (slot == null) return null;
+        try {
+            return EquipmentSlot.valueOf(slot.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            Logger.debug("[IAItemsConverter] Invalid equipment slot '" + slot + "' for item " + this.itemId);
+            return null;
         }
     }
 
