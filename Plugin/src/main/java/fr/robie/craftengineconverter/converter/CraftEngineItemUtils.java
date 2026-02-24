@@ -2,7 +2,6 @@ package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.utils.ObjectUtils;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,16 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 public class CraftEngineItemUtils extends ObjectUtils {
-    private Material material;
     private final ConfigurationSection craftEngineItemSection;
 
     public CraftEngineItemUtils(ConfigurationSection craftEngineItemSection){
         this.craftEngineItemSection = craftEngineItemSection;
-    }
-
-    public void setMaterial(@NotNull Material material){
-        this.craftEngineItemSection.set("material", material.name().toUpperCase());
-        this.material = material;
     }
 
     public void setItemName(@NotNull String itemName){
@@ -46,10 +39,6 @@ public class CraftEngineItemUtils extends ObjectUtils {
 
     public void enableEnchantmentGlint(){
         getComponentsSection().set("minecraft:enchantment_glint_override", true);
-    }
-
-    public Material getMaterial(){
-        return this.material;
     }
 
     public void setOversizedInGui(boolean oversized){

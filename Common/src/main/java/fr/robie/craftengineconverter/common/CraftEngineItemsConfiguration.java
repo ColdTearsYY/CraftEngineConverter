@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class CraftEngineItemsConfiguration {
@@ -21,18 +20,20 @@ public class CraftEngineItemsConfiguration {
         this.material = material;
     }
 
+    @NotNull
+    public Material getMaterial(){
+        return (this.material == null ? Configuration.defaultMaterial : this.material);
+    }
+
     public void addItemConfiguration(@NotNull ItemConfigurationSerializable itemConfiguration){
         this.itemsConfigurations.add(itemConfiguration);
     }
 
 
-
-
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection) {
-        HashMap<String, Object> result = new HashMap<>();
+        itemSection.set("material", (this.material == null ? Configuration.defaultMaterial : this.material).name().toLowerCase());
         for (ItemConfigurationSerializable itemConfiguration : this.itemsConfigurations) {
             itemConfiguration.serialize(yamlConfiguration, path, itemSection);
         }
-        itemSection.set("material", (this.material == null ? Configuration.defaultMaterial : this.material).name().toLowerCase());
     }
 }

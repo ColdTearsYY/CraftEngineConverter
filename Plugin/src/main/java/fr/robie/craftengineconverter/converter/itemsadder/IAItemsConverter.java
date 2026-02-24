@@ -7,6 +7,7 @@ import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.items.*;
 import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.common.utils.CecAttributeModifier;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
 import fr.robie.craftengineconverter.utils.FloatsUtils;
@@ -100,7 +101,7 @@ public class IAItemsConverter extends ItemConverter {
                 } catch (Exception ignored){
                 }
             }
-            this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipConfiguration(convertedFlags));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ComponentFlagsConfiguration(convertedFlags));
         }
     }
 
@@ -108,7 +109,7 @@ public class IAItemsConverter extends ItemConverter {
     public void convertAttributeModifiers(){
         ConfigurationSection attributesSection = this.iaItemSection.getConfigurationSection("attribute_modifiers");
         if (isNotNull(attributesSection)) {
-            List<AttributeModifier> attributeModifiers = new ArrayList<>();
+            List<CecAttributeModifier> attributeModifiers = new ArrayList<>();
 
             for (String equipmentSlot : attributesSection.getKeys(false)) {
                 ConfigurationSection slotSection = attributesSection.getConfigurationSection(equipmentSlot);
@@ -124,7 +125,7 @@ public class IAItemsConverter extends ItemConverter {
                     try {
                         Attribute attribute = Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(attributeKey));
                         int amount = slotSection.getInt(attributeKey);
-                        attributeModifiers.add(new AttributeModifier(attribute.name(), slot, null, amount, AttributeModifier.Operation.ADD_VALUE, null));
+                        attributeModifiers.add(new CecAttributeModifier(attribute.name(), slot, null, amount, AttributeModifier.Operation.ADD_VALUE, null));
                     } catch (Exception e) {
                         Logger.debug("[IAItemsConverter] Invalid attribute " + attributeKey + " for attribute modifiers for item " + this.itemId);
                     }
@@ -193,7 +194,7 @@ public class IAItemsConverter extends ItemConverter {
     @Override
     public void convertMaxStackSize(){
         int maxStackSize = this.iaItemSection.getInt("max_stack_size", -1);
-        if (maxStackSize > 0){
+        if (maxStackSize > 0 && maxStackSize <= 99){
             this.craftEngineItemsConfiguration.addItemConfiguration(new MaxStackSizeConfiguration(maxStackSize));
         }
     }
@@ -311,7 +312,7 @@ public class IAItemsConverter extends ItemConverter {
         String slot = equipmentSection.getString("slot");
         if (isValidString(slot)) return null;
 
-        return getEquipmentSlotFromSuffix(this.craftEngineItemUtils.getMaterial().name(), true);
+        return getEquipmentSlotFromSuffix(this.craftEngineItemsConfiguration.getMaterial().name(), true);
     }
 
     private EquipmentSlot getEquipmentSlotFromSuffix(String name, boolean uppercase) {
@@ -333,7 +334,7 @@ public class IAItemsConverter extends ItemConverter {
         if (attributeSlot == null) return;
 
         double armor = slotAttributeModifiers.getDouble("armor", 0.0);
-        AttributeModifier modifier = new AttributeModifier("minecraft:armor", attributeSlot, null, armor, AttributeModifier.Operation.ADD_VALUE, null);
+        CecAttributeModifier modifier = new CecAttributeModifier("minecraft:armor", attributeSlot, null, armor, AttributeModifier.Operation.ADD_VALUE, null);
         this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(List.of(modifier)));
     }
 
@@ -600,7 +601,7 @@ public class IAItemsConverter extends ItemConverter {
             Logger.debug("[IAItemsConverter] Missing model path for item " + this.itemId + ". Cannot convert item texture.");
             return;
         }
-        Material itemMaterial = this.craftEngineItemUtils.getMaterial();
+        Material itemMaterial = this.craftEngineItemsConfiguration.getMaterial();
         if (itemMaterial == Material.FISHING_ROD){
             handleFishingRod3D(modelPath,modelPath+"_cast");
             return;

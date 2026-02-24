@@ -8,10 +8,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class HideTooltipConfiguration implements ItemConfigurationSerializable {
+public class ComponentFlagsConfiguration implements ItemConfigurationSerializable {
     private final Set<ComponentFlag> flags = new HashSet<>();
 
-    public HideTooltipConfiguration(Collection<ComponentFlag> flags) {
+    public ComponentFlagsConfiguration(Collection<ComponentFlag> flags) {
         this.flags.addAll(flags);
     }
 

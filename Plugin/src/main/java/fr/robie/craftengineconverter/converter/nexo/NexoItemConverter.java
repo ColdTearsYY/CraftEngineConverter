@@ -4,8 +4,12 @@ import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.ArmorConverter;
+import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
+import fr.robie.craftengineconverter.common.enums.ComponentFlag;
+import fr.robie.craftengineconverter.common.items.*;
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.common.utils.CecAttributeModifier;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
 import fr.robie.craftengineconverter.utils.FloatsUtils;
@@ -18,6 +22,7 @@ import fr.robie.craftengineconverter.utils.loots.CraftEngineItemLoot;
 import fr.robie.craftengineconverter.utils.loots.ItemLoot;
 import fr.robie.craftengineconverter.utils.loots.MinecraftItemLoot;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Material;
@@ -29,6 +34,7 @@ import org.bukkit.block.data.type.Tripwire;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -44,13 +50,10 @@ public class NexoItemConverter extends ItemConverter {
 
     @Override
     public void convertMaterial() {
-        Material material;
         try {
-            material = Material.valueOf(this.nexoItemSection.getString("material", Configuration.defaultMaterial.name()).toUpperCase());
-        } catch (IllegalArgumentException e) {
-            material = Configuration.defaultMaterial;
+            this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(this.nexoItemSection.getString("material", Configuration.defaultMaterial.name()).toUpperCase()));
+        } catch (Exception ignored) {
         }
-        this.craftEngineItemUtils.setMaterial(material);
     }
 
     private void copyComponentSection(String nexoKey, String ceKey) {
@@ -64,7 +67,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertItemName() {
         String itemName = this.nexoItemSection.getString("itemname");
         if (isValidString(itemName)){
-            this.craftEngineItemUtils.setItemName(itemName);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName));
         }
     }
 
@@ -72,7 +75,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertLore() {
         List<String> lore = this.nexoItemSection.getStringList("lore");
         if (!lore.isEmpty()) {
-            this.craftEngineItemUtils.setLore(lore);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new LoreConfiguration(lore));
         }
     }
 
@@ -83,21 +86,33 @@ public class NexoItemConverter extends ItemConverter {
 
     @Override
     public void convertDyedColor() {
-        setIfNotNull(this.craftEngineItemUtils.getDataSection(), "dyed-color",
-                this.nexoItemSection.get("color"));
+        Object color = this.nexoItemSection.get("color");
+        if (isNotNull(color)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new DyedColorConfiguration(color));
+        }
     }
 
     @Override
     public void convertUnbreakable() {
-        setIfTrue(this.craftEngineItemUtils.getDataSection(), "unbreakable",
-                this.nexoItemSection.getBoolean("unbreakable", false));
+        boolean unbreakable = this.nexoItemSection.getBoolean("unbreakable", false);
+        if (unbreakable) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new UnbreakableConfiguration(true));
+        }
     }
 
     @Override
     public void convertItemFlags() {
-        List<?> itemFlags = this.nexoItemSection.getList("ItemFlags");
-        if (itemFlags != null && !itemFlags.isEmpty()) {
-            this.craftEngineItemUtils.getDataSection().set("hide-tooltip", itemFlags);
+        List<String> itemFlags = this.nexoItemSection.getStringList("ItemFlags");
+        if (!itemFlags.isEmpty()) {
+            List<ComponentFlag> convertedFlags = new ArrayList<>();
+            for (String flag : itemFlags){
+                try {
+                    ItemFlag bukkitFlag = ItemFlag.valueOf(flag.toUpperCase());
+                    convertedFlags.add(BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag));
+                } catch (Exception ignored){
+                }
+            }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ComponentFlagsConfiguration(convertedFlags));
         }
     }
 
@@ -106,34 +121,74 @@ public class NexoItemConverter extends ItemConverter {
         List<Map<?, ?>> mapList = this.nexoItemSection.getMapList("AttributeModifiers");
         if (mapList.isEmpty()) return;
 
-        List<Map<String, Object>> ceAttributeModifiers = new ArrayList<>();
+        List<CecAttributeModifier> attributeModifiers = new ArrayList<>();
         for (Map<?, ?> attributeModifier : mapList) {
             Object attribute = attributeModifier.get("attribute");
-            if (attribute == null) continue;
+            if (!(attribute instanceof String stringAttribute)) continue;
 
-            Object amount = attributeModifier.get("amount");
-            if (amount == null) continue;
+            Object rawAmount = attributeModifier.get("amount");
+            if (!(rawAmount instanceof Double amount)) continue;
 
-            Object operation = attributeModifier.get("operation");
-            if (!(operation instanceof Integer opInt)) continue;
+            Object rawOperation = attributeModifier.get("operation");
+            AttributeModifier.Operation operation;
+            if (rawOperation instanceof String strOperation) {
+                try {
+                    operation = AttributeModifier.Operation.valueOf(strOperation.toUpperCase());
+                } catch (Exception e) {
+                    if (strOperation.equalsIgnoreCase("ADD_NUMBER")) {
+                        operation = AttributeModifier.Operation.ADD_VALUE;
+                    } else if (strOperation.equalsIgnoreCase("ADD_SCALAR")) {
+                        operation = AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                    } else if (strOperation.equalsIgnoreCase("MULTIPLY_SCALAR_1")) {
+                        operation = AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
+                    } else {
+                        continue;
+                    }
+                }
+            } else if (rawOperation instanceof Integer intOperation) {
+                try {
+                    operation = switch (intOperation) {
+                        case 0 -> AttributeModifier.Operation.ADD_VALUE;
+                        case 1 -> AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                        case 2 -> AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
+                        default -> throw new IllegalArgumentException("Invalid operation id: " + intOperation);
+                    };
+                } catch (Exception e) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
 
-            Object slot = attributeModifier.get("slot");
-            if (slot == null) continue;
+            AttributeModifier.Slot attributeSlot = null;
+            Object rawSlot = attributeModifier.get("slot");
+            if (!(rawSlot instanceof String strSlot)) continue;
+            try {
+                attributeSlot = AttributeModifier.Slot.valueOf(strSlot.toUpperCase());
+            } catch (Exception ignored) {
+            }
+            if (attributeSlot == null) continue;
+            CecAttributeModifier.Display display = null;
+                Object rawDisplay = attributeModifier.get("display");
+                if (rawDisplay instanceof Map<?, ?> displayMap) {
+                    Object typeObj = displayMap.get("type");
+                    Object textObj = displayMap.get("text");
+                    if (typeObj instanceof String typeStr && textObj instanceof String textStr) {
+                        AttributeModifier.Display.Type displayType;
+                        try {
+                            displayType = AttributeModifier.Display.Type.valueOf(typeStr.toUpperCase());
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        display = new CecAttributeModifier.Display(displayType, textStr);
+                    }
+                }
 
-            Map<String, Object> attributeModifierMap = new HashMap<>();
-            attributeModifierMap.put("type", attribute.toString().toLowerCase());
-            attributeModifierMap.put("amount", amount);
-            attributeModifierMap.put("operation", switch (opInt) {
-                case 1 -> "add_multiplied_base";
-                case 2 -> "add_multiplied_total";
-                default -> "add_value";
-            });
-            attributeModifierMap.put("slot", slot.toString());
-            ceAttributeModifiers.add(attributeModifierMap);
+            attributeModifiers.add(new CecAttributeModifier(stringAttribute.toLowerCase(), attributeSlot, null, amount, operation, display));
         }
 
-        if (!ceAttributeModifiers.isEmpty()) {
-            this.craftEngineItemUtils.getDataSection().set("attribute-modifiers", ceAttributeModifiers);
+        if (!attributeModifiers.isEmpty()) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(attributeModifiers));
         }
     }
 
@@ -141,45 +196,49 @@ public class NexoItemConverter extends ItemConverter {
     public void convertEnchantments() {
         ConfigurationSection configurationSection = this.nexoItemSection.getConfigurationSection("Enchantments");
         if (configurationSection == null) return;
-
+        EnchantmentConfiguration enchantmentConfiguration = new EnchantmentConfiguration();
         for (String enchantmentKey : configurationSection.getKeys(false)) {
             int level = configurationSection.getInt(enchantmentKey, 1);
             String enchantmentName;
             try {
-                enchantmentName = Enchantment.getByName(enchantmentKey.toUpperCase()).key().toString();
+                enchantmentName = Enchantment.getByName(enchantmentKey).key().toString();
             } catch (Exception e) {
                 enchantmentName = enchantmentKey;
             }
-            this.craftEngineItemUtils.getDataSection().set("enchantment\n" + enchantmentName.toLowerCase(), level);
+            enchantmentConfiguration.addEnchantment(enchantmentName.toLowerCase(), level);
         }
+        if (enchantmentConfiguration.hasEnchantments())
+            this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
     }
 
     @Override
     public void convertCustomModelData() {
         int customModelData = this.nexoItemSection.getInt("Pack.custom_model_data", 0);
         if (customModelData != 0) {
-            this.craftEngineItemUtils.getGeneralSection().set("custom-model-data", customModelData);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new CustomModelDataConfiguration(customModelData));
         }
     }
 
     @Override
     public void convertItemModel() {
-        setIfNotEmpty(this.craftEngineItemUtils.getDataSection(), "item-model",
-                this.nexoItemSection.getString("Components.item_model"));
+        String itemModel = this.nexoItemSection.getString("Components.item_model");
+        if (isValidString(itemModel)){
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemModelConfiguration(itemModel));
+        }
     }
 
     @Override
     public void convertMaxStackSize() {
         int maxStackSize = this.nexoItemSection.getInt("Components.max_stack_size", 0);
-        if (maxStackSize > 0 && maxStackSize < 99) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:max_stack_size", maxStackSize);
+        if (maxStackSize > 0 && maxStackSize <= 99) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new MaxStackSizeConfiguration(maxStackSize));
         }
     }
 
     @Override
     public void convertEnchantmentGlintOverride() {
         if (this.nexoItemSection.getBoolean("Components.enchantment_glint_override", false)) {
-            this.craftEngineItemUtils.enableEnchantmentGlint();
+            this.craftEngineItemsConfiguration.addItemConfiguration(new EnchantmentGlintOverrideConfiguration(true));
         }
     }
 
@@ -200,7 +259,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertMaxDamage() {
         int maxDamage = this.nexoItemSection.getInt("Components.max_damage", 0);
         if (maxDamage > 0) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:max_damage", maxDamage);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new MaxDamageConfiguration(maxDamage));
         }
     }
 
@@ -208,14 +267,20 @@ public class NexoItemConverter extends ItemConverter {
     public void convertHideTooltip() {
         if (!this.nexoItemSection.getBoolean("Components.hide_tooltip", false)) return;
 
-        ConfigurationSection tooltipDisplaySection = getOrCreateSection(
-                this.craftEngineItemUtils.getComponentsSection(), "minecraft:tooltip_display");
-        tooltipDisplaySection.set("hide_tooltip", true);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltip(true));
     }
 
     @Override
     public void convertFood() {
-        copyComponentSection("food", "minecraft:food");
+        ConfigurationSection foodSection = this.nexoItemSection.getConfigurationSection("Components.food");
+        if (foodSection != null) {
+            int nutrition = foodSection.getInt("nutrition", -1);
+            float saturation = (float) foodSection.getDouble("saturation", -1);
+            boolean canAlwaysEat = foodSection.getBoolean("can_always_eat", false);
+            if (nutrition >= 0 && saturation >= 0) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new FoodConfiguration(nutrition, saturation, canAlwaysEat));
+            }
+        }
     }
 
     @Override
@@ -418,7 +483,7 @@ public class NexoItemConverter extends ItemConverter {
             ceEquipableSection.set("slot", slot.toLowerCase());
         }
         if (isValidString(assetId)) {
-            if (this.craftEngineItemUtils.getMaterial() == Material.ELYTRA){
+            if (this.craftEngineItemsConfiguration.getMaterial() == Material.ELYTRA){
                 if (assetId.contains(":")) {
                     assetId = assetId.split(":",2)[1];
                 }
@@ -1008,7 +1073,7 @@ public class NexoItemConverter extends ItemConverter {
     private void convertModelWithoutParent(ConfigurationSection packSection) {
         String modelPath = packSection.getString("model");
         if (!isValidString(modelPath)) {
-            if (this.craftEngineItemUtils.getMaterial() == Material.ELYTRA){
+            if (this.craftEngineItemsConfiguration.getMaterial() == Material.ELYTRA){
                 buildElytraModel(packSection);
             }
             if (packSection.isConfigurationSection("CustomArmor")){
@@ -1199,7 +1264,7 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     private boolean tryBuildTridentModel(ConfigurationSection packSection, String modelPath){
-        if (this.craftEngineItemUtils.getMaterial() != Material.TRIDENT) return false;
+        if (this.craftEngineItemsConfiguration.getMaterial() != Material.TRIDENT) return false;
         String namespacedModel = namespaced(modelPath);
         if (isNull(namespacedModel)) return false;
         String throwingModel = packSection.getString("throwing_model", namespacedModel+"_throwing");
@@ -1229,10 +1294,10 @@ public class NexoItemConverter extends ItemConverter {
         List<String> pullingModels = packSection.getStringList("pulling_models");
         if (pullingModels.isEmpty()) return false;
 
-        if (this.craftEngineItemUtils.getMaterial() == Material.CROSSBOW) {
+        if (this.craftEngineItemsConfiguration.getMaterial() == Material.CROSSBOW) {
             buildCrossbowModel(packSection);
             return true;
-        } else if (this.craftEngineItemUtils.getMaterial() == Material.BOW) {
+        } else if (this.craftEngineItemsConfiguration.getMaterial() == Material.BOW) {
             buildBowModel(packSection);
             return true;
         }
