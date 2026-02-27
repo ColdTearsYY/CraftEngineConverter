@@ -798,112 +798,54 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     @Override
-    public void convertKineticComponent(){
+    public void convertKineticComponent() {
         ConfigurationSection kineticSection = this.nexoItemSection.getConfigurationSection("Components.kinetic_weapon");
         if (isNull(kineticSection)) return;
 
-        ConfigurationSection ceKineticSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"minecraft:kinetic_weapon");
-
-        long delayTicks = TimerBuilder.parseTimeToTicks(kineticSection.getString("delay","0t"));
-        if (delayTicks > 0) {
-            ceKineticSection.set("delay_ticks", delayTicks);
-        }
-
-        double damageMultiplier = kineticSection.getDouble("damage_multiplier",1.0);
-        if (damageMultiplier != 1.0){
-            ceKineticSection.set("damage_multiplier", damageMultiplier);
-        }
-
+        long delayTicks = TimerBuilder.parseTimeToTicks(kineticSection.getString("delay", "0t"));
+        double damageMultiplier = kineticSection.getDouble("damage_multiplier", 1.0);
         double forwardMovement = kineticSection.getDouble("forward_movement", 0.0);
-        if (forwardMovement != 0.0) {
-            ceKineticSection.set("forward_movement", forwardMovement);
-        }
-
         String sound = kineticSection.getString("sound");
-        if (isValidString(sound)){
-            ceKineticSection.set("sound", sound);
-        }
-
         String hitSound = kineticSection.getString("hit_sound");
-        if (isValidString(hitSound)){
-            ceKineticSection.set("hit_sound", hitSound);
-        }
 
-        ConfigurationSection dismountConditionsSection = kineticSection.getConfigurationSection("dismount_conditions");
-        if (dismountConditionsSection != null) {
-            ConfigurationSection ceDismountSection = getOrCreateSection(ceKineticSection, "dismount_conditions");
-            convertKineticConditions(dismountConditionsSection, ceDismountSection);
-        }
+        KineticWeaponConfiguration.KineticConditions dismountConditions = parseKineticConditions(kineticSection.getConfigurationSection("dismount_conditions"));
+        KineticWeaponConfiguration.KineticConditions knockbackConditions = parseKineticConditions(kineticSection.getConfigurationSection("knockback_conditions"));
+        KineticWeaponConfiguration.KineticConditions damageConditions = parseKineticConditions(kineticSection.getConfigurationSection("damage_conditions"));
 
-        ConfigurationSection knockbackConditionsSection = kineticSection.getConfigurationSection("knockback_conditions");
-        if (knockbackConditionsSection != null) {
-            ConfigurationSection ceKnockbackSection = getOrCreateSection(ceKineticSection, "knockback_conditions");
-            convertKineticConditions(knockbackConditionsSection, ceKnockbackSection);
-        }
-
-        ConfigurationSection damageConditionsSection = kineticSection.getConfigurationSection("damage_conditions");
-        if (damageConditionsSection != null) {
-            ConfigurationSection ceDamageSection = getOrCreateSection(ceKineticSection, "damage_conditions");
-            convertKineticConditions(damageConditionsSection, ceDamageSection);
-        }
+        this.craftEngineItemsConfiguration.addItemConfiguration(new KineticWeaponConfiguration(delayTicks, damageMultiplier, forwardMovement, sound, hitSound, dismountConditions, knockbackConditions, damageConditions));
     }
 
-    private void convertKineticConditions(ConfigurationSection nexoConditions, ConfigurationSection ceConditions) {
-        long maxDurationTicks = TimerBuilder.parseTimeToTicks(nexoConditions.getString("max_duration", "0t"));
-        if (maxDurationTicks > 0) {
-            ceConditions.set("max_duration_ticks", maxDurationTicks);
-        }
-
-        double minSpeed = nexoConditions.getDouble("min_speed", 0.0);
-        if (minSpeed > 0.0) {
-            ceConditions.set("min_speed", minSpeed);
-        }
-
-        double minRelativeSpeed = nexoConditions.getDouble("min_relative_speed", 0.0);
-        if (minRelativeSpeed > 0.0) {
-            ceConditions.set("min_relative_speed", minRelativeSpeed);
-        }
+    private KineticWeaponConfiguration.KineticConditions parseKineticConditions(ConfigurationSection section) {
+        if (section == null) return null;
+        return new KineticWeaponConfiguration.KineticConditions(
+                TimerBuilder.parseTimeToTicks(section.getString("max_duration", "0t")),
+                section.getDouble("min_speed", 0.0),
+                section.getDouble("min_relative_speed", 0.0)
+        );
     }
 
     @Override
-    public void convertPiercingWeaponComponent(){
+    public void convertPiercingWeaponComponent() {
         ConfigurationSection piercingSection = this.nexoItemSection.getConfigurationSection("Components.piercing_weapon");
         if (isNull(piercingSection)) return;
 
-        ConfigurationSection cePiercingSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"minecraft:piercing_weapon");
-
-        boolean dealsKnockback = piercingSection.getBoolean("deals_knockback", true);
-        if (!dealsKnockback) {
-            cePiercingSection.set("deals_knockback", false);
-        }
-
-        boolean dismounts = piercingSection.getBoolean("dismounts", false);
-        if (dismounts) {
-            cePiercingSection.set("dismounts", true);
-        }
-
-        String sound = piercingSection.getString("sound");
-        if (isValidString(sound)){
-            cePiercingSection.set("sound", sound);
-        }
-
-        String hitSound = piercingSection.getString("hit_sound");
-        if (isValidString(hitSound)){
-            cePiercingSection.set("hit_sound", hitSound);
-        }
+        this.craftEngineItemsConfiguration.addItemConfiguration(new PiercingWeaponConfiguration(
+                piercingSection.getBoolean("deals_knockback", true),
+                piercingSection.getBoolean("dismounts", false),
+                piercingSection.getString("sound"),
+                piercingSection.getString("hit_sound")
+        ));
     }
 
     @Override
-    public void convertAttackRangeComponent(){
+    public void convertAttackRangeComponent() {
         ConfigurationSection attackRangeSection = this.nexoItemSection.getConfigurationSection("Components.attack_range");
         if (isNull(attackRangeSection)) return;
 
-        ConfigurationSection ceAttackRangeSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"minecraft:attack_range");
-
-        String reach = attackRangeSection.getString("reach");
         double minReach = 0.0;
         double maxReach = 3.0;
 
+        String reach = attackRangeSection.getString("reach");
         if (isValidString(reach)) {
             if (reach.contains("..")) {
                 String[] parts = reach.split("\\.\\.");
@@ -924,58 +866,41 @@ public class NexoItemConverter extends ItemConverter {
             }
         }
 
-        if (attackRangeSection.contains("min_reach")) {
-            minReach = attackRangeSection.getDouble("min_reach", 0.0);
-        }
-        if (attackRangeSection.contains("max_reach")) {
-            maxReach = attackRangeSection.getDouble("max_reach", 3.0);
-        }
+        if (attackRangeSection.contains("min_reach")) minReach = attackRangeSection.getDouble("min_reach", 0.0);
+        if (attackRangeSection.contains("max_reach")) maxReach = attackRangeSection.getDouble("max_reach", 3.0);
 
-        if (minReach != 0.0) {
-            minReach = Math.max(0.0, Math.min(64.0, minReach));
-            ceAttackRangeSection.set("min_reach", minReach);
-        }
-        if (maxReach != 3.0) {
-            maxReach = Math.max(0.0, Math.min(64.0, maxReach));
-            ceAttackRangeSection.set("max_reach", maxReach);
-        }
-
-        double hitboxMargin = attackRangeSection.getDouble("hitbox_margin", 0.3);
-        if (hitboxMargin != 0.3) {
-            hitboxMargin = Math.max(0.0, Math.min(1.0, hitboxMargin));
-            ceAttackRangeSection.set("hitbox_margin", hitboxMargin);
-        }
-
-        double mobFactor = attackRangeSection.getDouble("mob_factor", 1.0);
-        if (mobFactor != 1.0) {
-            mobFactor = Math.max(0.0, Math.min(2.0, mobFactor));
-            ceAttackRangeSection.set("mob_factor", mobFactor);
-        }
+        this.craftEngineItemsConfiguration.addItemConfiguration(new AttackRangeConfiguration(
+                minReach,
+                maxReach,
+                attackRangeSection.getDouble("min_creative_reach", 0.0),
+                attackRangeSection.getDouble("max_creative_reach", 5.0),
+                attackRangeSection.getDouble("hitbox_margin", 0.3),
+                attackRangeSection.getDouble("mob_factor", 1.0)
+        ));
     }
 
     @Override
-    public void convertSwingAnimationComponent(){
+    public void convertSwingAnimationComponent() {
         ConfigurationSection swingAnimationSection = this.nexoItemSection.getConfigurationSection("Components.swing_animation");
         if (isNull(swingAnimationSection)) return;
 
-        ConfigurationSection ceSwingAnimationSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"minecraft:swing_animation");
-
-        String type = swingAnimationSection.getString("type", "whack");
-        if (isValidString(type)) {
-            type = type.toLowerCase();
-            if (!type.equals("whack")) {
-                ceSwingAnimationSection.set("type", type);
-            }
+        SwingAnimationConfiguration.AnimationType type;
+        try {
+            type = SwingAnimationConfiguration.AnimationType.valueOf(
+                    swingAnimationSection.getString("type", "whack").toUpperCase()
+            );
+        } catch (IllegalArgumentException e) {
+            Logger.debug("Invalid type value for swing_animation in item '" + this.itemId + "'. Using default (whack).", LogType.WARNING);
+            type = SwingAnimationConfiguration.AnimationType.WHACK;
         }
 
-        long duration = TimerBuilder.parseTimeToTicks(swingAnimationSection.getString("duration", "6t"));
-        if (duration != 6) {
-            if (duration > 0) {
-                ceSwingAnimationSection.set("duration", (int) duration);
-            } else {
-                Logger.debug("Invalid duration value '" + duration + "' for swing_animation in item '" + this.itemId + "'. Must be positive. Using default (6).", LogType.WARNING);
-            }
+        long durationTicks = TimerBuilder.parseTimeToTicks(swingAnimationSection.getString("duration", "6t"));
+        if (durationTicks <= 0) {
+            Logger.debug("Invalid duration value '" + durationTicks + "' for swing_animation in item '" + this.itemId + "'. Must be positive. Using default (6).", LogType.WARNING);
+            durationTicks = 6;
         }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new SwingAnimationConfiguration(type, (int) durationTicks));
     }
 
     @Override
