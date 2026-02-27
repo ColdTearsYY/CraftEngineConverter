@@ -785,7 +785,7 @@ public class NexoItemConverter extends ItemConverter {
     @Override
     public void convertOversizedInGui() {
         if (this.nexoItemSection.getBoolean("Pack.oversized_in_gui", false)) {
-            this.craftEngineItemUtils.setOversizedInGui(true);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new OversizedInGuiConfiguration(true));
         }
     }
 
@@ -793,7 +793,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertPaintingVariant(){
         String paintingVariant = this.nexoItemSection.getString("Components.painting_variant");
         if (isValidString(paintingVariant)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:painting/variant", paintingVariant);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new PaintingVariantConfiguration(paintingVariant));
         }
     }
 

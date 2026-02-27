@@ -1,13 +1,8 @@
 package fr.robie.craftengineconverter.converter;
 
-import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.utils.ObjectUtils;
 import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class CraftEngineItemUtils extends ObjectUtils {
@@ -15,34 +10,6 @@ public class CraftEngineItemUtils extends ObjectUtils {
 
     public CraftEngineItemUtils(ConfigurationSection craftEngineItemSection){
         this.craftEngineItemSection = craftEngineItemSection;
-    }
-
-    public void setItemName(@NotNull String itemName){
-        getDataSection().set("item-name", (Configuration.disableDefaultItalic?"<!i>":"")+itemName);
-    }
-
-    public void setLore(@NotNull List<String> lore){
-        if (Configuration.disableDefaultItalic){
-            List<String> convertedLore = new ArrayList<>();
-            for (String line : lore) {
-                convertedLore.add("<!i>" + line);
-            }
-            lore = convertedLore;
-        }
-        getDataSection().set("lore", lore);
-    }
-
-    public void setJukeboxPlayable(@Nullable String song){
-        if (!isValidString(song)) return;
-        getComponentsSection().set("minecraft:jukebox_playable", Map.of("song", song));
-    }
-
-    public void enableEnchantmentGlint(){
-        getComponentsSection().set("minecraft:enchantment_glint_override", true);
-    }
-
-    public void setOversizedInGui(boolean oversized){
-        craftEngineItemSection.set("oversized-in-gui", oversized);
     }
 
     public ConfigurationSection getDataSection() {
