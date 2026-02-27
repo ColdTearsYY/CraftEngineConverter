@@ -657,9 +657,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertToolTipDisplay() {
         List<String> tooltipDisplay = this.nexoItemSection.getStringList("Components.tooltip_display");
         if (!tooltipDisplay.isEmpty()) {
-            this.craftEngineItemUtils.getComponentsSection()
-                    .createSection("minecraft:tooltip_display")
-                    .set("hidden_components", tooltipDisplay);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new TooltipDisplayConfiguration(tooltipDisplay));
         }
     }
 
@@ -667,8 +665,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertBreakSound() {
         String breakSound = this.nexoItemSection.getString("Components.break_sound");
         if (isValidString(breakSound)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:break_sound",
-                    Map.of("sound_id", breakSound, "range", 16.0));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new BreakSoundConfiguration(breakSound, 16.0f));
         }
     }
 
@@ -677,10 +674,9 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection weaponSection = this.nexoItemSection.getConfigurationSection("Components.weapon");
         if (weaponSection == null) return;
 
-        ConfigurationSection ceWeaponSection = this.craftEngineItemUtils.getComponentsSection()
-                .createSection("minecraft:weapon");
-        ceWeaponSection.set("item_damage_per_attack", weaponSection.getDouble("damage_per_attack", 1.0));
-        ceWeaponSection.set("disable_blocking_for_seconds", weaponSection.getDouble("disable_blocking", 0.0));
+        int damagePerAttack = weaponSection.getInt("item_damage_per_attack", 1);
+        float disableBlocking = (float) weaponSection.getDouble("disable_blocking", 0);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new WeaponConfiguration(damagePerAttack, disableBlocking));
     }
 
     @Override
