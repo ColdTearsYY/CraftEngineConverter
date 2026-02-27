@@ -24,6 +24,7 @@ import fr.robie.craftengineconverter.utils.loots.MinecraftItemLoot;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
+import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -403,11 +404,10 @@ public class NexoItemConverter extends ItemConverter {
             animation = ConsumableConfiguration.Animation.EAT;
         }
 
-        List<ConsumableConfiguration.ConsumeEffect> consumeEffects = new ArrayList<>();
+        List<AbstractEffectsConfiguration.ConsumeEffect> consumeEffects = new ArrayList<>();
 
         ConfigurationSection effectsSection = consumableSection.getConfigurationSection("effects");
         if (effectsSection != null) {
-            // Apply effects
             ConfigurationSection applyEffectsSection = effectsSection.getConfigurationSection("APPLY_EFFECTS");
             if (applyEffectsSection != null) {
                 List<ConsumableConfiguration.ApplyEffectsConsumeEffect.ApplyEffect> effects = new ArrayList<>();
@@ -579,73 +579,78 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection componentsSection = this.nexoItemSection.getConfigurationSection("Components");
         if (componentsSection == null) return;
 
-        List<Map<String, Object>> ceRepairItems = new ArrayList<>();
-
-        String singleRepairItem = componentsSection.getString("anvil_repairable.repairable");
-        if (isValidString(singleRepairItem)) {
-            Logger.debug("Nexo doesn't support amount for anvil_repairable, defaulting to 1.", LogType.WARNING);
-            ceRepairItems.add(Map.of("target", singleRepairItem, "amount", 1));
+        List<AnvilRepairItem> anvilRepairItems = new ArrayList<>();
+        Object singleRepairItem = componentsSection.get("anvil_repairable.repairable");
+        if (singleRepairItem instanceof String singleRepairItemStr && isValidString(singleRepairItemStr)) {
+            anvilRepairItems.add(new AnvilRepairItem(List.of(singleRepairItemStr),1, 1.0));
+        } else if (singleRepairItem instanceof List<?> singleRepairItemList) {
+            for (Object item : singleRepairItemList) {
+                if (item instanceof String itemStr && isValidString(itemStr)) {
+                    anvilRepairItems.add(new AnvilRepairItem(List.of(itemStr),1, 1.0));
+                }
+            }
         }
-
-        List<String> multipleRepairItems = componentsSection.getStringList("anvil_repairable.repairable");
-        for (String item : multipleRepairItems) {
-            Logger.debug("Nexo doesn't support amount for anvil_repairable, defaulting to 1.", LogType.WARNING);
-            ceRepairItems.add(Map.of("target", item, "amount", 1));
-        }
-
-        if (!ceRepairItems.isEmpty()) {
-            this.craftEngineItemUtils.getSettingsSection().set("anvil-repair-item", ceRepairItems);
+        if (!anvilRepairItems.isEmpty()) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new AnvilRepairItemConfiguration(anvilRepairItems));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new RepairableSettingConfiguration(false, true, false));
         }
     }
 
     @Override
     public void convertDeathProtection() {
-        ConfigurationSection nexoDeathprotectionSection = nexoItemSection.getConfigurationSection("Components.death_protection");
-        if (isNull(nexoDeathprotectionSection)) return;
-        ConfigurationSection deathEffects = nexoDeathprotectionSection.getConfigurationSection("death_effects");
-        ConfigurationSection ceDeathprotectionSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"minecraft:death_protection");
-        if (isNull(deathEffects)){
-            ceDeathprotectionSection.set("death_effects", new ArrayList<>());
+        ConfigurationSection nexoDeathProtectionSection = nexoItemSection.getConfigurationSection("Components.death_protection");
+        if (isNull(nexoDeathProtectionSection)) return;
+
+        ConfigurationSection deathEffectsSection = nexoDeathProtectionSection.getConfigurationSection("death_effects");
+
+        if (isNull(deathEffectsSection)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new DeathProtectionConfiguration(null));
             return;
         }
-        List<Map<String,Object>> ceDeathEffects = new ArrayList<>();
-        ConfigurationSection nexoApplyEffectsSection = deathEffects.getConfigurationSection("APPLY_EFFECTS");
-        if (isNotNull(nexoApplyEffectsSection)) {
-            for (String key : nexoApplyEffectsSection.getKeys(false)) {
-                Map<String,Object> consumeEffect = new HashMap<>();
-                consumeEffect.put("type","apply_effects");
-                List<Map<String,Object>> effectList = new ArrayList<>();
-                effectList.add(getEffectMap(key, nexoApplyEffectsSection.getDouble(key+".amplifier",0),nexoApplyEffectsSection.getInt(key+".duration",1),nexoApplyEffectsSection.getBoolean(key+".ambient",false),
-                        nexoApplyEffectsSection.getBoolean(key+".show_particles",true),nexoApplyEffectsSection.getBoolean("key+.show_icon",true)));
-                consumeEffect.put("effects",effectList);
-                consumeEffect.put("probability",nexoItemSection.getDouble(key+".probability",1.0));
-                ceDeathEffects.add(consumeEffect);
+
+        List<AbstractEffectsConfiguration.ConsumeEffect> deathEffects = new ArrayList<>();
+
+        ConfigurationSection applyEffectsSection = deathEffectsSection.getConfigurationSection("APPLY_EFFECTS");
+        if (isNotNull(applyEffectsSection)) {
+            List<AbstractEffectsConfiguration.ApplyEffectsConsumeEffect.ApplyEffect> effects = new ArrayList<>();
+            for (String key : applyEffectsSection.getKeys(false)) {
+                effects.add(new AbstractEffectsConfiguration.ApplyEffectsConsumeEffect.ApplyEffect(
+                        key,
+                        applyEffectsSection.getInt(key + ".amplifier", 0),
+                        applyEffectsSection.getInt(key + ".duration", 1),
+                        applyEffectsSection.getBoolean(key + ".ambient", false),
+                        applyEffectsSection.getBoolean(key + ".show_particles", true),
+                        applyEffectsSection.getBoolean(key + ".show_icon", true),
+                        applyEffectsSection.getDouble(key + ".probability", 1.0)
+                ));
             }
+            deathEffects.add(new AbstractEffectsConfiguration.ApplyEffectsConsumeEffect(effects));
         }
-        List<String> nexoRemoveEffects = deathEffects.getStringList("REMOVE_EFFECTS");
-        if (!nexoRemoveEffects.isEmpty()) {
-            Map<String,Object> removeEffects = new HashMap<>();
-            removeEffects.put("type","remove_effects");
-            removeEffects.put("effects",nexoRemoveEffects);
-            ceDeathEffects.add(removeEffects);
-        }
-        boolean clearAllEffects = deathEffects.isConfigurationSection("CLEAR_ALL_EFFECTS");
-        if (clearAllEffects){
-            ceDeathEffects.add(Map.of("type","clear_all_effects"));
-        }
-        ConfigurationSection teleportRandomlySection = deathEffects.getConfigurationSection("TELEPORT_RANDOMLY");
-        if (isNotNull(teleportRandomlySection)) {
-            double diameter = teleportRandomlySection.getDouble("diameter",16.0);
-            ceDeathEffects.add(Map.of("type","teleport_randomly","diameter",diameter));
-        }
-        ConfigurationSection playSoundSection = deathEffects.getConfigurationSection("PLAY_SOUND");
+
+        List<String> removeEffects = deathEffectsSection.getStringList("REMOVE_EFFECTS");
+        if (!removeEffects.isEmpty())
+            deathEffects.add(new AbstractEffectsConfiguration.RemoveEffectsConsumeEffect(removeEffects));
+
+        if (deathEffectsSection.get("CLEAR_ALL_EFFECTS") != null)
+            deathEffects.add(new AbstractEffectsConfiguration.ClearAllEffectsConsumeEffect());
+
+        double diameter = deathEffectsSection.getDouble("TELEPORT_RANDOMLY.diameter", -1.0);
+        if (diameter > 0)
+            deathEffects.add(new AbstractEffectsConfiguration.TeleportRandomlyConsumeEffect(diameter));
+
+        ConfigurationSection playSoundSection = deathEffectsSection.getConfigurationSection("PLAY_SOUND");
         if (isNotNull(playSoundSection)) {
             String sound = playSoundSection.getString("sound");
-            if (isValidString(sound)) {
-                ceDeathEffects.add(Map.of("type","play_sound","sound", sound));
-            }
+            if (isValidString(sound))
+                deathEffects.add(new AbstractEffectsConfiguration.PlaySoundConsumeEffect(
+                        sound,
+                        playSoundSection.getDouble("range", 16.0)
+                ));
         }
-        ceDeathprotectionSection.set("death_effects", ceDeathEffects);
+
+        if (!deathEffects.isEmpty()) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new DeathProtectionConfiguration(deathEffects));
+        }
     }
 
     @Override
