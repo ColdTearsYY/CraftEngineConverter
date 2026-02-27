@@ -124,7 +124,7 @@ public class IAConverter extends Converter {
                 iaItemsConverter.convertItem();
                 iaItemsConverter.getCraftEngineItemsConfiguration().serialize(convertedConfig, "items." + finalItemId, items.getConfigurationSection(finalItemId));
 
-                if (!iaItemsConverter.isExcludeFromInventory()) {
+                if (iaItemsConverter.isIncludeInsideInventory()) {
                     itemsIds.add(finalItemId);
                 }
                 PluginNameMapper pluginNameMapper = PluginNameMapper.getInstance();

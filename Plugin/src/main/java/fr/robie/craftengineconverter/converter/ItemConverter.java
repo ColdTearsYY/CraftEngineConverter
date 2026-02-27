@@ -2,8 +2,6 @@ package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.common.CraftEngineItemsConfiguration;
 import fr.robie.craftengineconverter.common.utils.ObjectUtils;
-import fr.robie.craftengineconverter.utils.enums.Template;
-import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -163,12 +161,6 @@ public abstract class ItemConverter extends ObjectUtils {
         }
     }
 
-    protected void setIfTrue(ConfigurationSection section, String key, boolean value) {
-        if (value) {
-            section.set(key, true);
-        }
-    }
-
     public void setAssetId(String assetId){
         this.assetId = assetId;
     }
@@ -196,17 +188,12 @@ public abstract class ItemConverter extends ObjectUtils {
         return this.craftEngineItemsConfiguration;
     }
 
-    public boolean isExcludeFromInventory() {
-        return this.excludeFromInventory;
+    public boolean isIncludeInsideInventory() {
+        return !this.excludeFromInventory;
     }
 
     public Converter getConverter() {
         return this.converter;
     }
 
-    public Map<String,Object> getEffectMap(String effectName,double amplifier,int duration, boolean ambient, boolean show_particles, boolean show_icon){
-        return InternalTemplateManager.parseTemplate(Template.MINECRAFT_EFFECT,"%effect_id%",effectName,"%effect_amplifier%",amplifier,"%effect_duration%",
-                duration, "%effect_ambient%", ambient, "%effect_show_particles%", show_particles,
-                "%effect_show_icon%" ,show_icon);
-    }
 }

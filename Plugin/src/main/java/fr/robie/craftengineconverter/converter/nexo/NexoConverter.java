@@ -133,7 +133,7 @@ public class NexoConverter extends Converter {
 
                 nexoItemConverter.convertItem();
 
-                if (!nexoItemConverter.isExcludeFromInventory()) {
+                if (nexoItemConverter.isIncludeInsideInventory()) {
                     itemsIds.add(finalItemId);
                 }
                 PluginNameMapper.getInstance().storeMapping(Plugins.NEXO, itemId, finalItemId);
