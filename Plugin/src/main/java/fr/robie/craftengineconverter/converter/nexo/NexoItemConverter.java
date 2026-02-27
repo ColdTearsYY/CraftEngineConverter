@@ -56,13 +56,6 @@ public class NexoItemConverter extends ItemConverter {
         }
     }
 
-    private void copyComponentSection(String nexoKey, String ceKey) {
-        ConfigurationSection section = this.nexoItemSection.getConfigurationSection("Components." + nexoKey);
-        if (section != null) {
-            this.craftEngineItemUtils.getComponentsSection().set(ceKey, section.getValues(true));
-        }
-    }
-
     @Override
     public void convertItemName() {
         String itemName = this.nexoItemSection.getString("itemname");
@@ -904,34 +897,22 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     @Override
-    public void convertUseEffectsComponent(){
+    public void convertUseEffectsComponent() {
         ConfigurationSection useEffectsSection = this.nexoItemSection.getConfigurationSection("Components.use_effects");
         if (isNull(useEffectsSection)) return;
 
-        ConfigurationSection ceUseEffectsSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"minecraft:use_effects");
-
-        boolean canSprint = useEffectsSection.getBoolean("can_sprint", false);
-        if (canSprint) {
-            ceUseEffectsSection.set("can_sprint", true);
-        }
-
-        boolean interactVibrations = useEffectsSection.getBoolean("interact_vibrations", true);
-        if (!interactVibrations) {
-            ceUseEffectsSection.set("interact_vibrations", false);
-        }
-
-        double speedMultiplier = useEffectsSection.getDouble("speed_multiplier", 0.2);
-        if (speedMultiplier != 0.2) {
-            speedMultiplier = Math.max(0.0, Math.min(1.0, speedMultiplier));
-            ceUseEffectsSection.set("speed_multiplier", speedMultiplier);
-        }
+        this.craftEngineItemsConfiguration.addItemConfiguration(new UseEffectsConfiguration(
+                useEffectsSection.getBoolean("can_sprint", false),
+                useEffectsSection.getDouble("speed_multiplier", 0.2),
+                useEffectsSection.getBoolean("interact_vibrations", true)
+        ));
     }
 
     @Override
     public void convertDamageTypeComponent(){
         String damageType = this.nexoItemSection.getString("Components.damage_type");
         if (isValidString(damageType)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:damage_type", damageType);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new DamageTypeConfiguration(damageType));
         }
     }
 
@@ -940,7 +921,7 @@ public class NexoItemConverter extends ItemConverter {
         double minAttackCharge = this.nexoItemSection.getDouble("Components.minimum_attack_charge", -1f);
         if (minAttackCharge >= 0f) {
             minAttackCharge = Math.max(0.0, Math.min(1.0, minAttackCharge));
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:minimum_attack_charge", minAttackCharge);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new MinimumAttackChargeConfiguration((float) minAttackCharge));
         }
     }
 
