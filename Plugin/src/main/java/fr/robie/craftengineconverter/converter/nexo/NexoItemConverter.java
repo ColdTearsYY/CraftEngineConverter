@@ -239,13 +239,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertFireResistance() {
         if (!this.nexoItemSection.getBoolean("Components.fire_resistant", false)) return;
 
-        List<String> invulnerable = this.craftEngineItemUtils.getSettingsSection().getStringList("invulnerable");
-        for (String invulnerableName : new String[]{"fire_tick", "lava"}) {
-            if (!invulnerable.contains(invulnerableName)) {
-                invulnerable.add(invulnerableName);
-            }
-        }
-        this.craftEngineItemUtils.getSettingsSection().set("invulnerable", invulnerable);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new InvulnerableSettingConfiguration(Set.of(InvulnerableSettingConfiguration.InvulnerableType.FIRE, InvulnerableSettingConfiguration.InvulnerableType.FIRE_TICK, InvulnerableSettingConfiguration.InvulnerableType.LAVA), true));
     }
 
     @Override
@@ -470,9 +464,6 @@ public class NexoItemConverter extends ItemConverter {
         }
 
         if (isValidString(assetId) && this.craftEngineItemsConfiguration.getMaterial() == Material.ELYTRA) {
-            if (assetId.contains(":")) {
-                assetId = assetId.split(":", 2)[1];
-            }
             for (String keyToCheck : new String[]{"_elytra"}) {
                 if (assetId.endsWith(keyToCheck)) {
                     assetId = assetId.substring(0, assetId.length() - keyToCheck.length());
@@ -496,7 +487,7 @@ public class NexoItemConverter extends ItemConverter {
             this.setAssetId(assetId);
         }
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new EquippableConfiguration(equipmentSlot, assetId, equipSound, allowedEntities, dispensable, swappable, damageOnHurt, equipOnInteract, cameraOverlay, canBeSheared, shearingSound));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new EquippableConfiguration(equipmentSlot, equipSound, assetId, allowedEntities, dispensable, swappable, damageOnHurt, equipOnInteract, cameraOverlay, canBeSheared, shearingSound, null));
     }
 
     @Override
@@ -554,17 +545,12 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection useRemainderSection = this.nexoItemSection.getConfigurationSection("Components.use_remainder");
         if (useRemainderSection == null) return;
 
-        for (String keyToCheck : new String[]{"minecraft_type", "crucible_item", "mmoitems_id", "mmoitems_type", "nexo_item"}) {
-            String value = useRemainderSection.getString(keyToCheck);
-            if (value == null || value.isEmpty()) continue;
-
-            switch (keyToCheck) {
-                case "minecraft_type" -> this.craftEngineItemUtils.getSettingsSection()
-                        .set("consume-replacement", "minecraft:" + value.toLowerCase());
-                case "nexo_item" -> this.craftEngineItemUtils.getSettingsSection()
-                        .set("consume-replacement", value);
-                default -> Logger.debug("Found unsupported use_remainder key '" + keyToCheck + "' with value '" + value + "', skipping conversion.", LogType.WARNING);
+        String minecraftType = useRemainderSection.getString("minecraft_type");
+        if (minecraftType != null) {
+            if (!minecraftType.contains(":")) {
+                minecraftType = "minecraft:" + minecraftType;
             }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new UseRemainderConfiguration(minecraftType.toLowerCase(), 1));
         }
     }
 
@@ -1046,7 +1032,8 @@ public class NexoItemConverter extends ItemConverter {
                                         }
                                     }
 
-                                    getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
+//                                    getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
+                                    this.craftEngineItemsConfiguration.addItemConfiguration(new EquippableConfiguration(assetId,(EquipmentSlot) null));
                                 }
                             }
 
@@ -1113,7 +1100,8 @@ public class NexoItemConverter extends ItemConverter {
                             }
                         }
 
-                        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
+//                        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
+                        this.craftEngineItemsConfiguration.addItemConfiguration(new EquippableConfiguration(assetId,(EquipmentSlot) null));
                         Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
                         this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
                     }
@@ -1151,7 +1139,8 @@ public class NexoItemConverter extends ItemConverter {
             this.craftEngineItemUtils.getGeneralSection().createSection("model", parseTemplate);
             String[] split = namespacedElytra.split(":", 2);
             String itemIdPartTwo = this.itemId.split(":")[1];
-            getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable").set("wings", split[0]+":"+itemIdPartTwo);
+//            getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable").set("wings", split[0]+":"+itemIdPartTwo);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new EquippableConfiguration(this.assetId, split[0]+":"+itemIdPartTwo));
             String string = split[1];
             int lastIndexOf = string.lastIndexOf("/");
             if (lastIndexOf != -1) {
@@ -1169,7 +1158,8 @@ public class NexoItemConverter extends ItemConverter {
         String throwingModel = packSection.getString("throwing_model", namespacedModel+"_throwing");
         String namespacedThrowingModel = namespaced(throwingModel);
         this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_TRIDENT, "%model_path%",namespacedModel,"%throwing_model_path%",namespacedThrowingModel));
-        this.craftEngineItemUtils.getSettingsSection().set("projectile",InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId));
+//        this.craftEngineItemUtils.getSettingsSection().set("projectile",InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new CecProjectileSettingConfiguration(InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId)));
         return true;
     }
 

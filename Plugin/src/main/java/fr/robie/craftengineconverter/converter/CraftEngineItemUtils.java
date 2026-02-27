@@ -12,14 +12,6 @@ public class CraftEngineItemUtils extends ObjectUtils {
         this.craftEngineItemSection = craftEngineItemSection;
     }
 
-    public ConfigurationSection getDataSection() {
-        return getOrCreateSection(craftEngineItemSection, "data");
-    }
-
-    public ConfigurationSection getComponentsSection() {
-        return getOrCreateSection(getDataSection(), "components");
-    }
-
     public ConfigurationSection getSettingsSection() {
         return getOrCreateSection(craftEngineItemSection, "settings");
     }

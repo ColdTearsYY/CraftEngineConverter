@@ -18,8 +18,9 @@ public class EquippableConfiguration implements ItemConfigurationSerializable {
     private final String cameraOverlay;
     private final boolean canBeSheared;
     private final String shearingSound;
+    private final String wings;
 
-    public EquippableConfiguration(EquipmentSlot equipmentSlot, String equipSound, String assetId, Object allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt, boolean equipOnInteract, String cameraOverlay, boolean canBeSheared, String shearingSound) {
+    public EquippableConfiguration(EquipmentSlot equipmentSlot, String equipSound, String assetId, Object allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt, boolean equipOnInteract, String cameraOverlay, boolean canBeSheared, String shearingSound, String wings) {
         this.equipmentSlot = equipmentSlot;
         this.equipSound = equipSound;
         this.assetId = assetId;
@@ -31,6 +32,7 @@ public class EquippableConfiguration implements ItemConfigurationSerializable {
         this.cameraOverlay = cameraOverlay;
         this.canBeSheared = canBeSheared;
         this.shearingSound = shearingSound;
+        this.wings = wings;
     }
 
     public EquippableConfiguration(String assetId, EquipmentSlot equipmentSlot) {
@@ -45,6 +47,22 @@ public class EquippableConfiguration implements ItemConfigurationSerializable {
         this.cameraOverlay = null;
         this.canBeSheared = false;
         this.shearingSound = "item.shears.snip";
+        this.wings = null;
+    }
+
+    public EquippableConfiguration(String assetId, String wings) {
+        this.assetId = assetId;
+        this.equipmentSlot = null;
+        this.equipSound = "item.armor.equip_generic";
+        this.allowedEntities = null;
+        this.dispensable = true;
+        this.swappable = true;
+        this.damageOnHurt = true;
+        this.equipOnInteract = false;
+        this.cameraOverlay = null;
+        this.canBeSheared = false;
+        this.shearingSound = "item.shears.snip";
+        this.wings = wings;
     }
 
     @Override
@@ -57,13 +75,13 @@ public class EquippableConfiguration implements ItemConfigurationSerializable {
             ceEquippableSection.set("slot", this.equipmentSlot.name().toLowerCase());
 
         if (this.equipSound != null && !this.equipSound.isBlank() && !this.equipSound.equals("item.armor.equip_generic"))
-            ceEquippableSection.set("equip_sound", this.equipSound);
+            ceEquippableSection.set("equip-sound", this.equipSound);
 
         if (this.assetId != null && !this.assetId.isBlank())
-            ceEquippableSection.set("asset_id", this.assetId);
+            ceEquippableSection.set("asset-id", this.assetId);
 
         if (this.allowedEntities != null)
-            ceEquippableSection.set("allowed_entities", this.allowedEntities);
+            ceEquippableSection.set("allowed-entities", this.allowedEntities);
 
         if (!this.dispensable)
             ceEquippableSection.set("dispensable", false);
@@ -72,18 +90,21 @@ public class EquippableConfiguration implements ItemConfigurationSerializable {
             ceEquippableSection.set("swappable", false);
 
         if (!this.damageOnHurt)
-            ceEquippableSection.set("damage_on_hurt", false);
+            ceEquippableSection.set("damage-on-hurt", false);
 
         if (this.equipOnInteract)
-            ceEquippableSection.set("equip_on_interact", true);
+            ceEquippableSection.set("equip-on-interact", true);
 
         if (this.cameraOverlay != null && !this.cameraOverlay.isBlank())
-            ceEquippableSection.set("camera_overlay", this.cameraOverlay);
+            ceEquippableSection.set("camera-overlay", this.cameraOverlay);
 
         if (this.canBeSheared)
-            ceEquippableSection.set("can_be_sheared", true);
+            ceEquippableSection.set("can-be-sheared", true);
 
         if (this.shearingSound != null && !this.shearingSound.isBlank() && !this.shearingSound.equals("item.shears.snip"))
-            ceEquippableSection.set("shearing_sound", this.shearingSound);
+            ceEquippableSection.set("shearing-sound", this.shearingSound);
+
+        if (this.wings != null && !this.wings.isBlank())
+            ceEquippableSection.set("wings", this.wings);
     }
 }

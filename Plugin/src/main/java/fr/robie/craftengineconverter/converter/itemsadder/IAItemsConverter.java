@@ -361,7 +361,6 @@ public class IAItemsConverter extends ItemConverter {
         assetId = namespaced(assetId, this.namespace);
         this.isValidString(assetId);
 
-        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(), "equippable");
         this.setAssetId(assetId);
 
         EquipmentSlot equipmentSlot = parseEquipmentSlot(armorSection.getString("slot"));
@@ -1027,7 +1026,7 @@ public class IAItemsConverter extends ItemConverter {
                         if (isNotNull(fuelSection)){
                             int burnTicks = fuelSection.getInt("burn_ticks", -1);
                             if (burnTicks > 0){
-                                this.craftEngineItemUtils.getSettingsSection().set("fuel-time", burnTicks);
+                                this.craftEngineItemsConfiguration.addItemConfiguration(new FuelTimeSettingConfiguration(burnTicks));
                             }
                             // machines fuel type not supported
                         }

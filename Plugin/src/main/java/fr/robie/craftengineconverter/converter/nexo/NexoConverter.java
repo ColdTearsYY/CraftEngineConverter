@@ -132,6 +132,7 @@ public class NexoConverter extends Converter {
                 );
 
                 nexoItemConverter.convertItem();
+                nexoItemConverter.getCraftEngineItemsConfiguration().serialize(convertedConfig, "items." + finalItemId, getOrCreateSection(items, finalItemId));
 
                 if (nexoItemConverter.isIncludeInsideInventory()) {
                     itemsIds.add(finalItemId);
