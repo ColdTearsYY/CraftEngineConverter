@@ -11,12 +11,12 @@ import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.utils.AbstractEffectsConfiguration;
 import fr.robie.craftengineconverter.common.utils.CecAttributeModifier;
+import fr.robie.craftengineconverter.common.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.utils.enums.*;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoBestTool;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoMinimalType;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
-import fr.robie.craftengineconverter.utils.FloatsUtils;
 import fr.robie.craftengineconverter.utils.Position;
 import fr.robie.craftengineconverter.utils.Tuple;
 import fr.robie.craftengineconverter.utils.loots.CraftEngineItemLoot;
@@ -25,7 +25,9 @@ import fr.robie.craftengineconverter.utils.loots.MinecraftItemLoot;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
+import net.momirealms.craftengine.core.entity.display.Billboard;
 import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
+import net.momirealms.craftengine.core.util.Direction;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -1531,235 +1533,272 @@ public class NexoItemConverter extends ItemConverter {
     private void convertFurnitureMechanic(ConfigurationSection nexoFurnitureMechanicsSection) {
         String nexoMEGModel = nexoFurnitureMechanicsSection.getString("modelengine_id");
         String nexoBetterModel = nexoFurnitureMechanicsSection.getString("better-model");
-        ConfigurationSection ceBehaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        ceBehaviorSection.set("type", "furniture_item");
-        ConfigurationSection ceSettingsSection = getOrCreateSection(ceBehaviorSection, "settings");
-        ceSettingsSection.set("item", this.itemId);
+
+        FurnitureConfiguration furnitureConfiguration = new FurnitureConfiguration();
+
+        // --- Sounds ---
         ConfigurationSection nexoBlockSoundSection = nexoFurnitureMechanicsSection.getConfigurationSection("block_sounds");
-        if (isNotNull(nexoBlockSoundSection)){
-            ConfigurationSection ceBlockSoundSection = getOrCreateSection(ceSettingsSection, "sounds");
-            setIfNotEmpty(ceBlockSoundSection, "place", nexoBlockSoundSection.getString("place_sound"));
-            setIfNotEmpty(ceBlockSoundSection, "break", nexoBlockSoundSection.getString("break_sound"));
-            // hit_sound / step_sound/ fall_sound are not supported in CE for furniture
+        if (isNotNull(nexoBlockSoundSection)) {
+            FurnitureConfiguration.Settings settings = furnitureConfiguration.getOrCreateSettings(this.itemId);
+            settings.setPlaceSound(nexoBlockSoundSection.getString("place_sound"));
+            settings.setBreakSound(nexoBlockSoundSection.getString("break_sound"));
+            // hit_sound / step_sound / fall_sound are not supported in CE for furniture
         }
+
+        // --- Rotation ---
         FurnitureRotation furnitureRotation = FurnitureRotation.EIGHT;
-        if (!nexoFurnitureMechanicsSection.getBoolean("rotatable",true)){
+        if (!nexoFurnitureMechanicsSection.getBoolean("rotatable", true)) {
             furnitureRotation = FurnitureRotation.FOUR;
         }
         String restrictedRotation = nexoFurnitureMechanicsSection.getString("restricted_rotation");
-        if (isValidString(restrictedRotation)){
-            if (restrictedRotation.equals("VERY_STRICT")){
+        if (isValidString(restrictedRotation)) {
+            if (restrictedRotation.equals("VERY_STRICT")) {
                 furnitureRotation = FurnitureRotation.FOUR;
-            } else if (restrictedRotation.equals("STRICT")){
+            } else if (restrictedRotation.equals("STRICT")) {
                 furnitureRotation = FurnitureRotation.EIGHT;
             }
         }
-        FloatsUtils seatPosition = new FloatsUtils(3,new float[]{0f,0f,0f});
+
+        // --- Seats ---
+        FloatsUtils seatPosition = new FloatsUtils(3, new float[]{0f, 0f, 0f});
         List<String> seats = nexoFurnitureMechanicsSection.getStringList("seats");
-        if (!seats.isEmpty()){
+        if (!seats.isEmpty()) {
             String seat = seats.getFirst();
-            String[] split = seat.split(",",3);
+            String[] split = seat.split(",", 3);
             try {
                 seatPosition.setValue(0, Float.parseFloat(split[0].trim()));
                 seatPosition.setValue(1, Float.parseFloat(split[1].trim()));
                 seatPosition.setValue(2, Float.parseFloat(split[2].trim()));
-            } catch (Exception e){
-                Logger.debug("Invalid seat format for furniture item '" + this.itemId + "', expected 3 comma-separated float values but got '"+seat+"'. Defaulting to (0,0,0).", LogType.WARNING);
+            } catch (Exception e) {
+                Logger.debug("Invalid seat format for furniture item '" + this.itemId + "', expected 3 comma-separated float values but got '" + seat + "'. Defaulting to (0,0,0).", LogType.WARNING);
             }
         }
 
-        ConfigurationSection nexoPropertiesSection = nexoFurnitureMechanicsSection.getConfigurationSection("properties");
-        Billboard transformType = Billboard.FIXED;
+        // --- Display properties ---
+        net.momirealms.craftengine.core.entity.display.Billboard transformType = net.momirealms.craftengine.core.entity.display.Billboard.FIXED;
         ItemDisplayType displayType = ItemDisplayType.FIXED;
+        FloatsUtils displayTranslation = new FloatsUtils(3, new float[]{0f, 0.5f, 0f});
+        FloatsUtils scale = new FloatsUtils(3, new float[]{1f, 1f, 1f});
 
-        FloatsUtils displayTranslation = new FloatsUtils(3,new float[]{0f,0.5f,0f});;
-        FloatsUtils scale = new FloatsUtils(3,new float[]{1f,1f,1f});
-        if (isNotNull(nexoPropertiesSection)){
-            String display_transform = nexoPropertiesSection.getString("display_transform","NONE");
+        ConfigurationSection nexoPropertiesSection = nexoFurnitureMechanicsSection.getConfigurationSection("properties");
+        if (isNotNull(nexoPropertiesSection)) {
+            String display_transform = nexoPropertiesSection.getString("display_transform", "NONE");
             try {
                 displayType = ItemDisplayType.valueOf(display_transform);
-            } catch (IllegalArgumentException e){
-                Logger.debug("Unknown display_transform '"+display_transform+"' for furniture item '"+this.itemId+"', defaulting to NONE.", LogType.WARNING);
+            } catch (IllegalArgumentException e) {
+                Logger.debug("Unknown display_transform '" + display_transform + "' for furniture item '" + this.itemId + "', defaulting to NONE.", LogType.WARNING);
                 displayType = ItemDisplayType.NONE;
             }
-            String tracking_rotation = nexoPropertiesSection.getString("tracking_rotation",Billboard.FIXED.name());
+            String tracking_rotation = nexoPropertiesSection.getString("tracking_rotation", net.momirealms.craftengine.core.entity.display.Billboard.FIXED.name());
             try {
                 transformType = Billboard.valueOf(tracking_rotation);
-            } catch (IllegalArgumentException e){
-                Logger.debug("Unknown tracking_rotation '"+tracking_rotation+"' for furniture item '"+this.itemId+"', defaulting to FIXED.", LogType.WARNING);
+            } catch (IllegalArgumentException e) {
+                Logger.debug("Unknown tracking_rotation '" + tracking_rotation + "' for furniture item '" + this.itemId + "', defaulting to FIXED.", LogType.WARNING);
             }
             List<Float> translations = nexoPropertiesSection.getFloatList("translation");
-            if (translations.size() >= 3){
+            if (translations.size() >= 3) {
                 displayTranslation.setValue(0, translations.get(0));
                 displayTranslation.setValue(1, translations.get(1));
                 displayTranslation.setValue(2, translations.get(2));
-            } else {
-                if (!translations.isEmpty()) {
-                    Logger.debug("Invalid translation size for furniture item '" + this.itemId + "', expected 3 values but got " + translations.size() + ". Defaulting to (0,0,0).", LogType.WARNING);
-                }
+            } else if (!translations.isEmpty()) {
+                Logger.debug("Invalid translation size for furniture item '" + this.itemId + "', expected 3 values but got " + translations.size() + ". Defaulting to (0,0,0).", LogType.WARNING);
             }
             String scales = nexoPropertiesSection.getString("scale");
-            if (isNotNull(scales)){
+            if (isNotNull(scales)) {
                 String[] split = scales.split(",", 3);
                 try {
                     scale.setValue(0, Float.parseFloat(split[0].trim()));
                     scale.setValue(1, Float.parseFloat(split[1].trim()));
                     scale.setValue(2, Float.parseFloat(split[2].trim()));
-                } catch (Exception e){
-                    Logger.debug("Invalid scale format for furniture item '" + this.itemId + "', expected 3 comma-separated float values but got '"+scales+"'. Defaulting to (1,1,1).", LogType.WARNING);
+                } catch (Exception e) {
+                    Logger.debug("Invalid scale format for furniture item '" + this.itemId + "', expected 3 comma-separated float values but got '" + scales + "'. Defaulting to (1,1,1).", LogType.WARNING);
                 }
             }
         }
+
+        // --- Loot ---
         ConfigurationSection dropSection = nexoFurnitureMechanicsSection.getConfigurationSection("drop");
-        if (isNotNull(dropSection)){
-            // TODO: Support for nexo drop
-            boolean dropSelfWithSilktouch = dropSection.getBoolean("silktouch",false);
-            boolean fortuneAffectsDrop = dropSection.getBoolean("fortune",false);
-            String minimal_type = dropSection.getString("minimal_type",null);
-            String best_tool = dropSection.getString("best_tool",null);
+        if (isNotNull(dropSection)) {
+            boolean dropSelfWithSilktouch = dropSection.getBoolean("silktouch", false);
+            boolean fortuneAffectsDrop = dropSection.getBoolean("fortune", false);
+            String minimal_type = dropSection.getString("minimal_type", null);
+            String best_tool = dropSection.getString("best_tool", null);
             List<Map<?, ?>> loots = dropSection.getMapList("loots");
             List<ItemLoot> itemLoots = new ArrayList<>();
-            for (Map<?, ?> lootMap : loots){
+            for (Map<?, ?> lootMap : loots) {
                 ItemLoot itemLoot = null;
                 int minAmount = 1;
                 int maxAmount = 1;
                 Object amount = lootMap.get("amount");
-                if (amount instanceof Integer intAmount){
+                if (amount instanceof Integer intAmount) {
                     minAmount = intAmount;
                     maxAmount = intAmount;
-                } else if (amount instanceof String amountString){
-                    String[] split = amountString.split("..",2);
+                } else if (amount instanceof String amountString) {
+                    String[] split = amountString.split("\\.\\.", 2);
                     try {
                         minAmount = Integer.parseInt(split[0].trim());
-                        if (split.length == 2){
-                            maxAmount = Integer.parseInt(split[1].trim());
-                        } else {
-                            maxAmount = minAmount;
-                        }
-                    } catch (NumberFormatException e){
-                        Logger.debug("Invalid amount format '"+amountString+"' for furniture item '"+this.itemId+"'. Defaulting to 1.", LogType.WARNING);
+                        maxAmount = split.length == 2 ? Integer.parseInt(split[1].trim()) : minAmount;
+                    } catch (NumberFormatException e) {
+                        Logger.debug("Invalid amount format '" + amountString + "' for furniture item '" + this.itemId + "'. Defaulting to 1.", LogType.WARNING);
                     }
                 }
                 float probability = 1.0f;
                 Object probObj = lootMap.get("probability");
-                if (probObj instanceof Number num){
-                    probability = num.floatValue();;
-                } else if (probObj instanceof String probString){
+                if (probObj instanceof Number num) {
+                    probability = num.floatValue();
+                } else if (probObj instanceof String probString) {
                     try {
                         probability = Float.parseFloat(probString);
-                    } catch (NumberFormatException e){
-                        Logger.debug("Invalid probability format '"+probString+"' for furniture item '"+this.itemId+"'. Defaulting to 1.0.", LogType.WARNING);
+                    } catch (NumberFormatException e) {
+                        Logger.debug("Invalid probability format '" + probString + "' for furniture item '" + this.itemId + "'. Defaulting to 1.0.", LogType.WARNING);
                     }
                 }
-                if (lootMap.get("nexo_item") instanceof String nexoItemString){
+                if (lootMap.get("nexo_item") instanceof String nexoItemString) {
                     itemLoot = new CraftEngineItemLoot(nexoItemString, minAmount, maxAmount, probability);
-                } else if (lootMap.get("minecraft_type") instanceof String minecraftTypeString){
+                } else if (lootMap.get("minecraft_type") instanceof String minecraftTypeString) {
                     itemLoot = new MinecraftItemLoot(minecraftTypeString, minAmount, maxAmount, probability);
                 }
-                if (isNotNull(itemLoot))
-                    itemLoots.add(itemLoot);
+                if (isNotNull(itemLoot)) itemLoots.add(itemLoot);
             }
-            if (isValidString(minimal_type) || isValidString(best_tool)){
-                Logger.debug("Custom drop conditions (minimal_type, best_tool) for furniture item '"+this.itemId+"' are not supported yet. Skipping custom drop conditions.", LogType.WARNING);
+            if (isValidString(minimal_type) || isValidString(best_tool)) {
+                Logger.debug("Custom drop conditions (minimal_type, best_tool) for furniture item '" + this.itemId + "' are not supported yet. Skipping custom drop conditions.", LogType.WARNING);
             }
-            if (dropSelfWithSilktouch && !fortuneAffectsDrop){
-                ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-                ceFurnitureSection.set("loot", InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_SILK_TOUCH_ONLY, "%type%", "item", "%item%", this.itemId));
-            } else if (!dropSelfWithSilktouch && fortuneAffectsDrop){
-                if (itemLoots.isEmpty()){
-                    Logger.info("Furniture item '"+this.itemId+"' has fortune-based drop enabled but no loots defined. Please define loots to use fortune-based drops.");
-                } else {
-                    //TODO: Wait for Ce support to implement this
+            if (dropSelfWithSilktouch && !fortuneAffectsDrop) {
+                furnitureConfiguration.setLoot(InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_SILK_TOUCH_ONLY, "%type%", "item", "%item%", this.itemId));
+            } else if (!dropSelfWithSilktouch && fortuneAffectsDrop) {
+                if (itemLoots.isEmpty()) {
+                    Logger.info("Furniture item '" + this.itemId + "' has fortune-based drop enabled but no loots defined. Please define loots to use fortune-based drops.");
                 }
-            } else if (dropSelfWithSilktouch){ // fortuneAffectsDrop == True
-                //TODO: Wait for Ce support to implement this
+                // TODO: Wait for CE support
+            } else if (dropSelfWithSilktouch) {
+                // TODO: Wait for CE support (fortuneAffectsDrop == true)
             }
         } else {
-            ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-            ceFurnitureSection.set("loot", InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_BASIC_DROP, "%type%","furniture_item","%item%", this.itemId));
+            furnitureConfiguration.setLoot(InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_BASIC_DROP, "%type%", "furniture_item", "%item%", this.itemId));
         }
+
+        // --- Placements ---
+        Set<FurniturePlacement> placementKeys = new HashSet<>();
         ConfigurationSection limitedPlacingSection = nexoFurnitureMechanicsSection.getConfigurationSection("limited_placing");
-        Set<FurniturePlacement> noLimitedPlacingKeys = new HashSet<>();
-        if (isNotNull(limitedPlacingSection)){
-            boolean limitedRoof = limitedPlacingSection.getBoolean("roof", false);
-            boolean limitedFloor = limitedPlacingSection.getBoolean("floor", false);
-            boolean limitedWall = limitedPlacingSection.getBoolean("wall", false);
-            if (limitedFloor){
-                noLimitedPlacingKeys.add(FurniturePlacement.GROUND);
-            }
-            if (limitedWall){
-                noLimitedPlacingKeys.add(FurniturePlacement.WALL);
-            }
-            if (limitedRoof){
-                noLimitedPlacingKeys.add(FurniturePlacement.CEILING);
-            }
+        if (isNotNull(limitedPlacingSection)) {
+            if (limitedPlacingSection.getBoolean("floor", false)) placementKeys.add(FurniturePlacement.GROUND);
+            if (limitedPlacingSection.getBoolean("wall", false)) placementKeys.add(FurniturePlacement.WALL);
+            if (limitedPlacingSection.getBoolean("roof", false)) placementKeys.add(FurniturePlacement.CEILING);
         } else {
-            noLimitedPlacingKeys.addAll(List.of(FurniturePlacement.values()));
+            placementKeys.addAll(List.of(FurniturePlacement.values()));
         }
-        if (!noLimitedPlacingKeys.isEmpty()){
-            if (isValidString(nexoBetterModel) || isValidString(nexoMEGModel)){
-                for (FurniturePlacement placement : noLimitedPlacingKeys){
-                    ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-                    ConfigurationSection cePlacementSection = getOrCreateSection(ceFurnitureSection, "placement");
-                    ConfigurationSection ceTypePlacementSection = cePlacementSection.createSection(placement.name().toLowerCase());
-                    if (isValidString(nexoBetterModel)){
-                        ceTypePlacementSection.set("better-model", nexoBetterModel);
-                    } else if (isValidString(nexoMEGModel)){
-                        ceTypePlacementSection.set("model-engine", nexoMEGModel);
+
+        if (!placementKeys.isEmpty()) {
+            if (isValidString(nexoBetterModel) || isValidString(nexoMEGModel)) {
+                for (FurniturePlacement placement : placementKeys) {
+                    FurnitureConfiguration.Placement p = furnitureConfiguration.getOrCreatePlacement(placement);
+                    if (isValidString(nexoBetterModel)) p.setBetterModel(nexoBetterModel);
+                    else p.setModelEngine(nexoMEGModel);
+                }
+            } else {
+                // Build element
+                FurnitureConfiguration.ItemDisplayElement element = new FurnitureConfiguration.ItemDisplayElement(this.itemId);
+                element.setDisplayTransform(displayType);
+                element.display().setBillboard(transformType);
+                element.display().setTranslation(displayTranslation.getValue(0), displayTranslation.getValue(1), displayTranslation.getValue(2));
+                element.display().setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
+
+                // Build hitboxes
+                List<FurnitureConfiguration.Hitbox> hitboxList = new ArrayList<>();
+                ConfigurationSection nexoHitboxesSection = nexoFurnitureMechanicsSection.getConfigurationSection("hitbox");
+                if (isNotNull(nexoHitboxesSection)) {
+                    AtomicBoolean seatsAdded = new AtomicBoolean(false);
+
+                    // Barriers
+                    for (Position pos : expandBarrierPositions(nexoHitboxesSection.getStringList("barriers"))) {
+                        FurnitureConfiguration.ShulkerHitbox hitbox = new FurnitureConfiguration.ShulkerHitbox();
+                        hitbox.setPosition(pos.x(), pos.y(), pos.z());
+                        hitboxList.add(hitbox);
+                    }
+
+                    // Shulkers
+                    for (String shulker : nexoHitboxesSection.getStringList("shulkers")) {
+                        if (!isValidString(shulker)) continue;
+                        String[] parts = shulker.trim().split("\\s+");
+                        if (parts.length < 3) {
+                            Logger.debug("Invalid shulker entry '" + shulker + "' for item '" + this.itemId + "'.", LogType.WARNING);
+                            continue;
+                        }
+                        String[] coords = parts[0].split("\\s*,\\s*");
+                        if (coords.length != 3) continue;
+                        try {
+                            FurnitureConfiguration.ShulkerHitbox hitbox = new FurnitureConfiguration.ShulkerHitbox();
+                            hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
+                            hitbox.setScale(Float.parseFloat(parts[1]));
+                            hitbox.setPeek((int) (Float.parseFloat(parts[2]) * 100));
+                            if (parts.length >= 4) {
+                                String dir = parts[3].toUpperCase();
+                                hitbox.setDirection(getDirectionFromString(dir));
+                            }
+                            if (seatPosition.isUpdated() && !seatsAdded.getAndSet(true))
+                                hitbox.addSeat(seatPosition.getValue(0), seatPosition.getValue(1), seatPosition.getValue(2), 0);
+                            hitboxList.add(hitbox);
+                        } catch (NumberFormatException e) {
+                            Logger.debug("Non-numeric values in shulker '" + shulker + "' for item '" + this.itemId + "'.", LogType.WARNING);
+                        }
+                    }
+
+                    // Ghasts
+                    for (String ghast : nexoHitboxesSection.getStringList("ghasts")) {
+                        if (!isValidString(ghast)) continue;
+                        String[] parts = ghast.trim().split("\\s+");
+                        if (parts.length < 2) {
+                            Logger.debug("Invalid ghast entry '" + ghast + "' for item '" + this.itemId + "'.", LogType.WARNING);
+                            continue;
+                        }
+                        String[] coords = parts[0].split("\\s*,\\s*");
+                        if (coords.length != 3) continue;
+                        try {
+                            FurnitureConfiguration.HappyGhastHitbox hitbox = new FurnitureConfiguration.HappyGhastHitbox();
+                            hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
+                            hitbox.setScale(Float.parseFloat(parts[1]));
+                            if (seatPosition.isUpdated() && !seatsAdded.getAndSet(true))
+                                hitbox.addSeat(seatPosition.getValue(0), seatPosition.getValue(1), seatPosition.getValue(2), 0);
+                            hitboxList.add(hitbox);
+                        } catch (NumberFormatException e) {
+                            Logger.debug("Non-numeric values in ghast '" + ghast + "' for item '" + this.itemId + "'.", LogType.WARNING);
+                        }
+                    }
+
+                    // Interactions
+                    for (String interaction : nexoHitboxesSection.getStringList("interactions")) {
+                        if (!isValidString(interaction)) continue;
+                        String[] parts = interaction.trim().split("\\s+");
+                        if (parts.length != 2) {
+                            Logger.debug("Invalid interaction entry '" + interaction + "' for item '" + this.itemId + "'.", LogType.WARNING);
+                            continue;
+                        }
+                        String[] coords = parts[0].split("\\s*,\\s*");
+                        String[] size = parts[1].split("\\s*,\\s*");
+                        if (coords.length != 3 || size.length != 2) continue;
+                        try {
+                            FurnitureConfiguration.InteractionHitbox hitbox = new FurnitureConfiguration.InteractionHitbox();
+                            hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
+                            hitbox.setWidth(Float.parseFloat(size[0]));
+                            hitbox.setHeight(Float.parseFloat(size[1]));
+                            hitboxList.add(hitbox);
+                        } catch (NumberFormatException e) {
+                            Logger.debug("Non-numeric values in interaction '" + interaction + "' for item '" + this.itemId + "'.", LogType.WARNING);
+                        }
                     }
                 }
-                return;
-            }
-            List<Map<String,Object>> elements = new ArrayList<>();
-            Map<String,Object> map = new HashMap<>();
-            map.put("item", this.itemId);
-            map.put("display-transform", displayType.name());
-            map.put("billboard", transformType.name());
-            map.put("translation", displayTranslation.toString());
-            map.put("scale", scale.toString());
-            elements.add(map);
-            List<Map<String,Object>> hitboxes = new ArrayList<>();
-            ConfigurationSection nexoHitboxesSection = nexoFurnitureMechanicsSection.getConfigurationSection("hitbox");
-            if (isNotNull(nexoHitboxesSection)){
-                // Parse barriers (simple shulker hitboxes)
-                List<String> barriersList = nexoHitboxesSection.getStringList("barriers");
-                List<Position> barrierPositions = expandBarrierPositions(barriersList);
-                for (Position pos : barrierPositions){
-                    Map<String,Object> hitboxMap = new HashMap<>();
-                    hitboxMap.put("type","shulker");
-                    hitboxMap.put("position",pos.toString());
-                    hitboxes.add(hitboxMap);
-                }
 
-                // Track if seats have been added (only add to first hitbox)
-                AtomicBoolean seatsAdded = new AtomicBoolean(false);
-
-                // Parse shulkers (advanced shulker hitboxes with scale, peek, direction)
-                List<String> shulkersList = nexoHitboxesSection.getStringList("shulkers");
-                parseShulkersHitboxes(shulkersList, hitboxes, seatPosition, seatsAdded);
-
-                // Parse ghasts (happy_ghast hitboxes with scale)
-                List<String> ghastsList = nexoHitboxesSection.getStringList("ghasts");
-                parseGhastsHitboxes(ghastsList, hitboxes, seatPosition, seatsAdded);
-
-                // Parse interactions (non-collision hitboxes)
-                List<String> interactionsList = nexoHitboxesSection.getStringList("interactions");
-                parseInteractionsHitboxes(interactionsList, hitboxes);
-            }
-            ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-            ConfigurationSection cePlacementSection = getOrCreateSection(ceFurnitureSection, "placement");
-
-            for (FurniturePlacement furniturePlacement : noLimitedPlacingKeys){
-                ConfigurationSection ceTypePlacementSection = cePlacementSection.createSection(furniturePlacement.name().toLowerCase());
-                ConfigurationSection ceRuleSection = ceTypePlacementSection.createSection("rules");
-                ceRuleSection.set("rotation", furnitureRotation.name());
-                ceTypePlacementSection.set("elements", elements);
-                if (!hitboxes.isEmpty()){
-                    ceTypePlacementSection.set("hitboxes", hitboxes);
+                for (FurniturePlacement furniturePlacement : placementKeys) {
+                    FurnitureConfiguration.Placement p = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
+                    FurnitureConfiguration.Rules rules = p.getRules();
+                    rules.setRotation(furnitureRotation);
+                    p.addElement(element);
+                    hitboxList.forEach(p::addHitbox);
                 }
             }
-
         }
+
+        this.getCraftEngineItemsConfiguration().addItemConfiguration(furnitureConfiguration);
     }
 
     private List<Position> expandBarrierPositions(List<String> barriersList) {
@@ -1830,145 +1869,14 @@ public class NexoItemConverter extends ItemConverter {
         }
     }
 
-    private void parseInteractionsHitboxes(List<String> interactionsList, List<Map<String,Object>> hitboxes) {
-        for (String interaction : interactionsList) {
-            if (!isValidString(interaction)) continue;
-
-            String[] parts = interaction.trim().split("\\s+");
-            if (parts.length != 2) {
-                Logger.debug("Invalid interaction entry '"+interaction+"' for item '"+this.itemId+"', expected format: 'x,y,z width,height'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] coordParts = parts[0].split("\\s*,\\s*");
-            if (coordParts.length != 3) {
-                Logger.debug("Invalid coordinates in interaction '"+interaction+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] sizeParts = parts[1].split("\\s*,\\s*");
-            if (sizeParts.length != 2) {
-                Logger.debug("Invalid size in interaction '"+interaction+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            try {
-                float x = Float.parseFloat(coordParts[0]);
-                float y = Float.parseFloat(coordParts[1]);
-                float z = Float.parseFloat(coordParts[2]);
-                float width = Float.parseFloat(sizeParts[0]);
-                float height = Float.parseFloat(sizeParts[1]);
-
-                Map<String,Object> hitbox = new HashMap<>();
-                hitbox.put("type", "interaction");
-                hitbox.put("position", x+","+y+","+z);
-                hitbox.put("width", width);
-                hitbox.put("height", height);
-                hitboxes.add(hitbox);
-            } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric values in interaction '"+interaction+"' for item '"+this.itemId+"'.", LogType.WARNING);
-            }
-        }
-    }
-
-    private void parseShulkersHitboxes(List<String> shulkersList, List<Map<String,Object>> hitboxes, FloatsUtils seatPosition, AtomicBoolean seatsAdded) {
-        for (String shulker : shulkersList) {
-            if (!isValidString(shulker)) continue;
-
-            // Format: "x,y,z scale peek [direction] [visible]"
-            String[] parts = shulker.trim().split("\\s+");
-            if (parts.length < 3) {
-                Logger.debug("Invalid shulker entry '"+shulker+"' for item '"+this.itemId+"', expected format: 'x,y,z scale peek [direction] [visible]'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] coordParts = parts[0].split("\\s*,\\s*");
-            if (coordParts.length != 3) {
-                Logger.debug("Invalid coordinates in shulker '"+shulker+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            try {
-                float x = Float.parseFloat(coordParts[0]);
-                float y = Float.parseFloat(coordParts[1]);
-                float z = Float.parseFloat(coordParts[2]);
-                float scale = Float.parseFloat(parts[1]);
-                float peek = Float.parseFloat(parts[2]);
-
-                Map<String,Object> hitbox = new HashMap<>();
-                hitbox.put("type", "shulker");
-                hitbox.put("position", x+","+y+","+z);
-                hitbox.put("scale", scale);
-                hitbox.put("peek", (int) (peek * 100));
-
-                if (parts.length >= 4) {
-                    String direction = parts[3].toUpperCase();
-                    if (isValidDirection(direction)) {
-                        hitbox.put("direction", direction);
-                    } else {
-                        Logger.debug("Invalid direction '"+parts[3]+"' in shulker '"+shulker+"' for item '"+this.itemId+"', defaulting to UP.", LogType.WARNING);
-                        hitbox.put("direction", "UP");
-                    }
-                } else {
-                    hitbox.put("direction", "UP");
-                }
-
-                addSeatsIfNeeded(hitbox, seatPosition, seatsAdded);
-                hitboxes.add(hitbox);
-            } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric values in shulker '"+shulker+"' for item '"+this.itemId+"'.", LogType.WARNING);
-            }
-        }
-    }
-
-    private void parseGhastsHitboxes(List<String> ghastsList, List<Map<String,Object>> hitboxes, FloatsUtils seatPosition, AtomicBoolean seatsAdded) {
-        for (String ghast : ghastsList) {
-            if (!isValidString(ghast)) continue;
-
-            // Format: "x,y,z scale [rotation] [visible]"
-            String[] parts = ghast.trim().split("\\s+");
-            if (parts.length < 2) {
-                Logger.debug("Invalid ghast entry '"+ghast+"' for item '"+this.itemId+"', expected format: 'x,y,z scale [rotation] [visible]'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] coordParts = parts[0].split("\\s*,\\s*");
-            if (coordParts.length != 3) {
-                Logger.debug("Invalid coordinates in ghast '"+ghast+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            try {
-                float x = Float.parseFloat(coordParts[0]);
-                float y = Float.parseFloat(coordParts[1]);
-                float z = Float.parseFloat(coordParts[2]);
-                float scale = Float.parseFloat(parts[1]);
-
-                Map<String,Object> hitbox = new HashMap<>();
-                hitbox.put("type", "happy_ghast");
-                hitbox.put("position", x+","+y+","+z);
-                hitbox.put("scale", scale);
-
-                addSeatsIfNeeded(hitbox, seatPosition, seatsAdded);
-                hitboxes.add(hitbox);
-            } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric values in ghast '"+ghast+"' for item '"+this.itemId+"'.", LogType.WARNING);
-            }
-        }
-    }
-
-    private void addSeatsIfNeeded(Map<String, Object> hitbox, FloatsUtils seatPosition, AtomicBoolean seatsAdded) {
-        if (seatPosition.isUpdated() && !seatsAdded.getAndSet(true)) {
-            List<String> seats = new ArrayList<>();
-            seats.add(seatPosition + " 0");
-            hitbox.put("seats", seats);
-        }
-    }
-
-    private boolean isValidDirection(String direction) {
+    public Direction getDirectionFromString(String direction) {
         return switch (direction.toUpperCase()) {
-            case "UP", "DOWN", "NORTH", "SOUTH", "EAST", "WEST" -> true;
-            default -> false;
+            case "DOWN" -> Direction.DOWN;
+            case "NORTH" -> Direction.NORTH;
+            case "SOUTH" -> Direction.SOUTH;
+            case "EAST" -> Direction.EAST;
+            case "WEST" -> Direction.WEST;
+            default -> Direction.UP;
         };
     }
 }

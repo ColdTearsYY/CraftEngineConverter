@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.utils;
+package fr.robie.craftengineconverter.common.utils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -6,7 +6,7 @@ public class FloatsUtils {
     private final float[] values;
     private boolean updated;
 
-    public FloatsUtils(int size,float[] defaultValues){
+    public FloatsUtils(int size, float[] defaultValues){
         this.values = new float[size];
         this.updated = false;
         System.arraycopy(defaultValues, 0, this.values, 0, Math.min(defaultValues.length, size));
@@ -36,5 +36,9 @@ public class FloatsUtils {
             }
         }
         return sb.toString();
+    }
+
+    public float getValue(int i) {
+        return this.values[i];
     }
 }

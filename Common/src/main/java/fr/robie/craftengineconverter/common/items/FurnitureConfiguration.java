@@ -1,20 +1,25 @@
 package fr.robie.craftengineconverter.common.items;
 
+import fr.robie.craftengineconverter.common.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.utils.ItemConfigurationSerializable;
 import fr.robie.craftengineconverter.common.utils.enums.FurniturePlacement;
+import fr.robie.craftengineconverter.common.utils.enums.FurnitureRotation;
 import fr.robie.craftengineconverter.common.utils.enums.ItemDisplayType;
 import net.momirealms.craftengine.core.entity.display.Billboard;
 import net.momirealms.craftengine.core.entity.display.TextDisplayAlignment;
+import net.momirealms.craftengine.core.entity.furniture.AlignmentRule;
+import net.momirealms.craftengine.core.util.Direction;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class FurnitureConfiguration implements ItemConfigurationSerializable {
     private Settings settings;
-    private String loot;
+    private Map<String,Object> loot;
     private final Map<FurniturePlacement, Placement> placements = new EnumMap<>(FurniturePlacement.class);
 
     @NotNull
@@ -28,7 +33,9 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         return this.placements.computeIfAbsent(type, Placement::new);
     }
 
-    public void setLoot(String loot) { this.loot = loot; }
+    public void setLoot(Map<String, Object> loot) {
+        this.loot = loot;
+    }
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
@@ -38,20 +45,28 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         ConfigurationSection settingsSection = getOrCreateSection(behaviorSection, "settings");
         settingsSection.set("item", itemId);
 
+        ConfigurationSection furnitureSection = getOrCreateSection(behaviorSection, "furniture");
         if (this.settings != null) {
-            ConfigurationSection furnitureSettingsSection = getOrCreateSection(settingsSection, "furniture");
+            ConfigurationSection furnitureSettingsSection = getOrCreateSection(furnitureSection, "settings");
             furnitureSettingsSection.set("item", this.settings.getItem());
-            if (this.settings.getHitTimes() != null)
+            if (this.settings.getHitTimes() != null) {
                 furnitureSettingsSection.set("hit-times", this.settings.getHitTimes());
-            if (this.settings.getBreakSound() != null)
+            }
+            if (this.settings.getBreakSound() != null) {
                 getOrCreateSection(furnitureSettingsSection, "sounds").set("break", this.settings.getBreakSound());
-            if (this.settings.getPlaceSound() != null)
+            }
+            if (this.settings.getPlaceSound() != null) {
                 getOrCreateSection(furnitureSettingsSection, "sounds").set("place", this.settings.getPlaceSound());
-            if (this.settings.getHitSound() != null)
+            }
+            if (this.settings.getHitSound() != null) {
                 getOrCreateSection(furnitureSettingsSection, "sounds").set("hit", this.settings.getHitSound());
+            }
         }
 
-        ConfigurationSection furnitureSection = getOrCreateSection(behaviorSection, "furniture");
+        if (this.loot != null) {
+            furnitureSection.createSection("loot", this.loot);
+        }
+
 
         if (!this.placements.isEmpty()) {
             ConfigurationSection placementSection = getOrCreateSection(furnitureSection, "placement");
@@ -86,8 +101,10 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         private final float[] lootSpawnOffset = new float[3];
         private boolean entityCulling = false;
 
+        private final Rules rules = new Rules();
+
         private final List<Element> elements = new ArrayList<>();
-        private final List<Hitboxe> hitboxes = new ArrayList<>();
+        private final List<Hitbox> hitboxes = new ArrayList<>();
 
         private String betterModel;
         private String modelEngine;
@@ -108,9 +125,11 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
 
         public void addElement(Element element) { this.elements.add(element); }
 
-        public void addHitbox(Hitboxe hitbox) { this.hitboxes.add(hitbox); }
+        public void addHitbox(Hitbox hitbox) { this.hitboxes.add(hitbox); }
 
         public void setEntityCulling(boolean entityCulling) { this.entityCulling = entityCulling; }
+
+        public Rules getRules() { return this.rules; }
 
         public void serialize(ConfigurationSection placementSection) {
             ConfigurationSection typeSection = placementSection.createSection(this.type.name().toLowerCase());
@@ -130,6 +149,11 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
             if (this.lootSpawnOffset[0] != 0 || this.lootSpawnOffset[1] != 0 || this.lootSpawnOffset[2] != 0)
                 typeSection.set("loot-spawn-offset", this.lootSpawnOffset);
 
+            if (this.rules.isModified()) {
+                ConfigurationSection rulesSection = typeSection.createSection("rules");
+                this.rules.serialize(rulesSection);
+            }
+
             if (!this.elements.isEmpty()) {
                 List<Map<String, Object>> serializedElements = new ArrayList<>();
                 for (Element element : this.elements) {
@@ -140,11 +164,39 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
 
             if (!this.hitboxes.isEmpty()) {
                 List<Map<String, Object>> serializedHitboxes = new ArrayList<>();
-                for (Hitboxe hitbox : this.hitboxes) {
+                for (Hitbox hitbox : this.hitboxes) {
                     serializedHitboxes.add(hitbox.serialize());
                 }
                 typeSection.set("hitboxes", serializedHitboxes);
             }
+        }
+    }
+
+    public static class Rules {
+        private boolean isModified = false;
+
+        private FurnitureRotation rotation;
+        private AlignmentRule alignment;
+
+        public void setRotation(FurnitureRotation furnitureRotation) {
+            this.rotation = furnitureRotation;
+            this.isModified = true;
+        }
+
+        public void setAlignment(AlignmentRule alignment) {
+            this.alignment = alignment;
+            this.isModified = true;
+        }
+
+        public void serialize(ConfigurationSection rulesSection) {
+            rulesSection.set("alignment", this.alignment.name());
+
+            if (this.rotation != null)
+                rulesSection.set("rotation", this.rotation.name());
+        }
+
+        public boolean isModified() {
+            return this.isModified;
         }
     }
 
@@ -155,19 +207,23 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
     public static abstract class ItemElement implements Element {
         protected final String item;
         protected boolean applyDyedColor = true;
-        protected final float[] position = new float[3];
+        protected final FloatsUtils position = new FloatsUtils(3, new float[]{0, 0, 0});
 
         protected ItemElement(@NotNull String item) { this.item = item; }
 
         public void setApplyDyedColor(boolean applyDyedColor) { this.applyDyedColor = applyDyedColor; }
-        public void setPosition(float x, float y, float z) { this.position[0] = x; this.position[1] = y; this.position[2] = z; }
+        public void setPosition(float x, float y, float z) {
+            this.position.setValue(0, x);
+            this.position.setValue(1, y);
+            this.position.setValue(2, z);
+        }
 
         protected void serialize(Map<String, Object> data) {
             data.put("item", this.item);
             if (!this.applyDyedColor)
                 data.put("apply-dyed-color", false);
-            if (this.position[0] != 0 || this.position[1] != 0 || this.position[2] != 0)
-                data.put("position", this.position);
+            if (this.position.isUpdated())
+                data.put("position", this.position.toString());
         }
     }
 
@@ -185,13 +241,17 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
     }
 
     public static class ArmorStandElement extends ItemElement {
-        private final float[] scale = new float[]{1, 1, 1};
+        private final FloatsUtils scale = new FloatsUtils(3, new float[]{1, 1, 1});
         private boolean isSmall = false;
         private DyeColor glowColor = DyeColor.WHITE;
 
         public ArmorStandElement(@NotNull String item) { super(item); }
 
-        public void setScale(float x, float y, float z) { this.scale[0] = x; this.scale[1] = y; this.scale[2] = z; }
+        public void setScale(float x, float y, float z) {
+            this.scale.setValue(0, x);
+            this.scale.setValue(1, y);
+            this.scale.setValue(2, z);
+        }
         public void setSmall(boolean small) { this.isSmall = small; }
         public void setGlowColor(@NotNull DyeColor glowColor) { this.glowColor = glowColor; }
 
@@ -200,8 +260,8 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
             Map<String, Object> data = new HashMap<>();
             data.put("type", "armor_stand");
             super.serialize(data);
-            if (this.scale[0] != 1 || this.scale[1] != 1 || this.scale[2] != 1)
-                data.put("scale", this.scale);
+            if (this.scale.isUpdated())
+                data.put("scale", this.scale.toString());
             if (this.isSmall)
                 data.put("small", true);
             if (this.glowColor != DyeColor.WHITE)
@@ -274,9 +334,9 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
 
     public static class DisplayProperties {
         private Billboard billboard = Billboard.FIXED;
-        private final float[] translation = new float[3];
-        private final float[] scale = new float[]{1, 1, 1};
-        private final float[] glowColor = {-1, -1, -1};
+        private final FloatsUtils translation = new FloatsUtils(3, new float[]{0, 0, 0});
+        private final FloatsUtils scale = new FloatsUtils(3, new float[]{1, 1, 1});
+        private final FloatsUtils glowColor = new FloatsUtils(3, new float[]{-1, -1, -1});
         private int brightnessBlockLight = -1;
         private int brightnessSkyLight = -1;
         private float viewRange = 1.0f;
@@ -285,9 +345,21 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         private Float rotationYaw = null;
 
         public void setBillboard(@NotNull Billboard billboard) { this.billboard = billboard; }
-        public void setTranslation(float x, float y, float z) { this.translation[0] = x; this.translation[1] = y; this.translation[2] = z; }
-        public void setScale(float x, float y, float z) { this.scale[0] = x; this.scale[1] = y; this.scale[2] = z; }
-        public void setGlowColor(float r, float g, float b) { this.glowColor[0] = r; this.glowColor[1] = g; this.glowColor[2] = b; }
+        public void setTranslation(float x, float y, float z) {
+            this.translation.setValue(0, x);
+            this.translation.setValue(1, y);
+            this.translation.setValue(2, z);
+        }
+        public void setScale(float x, float y, float z) {
+            this.scale.setValue(0, x);
+            this.scale.setValue(1, y);
+            this.scale.setValue(2, z);
+        }
+        public void setGlowColor(float r, float g, float b) {
+            this.glowColor.setValue(0, r);
+            this.glowColor.setValue(1, g);
+            this.glowColor.setValue(2, b);
+        }
         public void setBrightness(int blockLight, int skyLight) { this.brightnessBlockLight = blockLight; this.brightnessSkyLight = skyLight; }
         public void setViewRange(float viewRange) { this.viewRange = viewRange; }
         public void setRotationYaw(float yaw) { this.rotationYaw = yaw; this.rotationEuler = null; this.rotationQuaternion = null; }
@@ -297,12 +369,12 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         public void serialize(Map<String, Object> data) {
             if (this.billboard != Billboard.FIXED)
                 data.put("billboard", this.billboard.name().toLowerCase());
-            if (this.translation[0] != 0 || this.translation[1] != 0 || this.translation[2] != 0)
-                data.put("translation", this.translation);
-            if (this.scale[0] != 1 || this.scale[1] != 1 || this.scale[2] != 1)
-                data.put("scale", this.scale);
-            if (this.glowColor[0] != -1 || this.glowColor[1] != -1 || this.glowColor[2] != -1)
-                data.put("glow-color", this.glowColor);
+            if (this.translation.isUpdated())
+                data.put("translation", this.translation.toString());
+            if (this.scale.isUpdated())
+                data.put("scale", this.scale.toString());
+            if (this.glowColor.isUpdated())
+                data.put("glow-color", this.glowColor.toString());
             if (this.brightnessBlockLight != -1 || this.brightnessSkyLight != -1) {
                 Map<String, Integer> brightness = new HashMap<>();
                 if (this.brightnessBlockLight != -1) brightness.put("block-light", this.brightnessBlockLight);
@@ -320,18 +392,21 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         }
     }
 
-    public interface Hitboxe extends Element {}
+    public interface Hitbox extends Element {}
 
-    public static abstract class BaseHitbox implements Hitboxe {
-        protected final float[] position = new float[3];
+    public static abstract class BaseHitbox implements Hitbox {
+        protected final FloatsUtils position = new FloatsUtils(3, new float[]{0, 0, 0});
         protected final List<String> seats = new ArrayList<>();
 
-        public void setPosition(float x, float y, float z) { this.position[0] = x; this.position[1] = y; this.position[2] = z; }
+        public void setPosition(float x, float y, float z) {
+            this.position.setValue(0, x);
+            this.position.setValue(1, y);
+            this.position.setValue(2, z);
+        }
         public void addSeat(float x, float y, float z, float yaw) { this.seats.add(x + "," + y + "," + z + " " + yaw); }
 
         protected void serialize(Map<String, Object> data) {
-            if (this.position[0] != 0 || this.position[1] != 0 || this.position[2] != 0)
-                data.put("position", this.position[0] + "," + this.position[1] + "," + this.position[2]);
+            data.put("position", this.position.toString());
             if (!this.seats.isEmpty())
                 data.put("seats", this.seats);
         }
@@ -401,14 +476,14 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
     public static class ShulkerHitbox extends CollidableHitbox {
         private float scale = 1;
         private int peek = 0;
-        private String direction = "UP";
+        private Direction direction = Direction.UP;
         private boolean interactionEntity = true;
 
         public ShulkerHitbox() { super(true, true, true); }
 
         public void setScale(float scale) { this.scale = scale; }
         public void setPeek(int peek) { this.peek = peek; }
-        public void setDirection(@NotNull String direction) { this.direction = direction; }
+        public void setDirection(@NotNull Direction direction) { this.direction = direction; }
         public void setInteractionEntity(boolean interactionEntity) { this.interactionEntity = interactionEntity; }
 
         @Override protected boolean getDefaultCanUseItemOn() { return true; }
@@ -422,7 +497,7 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
             super.serialize(data);
             if (this.scale != 1) data.put("scale", this.scale);
             if (this.peek != 0) data.put("peek", this.peek);
-            if (!this.direction.equals("UP")) data.put("direction", this.direction.toLowerCase());
+            if (this.direction != Direction.UP) data.put("direction", this.direction.name());
             if (!this.interactionEntity) data.put("interaction-entity", false);
             return data;
         }
@@ -454,10 +529,12 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
 
     public static class CustomHitbox extends BaseHitbox {
         private float scale = 5;
-        private String entityType = "slime";
+        private EntityType entityType = EntityType.SLIME;
 
         public void setScale(float scale) { this.scale = scale; }
-        public void setEntityType(@NotNull String entityType) { this.entityType = entityType; }
+        public void setEntityType(@NotNull EntityType entityType) {
+            this.entityType = entityType;
+        }
 
         @Override
         public Map<String, Object> serialize() {
@@ -465,7 +542,7 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
             data.put("type", "custom");
             super.serialize(data);
             if (this.scale != 5) data.put("scale", this.scale);
-            if (!this.entityType.equals("slime")) data.put("entity-type", this.entityType);
+            if (this.entityType != EntityType.SLIME) data.put("entity-type", this.entityType);
             return data;
         }
     }
