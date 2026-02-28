@@ -9,10 +9,10 @@ import fr.robie.craftengineconverter.common.items.*;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.utils.CecAttributeModifier;
 import fr.robie.craftengineconverter.common.utils.FloatsUtils;
-import fr.robie.craftengineconverter.common.utils.enums.Billboard;
 import fr.robie.craftengineconverter.common.utils.enums.BlockParent;
 import fr.robie.craftengineconverter.common.utils.enums.FurniturePlacement;
 import fr.robie.craftengineconverter.common.utils.enums.ItemDisplayType;
+import fr.robie.craftengineconverter.common.utils.enums.Template;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IADirectionalMode;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IAEntityTypes;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IAModelsKeys;
@@ -22,6 +22,7 @@ import fr.robie.craftengineconverter.converter.ItemConverter;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
+import net.momirealms.craftengine.core.entity.display.Billboard;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -1045,123 +1046,102 @@ public class IAItemsConverter extends ItemConverter {
     private void convertFurniture(ConfigurationSection furnitureSection, ConfigurationSection behavioursSection) {
         IAEntityTypes entityType = IAEntityTypes.ITEM_FRAME;
         try {
-            entityType = IAEntityTypes.valueOf(furnitureSection.getString("entity","ITEM_FRAME").toUpperCase());
-        } catch (Exception ignored){
-        }
+            entityType = IAEntityTypes.valueOf(furnitureSection.getString("entity", "ITEM_FRAME").toUpperCase());
+        } catch (Exception ignored) {}
+
         boolean isBig = furnitureSection.getBoolean("small", true);
+
         Set<FurniturePlacement> placements = new HashSet<>();
         ConfigurationSection placeableSection = furnitureSection.getConfigurationSection("placeable_on");
-        if (isNotNull(placeableSection)){
-            boolean placeableOnFloor = placeableSection.getBoolean("floor", true);
-            boolean placeableOnCeiling = placeableSection.getBoolean("ceiling", true);
-            boolean placeableOnWall = placeableSection.getBoolean("wall", true);
-            if (placeableOnFloor){
-                placements.add(FurniturePlacement.GROUND);
-            }
-            if (placeableOnCeiling){
-                placements.add(FurniturePlacement.CEILING);
-            }
-            if (placeableOnWall){
-                placements.add(FurniturePlacement.WALL);
-            }
+        if (isNotNull(placeableSection)) {
+            if (placeableSection.getBoolean("floor", true)) placements.add(FurniturePlacement.GROUND);
+            if (placeableSection.getBoolean("ceiling", true)) placements.add(FurniturePlacement.CEILING);
+            if (placeableSection.getBoolean("wall", true)) placements.add(FurniturePlacement.WALL);
         } else {
             placements.addAll(List.of(FurniturePlacement.values()));
         }
-        if (!placements.isEmpty()){
-            Billboard transformType = Billboard.FIXED;
-            ItemDisplayType displayType = ItemDisplayType.NONE;
 
-            FloatsUtils displayTranslation = new FloatsUtils(3,new float[]{0f,0.5f,0f});
-            if (isBig){
-                displayTranslation.addValue(1,1f);
+        if (placements.isEmpty()) return;
+
+        FurnitureConfiguration furnitureConfiguration = new FurnitureConfiguration();
+
+        // --- Display properties ---
+        Billboard transformType = Billboard.FIXED;
+        ItemDisplayType displayType = ItemDisplayType.NONE;
+        FloatsUtils displayTranslation = new FloatsUtils(3, new float[]{0f, 0.5f, 0f});
+        if (isBig) displayTranslation.addValue(1, 1f);
+        FloatsUtils scale = new FloatsUtils(3, new float[]{1f, 1f, 1f});
+
+        ConfigurationSection displayTransformationSection = furnitureSection.getConfigurationSection("display_transformation");
+        if (isNotNull(displayTransformationSection)) {
+            try {
+                displayType = ItemDisplayType.valueOf(displayTransformationSection.getString("transform", "FIXED").toUpperCase());
+            } catch (Exception e) {
+                Logger.debug("[IAItemsConverter] Unknown furniture display transform type for item " + this.itemId + ": " + displayTransformationSection.getString("transform"));
             }
-            FloatsUtils scale = new FloatsUtils(3, new float[]{1f,1f,1f});
-
-            ConfigurationSection displayTransformationSection = furnitureSection.getConfigurationSection("display_transformation");
-            if (isNotNull(displayTransformationSection)){
-                try {
-                    displayType = ItemDisplayType.valueOf(displayTransformationSection.getString("transform","FIXED").toUpperCase());
-                } catch (Exception exception){
-                    Logger.debug("[IAItemsConverter] Unknown furniture display transform type for item "+this.itemId+": "+displayTransformationSection.getString("transform"));
-                }
-                ConfigurationSection translationSection = displayTransformationSection.getConfigurationSection("translation");
-                if (isNotNull(translationSection)){
-                    double x = translationSection.getDouble("x");
-                    double y = translationSection.getDouble("y");
-                    double z = translationSection.getDouble("z");
-                    if (x != 0d){
-                        displayTranslation.setValue(0,(float)x);
-                    }
-                    if (y != 0d){
-                        displayTranslation.setValue(1,(float)y);
-                    }
-                    if (z != 0d) {
-                        displayTranslation.setValue(2, (float) z);
-                    }
-                }
-                ConfigurationSection scaleSection = displayTransformationSection.getConfigurationSection("scale");
-                if (isNotNull(scaleSection)){
-                    double x = scaleSection.getDouble("x",1.0);
-                    double y = scaleSection.getDouble("y",1.0);
-                    double z = scaleSection.getDouble("z",1.0);
-                    if (x != 1.0){
-                        scale.setValue(0,(float)x);
-                    }
-                    if (y != 1.0){
-                        scale.setValue(1,(float)y);
-                    }
-                    if (z != 1.0) {
-                        scale.setValue(2, (float) z);
-                    }
-                }
+            ConfigurationSection translationSection = displayTransformationSection.getConfigurationSection("translation");
+            if (isNotNull(translationSection)) {
+                double x = translationSection.getDouble("x");
+                double y = translationSection.getDouble("y");
+                double z = translationSection.getDouble("z");
+                if (x != 0d) displayTranslation.setValue(0, (float) x);
+                if (y != 0d) displayTranslation.setValue(1, (float) y);
+                if (z != 0d) displayTranslation.setValue(2, (float) z);
             }
-
-            List<Map<String,Object>> elements = new ArrayList<>();
-            Map<String,Object> map = new HashMap<>();
-            if (entityType == IAEntityTypes.ITEM_FRAME){
-                map.put("type", "item_display");
-                int light = furnitureSection.getInt("light_level",-1);
-                if (light >= 0){
-                    map.put("brightness", Map.of("block-light", light));
-                }
-
+            ConfigurationSection scaleSection = displayTransformationSection.getConfigurationSection("scale");
+            if (isNotNull(scaleSection)) {
+                double x = scaleSection.getDouble("x", 1.0);
+                double y = scaleSection.getDouble("y", 1.0);
+                double z = scaleSection.getDouble("z", 1.0);
+                if (x != 1.0) scale.setValue(0, (float) x);
+                if (y != 1.0) scale.setValue(1, (float) y);
+                if (z != 1.0) scale.setValue(2, (float) z);
             }
-            map.put("item", this.itemId);
-            if (displayType != ItemDisplayType.NONE) {
-                map.put("display-transform", displayType.name());
-            }
-            map.put("billboard", transformType.name());
-            map.put("translation", displayTranslation.toString());
-            map.put("scale", scale.toString());
-            elements.add(map);
-
-            double sitHeight = behavioursSection.getDouble("furniture_sit.sit_height", 0d);
-            List<Map<String,Object>> hitboxes = new ArrayList<>();
-            ConfigurationSection iaHitboxesSection = furnitureSection.getConfigurationSection("hitbox");
-
-            if (isNotNull(iaHitboxesSection)) {
-                parseItemsAdderHitboxes(iaHitboxesSection, hitboxes, sitHeight);
-            }
-            ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-            behaviorSection.set("type","furniture_item");
-            getOrCreateSection(behaviorSection, "settings").set("item", this.itemId);
-            ConfigurationSection ceFurnitureSection = getOrCreateSection(behaviorSection, "furniture");
-            ConfigurationSection cePlacementSection = getOrCreateSection(ceFurnitureSection, "placement");
-
-            for (FurniturePlacement furniturePlacement : placements){
-                ConfigurationSection ceTypePlacementSection = cePlacementSection.createSection(furniturePlacement.name().toLowerCase());
-                ceTypePlacementSection.set("elements", elements);
-                if (!hitboxes.isEmpty()){
-                    ceTypePlacementSection.set("hitboxes", hitboxes);
-                }
-            }
-
-            ceFurnitureSection.set("loot", InternalTemplateManager.parseTemplate(fr.robie.craftengineconverter.common.utils.enums.Template.LOOT_TABLE_BASIC_DROP, "%type%","furniture_item","%item%", this.itemId));
-
         }
+
+        // --- Element ---
+        FurnitureConfiguration.ItemElement element;
+        if (entityType == IAEntityTypes.ARMOR_STAND) {
+            FurnitureConfiguration.ArmorStandElement armorStand = new FurnitureConfiguration.ArmorStandElement(this.itemId);
+            if (scale.isUpdated())
+                armorStand.setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
+            if (!isBig) armorStand.setSmall(true);
+            element = armorStand;
+        } else {
+            FurnitureConfiguration.ItemDisplayElement itemDisplay = new FurnitureConfiguration.ItemDisplayElement(this.itemId);
+            int light = furnitureSection.getInt("light_level", -1);
+            if (light >= 0) itemDisplay.display().setBrightness(light, -1);
+            if (displayType != ItemDisplayType.NONE) itemDisplay.setDisplayTransform(displayType);
+            itemDisplay.display().setBillboard(transformType);
+            if (displayTranslation.isUpdated())
+                itemDisplay.display().setTranslation(displayTranslation.getValue(0), displayTranslation.getValue(1), displayTranslation.getValue(2));
+            if (scale.isUpdated())
+                itemDisplay.display().setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
+            element = itemDisplay;
+        }
+
+        // --- Hitboxes ---
+        double sitHeight = behavioursSection.getDouble("furniture_sit.sit_height", 0d);
+        List<FurnitureConfiguration.Hitbox> hitboxList = new ArrayList<>();
+        ConfigurationSection iaHitboxesSection = furnitureSection.getConfigurationSection("hitbox");
+        if (isNotNull(iaHitboxesSection)) {
+            parseItemsAdderHitboxes(iaHitboxesSection, hitboxList, sitHeight);
+        }
+
+        // --- Loot ---
+        furnitureConfiguration.setLoot(InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_BASIC_DROP, "%type%", "furniture_item", "%item%", this.itemId));
+
+        // --- Placements ---
+        for (FurniturePlacement furniturePlacement : placements) {
+            FurnitureConfiguration.Placement placement = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
+            placement.addElement(element);
+            hitboxList.forEach(placement::addHitbox);
+        }
+
+        this.getCraftEngineItemsConfiguration().addItemConfiguration(furnitureConfiguration);
     }
 
-    private void parseItemsAdderHitboxes(ConfigurationSection iaHitboxesSection, List<Map<String,Object>> hitboxes, double seatPosition) {
+    private void parseItemsAdderHitboxes(ConfigurationSection iaHitboxesSection, List<FurnitureConfiguration.Hitbox> hitboxes, double seatPosition) {
         if (iaHitboxesSection == null) return;
 
         int length = iaHitboxesSection.getInt("length", 1);
@@ -1174,18 +1154,10 @@ public class IAItemsConverter extends ItemConverter {
         for (int x = 0; x < length; x++) {
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < width; z++) {
-                    float posX = x + lengthOffset;
-                    float posY = y + heightOffset;
-                    float posZ = z + widthOffset;
-
-                    Map<String, Object> hitbox = new HashMap<>();
-                    hitbox.put("type", "shulker");
-                    hitbox.put("position", posX + "," + posY + "," + posZ);
-
-                    if (x == 0 && y == 0 && z == 0) {
-                        hitbox.put("seats", List.of("0,"+seatPosition+",0 0"));
-                    }
-
+                    FurnitureConfiguration.ShulkerHitbox hitbox = new FurnitureConfiguration.ShulkerHitbox();
+                    hitbox.setPosition(x + lengthOffset, y + heightOffset, z + widthOffset);
+                    if (x == 0 && y == 0 && z == 0)
+                        hitbox.addSeat(0, (float) seatPosition, 0, 0);
                     hitboxes.add(hitbox);
                 }
             }
