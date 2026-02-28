@@ -101,6 +101,30 @@ warning:
   folder:
     delete-failure: "Échec de la suppression du dossier §e%folder% (%path%)§c !"
 
+  furniture:
+    invalid-seat-format: "§cFormat de siège invalide pour le meuble §e%item%§c, 3 valeurs flottantes séparées par des virgules étaient attendues mais §e%value%§c a été reçu. Par défaut (0,0,0)."
+    unknown-display-transform: "§cdisplay_transform inconnue §e%transform%§c pour le meuble §e%item%§c, par défaut NONE."
+    unknown-tracking-rotation: "§ctracking_rotation inconnue §e%rotation%§c pour le meuble §e%item%§c, par défaut FIXED."
+    invalid-translation-size: "§cTaille de translation invalide pour le meuble §e%item%§c, 3 valeurs étaient attendues mais §e%size%§c ont été reçues. Par défaut (0,0,0)."
+    invalid-scale-format: "§cFormat d'échelle invalide pour le meuble §e%item%§c, 3 valeurs flottantes séparées par des virgules étaient attendues mais §e%value%§c a été reçu. Par défaut (1,1,1)."
+    invalid-amount-format: "§cFormat de quantité invalide §e%amount%§c pour le meuble §e%item%§c. Par défaut 1."
+    invalid-probability-format: "§cFormat de probabilité invalide §e%probability%§c pour le meuble §e%item%§c. Par défaut 1.0."
+    custom-drop-conditions-not-supported: "§cLes conditions de drop personnalisées (minimal_type, best_tool) pour le meuble §e%item%§c ne sont pas encore supportées. Celles-ci seront ignorées."
+    fortune-drop-no-loots: "§eLe meuble §e%item%§e a le drop basé sur la fortune activé mais aucun loot n'est défini. Veuillez définir des loots pour utiliser les drops basés sur la fortune."
+    invalid-shulker-entry: "§cEntrée shulker invalide §e%entry%§c pour l'item §e%item%§c."
+    non-numeric-shulker-values: "§cValeurs non numériques dans le shulker §e%entry%§c pour l'item §e%item%§c."
+    invalid-ghast-entry: "§cEntrée ghast invalide §e%entry%§c pour l'item §e%item%§c."
+    non-numeric-ghast-values: "§cValeurs non numériques dans le ghast §e%entry%§c pour l'item §e%item%§c."
+    invalid-interaction-entry: "§cEntrée interaction invalide §e%entry%§c pour l'item §e%item%§c."
+    non-numeric-interaction-values: "§cValeurs non numériques dans l'interaction §e%entry%§c pour l'item §e%item%§c."
+    invalid-barrier-entry: "§cEntrée de barrière invalide §e%entry%§c pour l'item §e%item%§c, 3 valeurs séparées par des virgules étaient attendues."
+    invalid-barrier-range: "§cIntervalle invalide §e%range%§c dans l'entrée de barrière §e%entry%§c."
+    non-numeric-barrier-range-bounds: "§cBornes d'intervalle non numériques §e%range%§c dans l'entrée de barrière §e%entry%§c."
+    non-numeric-barrier-value: "§cValeur non numérique §e%value%§c dans l'entrée de barrière §e%entry%§c."
+  ia:
+    furniture:
+      unknown-display-transform: "§cType de transformation d'affichage de meuble inconnu §e%transform%§c pour l'item §e%item%§c."
+
 error:
   mkdir-failure: "Échec de la création du dossier §e%directory% (%path%)§c !"
   file:

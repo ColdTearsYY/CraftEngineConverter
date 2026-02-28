@@ -105,6 +105,30 @@ warning:
   folder:
     delete-failure: "Failed to delete folder §e%folder% (%path%)§c!"
 
+  furniture:
+    invalid-seat-format: "§cInvalid seat format for furniture item §e%item%§c, expected 3 comma-separated float values but got §e%value%§c. Defaulting to (0,0,0)."
+    unknown-display-transform: "§cUnknown display_transform §e%transform%§c for furniture item §e%item%§c, defaulting to NONE."
+    unknown-tracking-rotation: "§cUnknown tracking_rotation §e%rotation%§c for furniture item §e%item%§c, defaulting to FIXED."
+    invalid-translation-size: "§cInvalid translation size for furniture item §e%item%§c, expected 3 values but got §e%size%§c. Defaulting to (0,0,0)."
+    invalid-scale-format: "§cInvalid scale format for furniture item §e%item%§c, expected 3 comma-separated float values but got §e%value%§c. Defaulting to (1,1,1)."
+    invalid-amount-format: "§cInvalid amount format §e%amount%§c for furniture item §e%item%§c. Defaulting to 1."
+    invalid-probability-format: "§cInvalid probability format §e%probability%§c for furniture item §e%item%§c. Defaulting to 1.0."
+    custom-drop-conditions-not-supported: "§cCustom drop conditions (minimal_type, best_tool) for furniture item §e%item%§c are not supported yet. Skipping custom drop conditions."
+    fortune-drop-no-loots: "§eFurniture item §e%item%§e has fortune-based drop enabled but no loots defined. Please define loots to use fortune-based drops."
+    invalid-shulker-entry: "§cInvalid shulker entry §e%entry%§c for item §e%item%§c."
+    non-numeric-shulker-values: "§cNon-numeric values in shulker §e%entry%§c for item §e%item%§c."
+    invalid-ghast-entry: "§cInvalid ghast entry §e%entry%§c for item §e%item%§c."
+    non-numeric-ghast-values: "§cNon-numeric values in ghast §e%entry%§c for item §e%item%§c."
+    invalid-interaction-entry: "§cInvalid interaction entry §e%entry%§c for item §e%item%§c."
+    non-numeric-interaction-values: "§cNon-numeric values in interaction §e%entry%§c for item §e%item%§c."
+    invalid-barrier-entry: "§cInvalid barrier entry §e%entry%§c for item §e%item%§c, expected 3 comma-separated values."
+    invalid-barrier-range: "§cInvalid range §e%range%§c in barrier entry §e%entry%§c."
+    non-numeric-barrier-range-bounds: "§cNon-numeric range bounds §e%range%§c in barrier entry §e%entry%§c."
+    non-numeric-barrier-value: "§cNon-numeric value §e%value%§c in barrier entry §e%entry%§c."
+  ia:
+    furniture:
+      unknown-display-transform: "§cUnknown furniture display transform type §e%transform%§c for item §e%item%§c."
+
 error:
   mkdir-failure: "Failed to create directory §e%directory% (%path%)§c!"
   file-operations:
