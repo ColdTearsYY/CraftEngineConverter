@@ -22,6 +22,15 @@
         </dependency>
 
         <dependency>
+            <groupId>net.momirealms</groupId>
+            <artifactId>craft-engine-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.momirealms</groupId>
+            <artifactId>craft-engine-bukkit</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>fr.maxlego08.sarah</groupId>
             <artifactId>sarah</artifactId>
             <scope>provided</scope>

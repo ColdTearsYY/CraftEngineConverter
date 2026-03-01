@@ -1,0 +1,26 @@
+package fr.robie.craftengineconverter.api.configurations.item;
+
+import fr.robie.craftengineconverter.api.configurations.utils.AbstractItemConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
+
+public class ItemNameConfiguration extends AbstractItemConfiguration {
+    private final String itemName;
+
+    public ItemNameConfiguration(String itemName) {
+        super(false);
+        this.itemName = itemName;
+    }
+
+    public ItemNameConfiguration(String itemName, boolean applyNoItalic) {
+        super(applyNoItalic);
+        this.itemName = itemName;
+    }
+
+    @Override
+    public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
+        if (this.itemName == null || this.itemName.isEmpty()) return;
+        itemSection.set("item-name", applyNoItalic(this.itemName));
+    }
+}

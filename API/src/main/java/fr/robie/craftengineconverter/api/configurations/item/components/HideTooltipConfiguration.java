@@ -1,0 +1,21 @@
+package fr.robie.craftengineconverter.api.configurations.item.components;
+
+import fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
+
+public class HideTooltipConfiguration implements ItemConfigurationSerializable {
+    private final boolean hideTooltip;
+
+    public HideTooltipConfiguration(boolean hideTooltip) {
+        this.hideTooltip = hideTooltip;
+    }
+
+    @Override
+    public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
+        ConfigurationSection components = getOrCreateSection(itemSection, "components");
+        ConfigurationSection tooltipDisplay = getOrCreateSection(components, "minecraft:tooltip_display");
+        tooltipDisplay.set("hide_tooltip", this.hideTooltip);
+    }
+}

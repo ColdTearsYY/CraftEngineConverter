@@ -5,16 +5,15 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-public class UnbreakableConfiguration implements ItemConfigurationSerializable {
-    private final boolean unbreakable;
+public class MaxDamageConfiguration implements ItemConfigurationSerializable {
+    private final int maxDamage;
 
-    public UnbreakableConfiguration(boolean unbreakable) {
-        this.unbreakable = unbreakable;
+    public MaxDamageConfiguration(int maxDamage) {
+        this.maxDamage = maxDamage;
     }
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
-        if (!this.unbreakable) return;
-        ConfigurationSection dataSection = getOrCreateSection(itemSection, "data");
-        dataSection.set("unbreakable", true);    }
+        getOrCreateSection(itemSection, "data").set("max-damage", this.maxDamage);
+    }
 }
