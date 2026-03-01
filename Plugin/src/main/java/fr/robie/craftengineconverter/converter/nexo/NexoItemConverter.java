@@ -1,7 +1,6 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
 import fr.robie.craftengineconverter.api.ComponentFlag;
-import fr.robie.craftengineconverter.api.configurations.item.ItemNameConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.FurnitureConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.components.ConsumableConfiguration;
@@ -9,6 +8,7 @@ import fr.robie.craftengineconverter.api.configurations.item.components.HideTool
 import fr.robie.craftengineconverter.api.configurations.item.components.WeaponConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.data.AttributeModifiersConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.data.ItemNameConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.data.UnbreakableConfiguration;
 import fr.robie.craftengineconverter.api.configurations.utils.AbstractEffectsConfiguration;
 import fr.robie.craftengineconverter.api.configurations.utils.FurniturePlacement;

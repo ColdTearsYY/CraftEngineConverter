@@ -1,13 +1,9 @@
 package fr.robie.craftengineconverter.converter.itemsadder;
 
 import fr.robie.craftengineconverter.api.ComponentFlag;
-import fr.robie.craftengineconverter.api.configurations.item.ItemNameConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.FurnitureConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.AttributeModifiersConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.HideTooltipConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.UnbreakableConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.data.*;
 import fr.robie.craftengineconverter.api.configurations.item.settings.GlowDropColorConfiguration;
 import fr.robie.craftengineconverter.api.configurations.utils.FurniturePlacement;
 import fr.robie.craftengineconverter.api.configurations.utils.ItemDisplayType;

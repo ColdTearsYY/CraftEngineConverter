@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.api.configurations.item;
+package fr.robie.craftengineconverter.api.configurations.item.data;
 
 import fr.robie.craftengineconverter.api.configurations.utils.AbstractItemConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
@@ -21,6 +21,7 @@ public class ItemNameConfiguration extends AbstractItemConfiguration {
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
         if (this.itemName == null || this.itemName.isEmpty()) return;
-        itemSection.set("item-name", applyNoItalic(this.itemName));
+        ConfigurationSection data = getOrCreateSection(itemSection, "data");
+        data.set("item-name", applyNoItalic(this.itemName));
     }
 }
