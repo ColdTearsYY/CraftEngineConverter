@@ -335,7 +335,7 @@ public class IAConverter extends Converter {
         }
 
         if (totalEntries == 0) {
-            Logger.info(Message.INFO__IA__LANGUAGES__NONE_FOUND);
+            Logger.info(Message.ERROR__CONVERTER__IA__CONTENTS_FOLDER_NOT_FOUND);
             return;
         }
 
