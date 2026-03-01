@@ -21,7 +21,7 @@ public abstract class ItemConverter extends ObjectUtils {
     protected YamlConfiguration fileConfig;
     protected String assetId;
 
-    protected CraftEngineItemsConfiguration craftEngineItemsConfiguration = new CraftEngineItemsConfiguration(Configuration.defaultMaterial);
+    protected final CraftEngineItemsConfiguration craftEngineItemsConfiguration;
 
     public ItemConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig) {
         this.itemId = itemId;
@@ -29,6 +29,7 @@ public abstract class ItemConverter extends ObjectUtils {
         this.craftEngineItemUtils = new CraftEngineItemUtils(craftEngineItemSection);
         this.fileConfig = fileConfig;
         this.fileConfig.options().pathSeparator('\n');
+        this.craftEngineItemsConfiguration = new CraftEngineItemsConfiguration(itemId, Configuration.defaultMaterial);
     }
 
     public void convertItem(){
