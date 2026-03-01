@@ -1,8 +1,9 @@
 package fr.robie.craftengineconverter.converter.itemsadder;
 
+import fr.robie.craftengineconverter.api.ComponentFlag;
 import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.data.HideTooltipConfiguration;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
-import fr.robie.craftengineconverter.common.enums.ComponentFlag;
 import fr.robie.craftengineconverter.common.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.format.Message;
@@ -109,7 +110,7 @@ public class IAItemsConverter extends ItemConverter {
                 } catch (Exception ignored){
                 }
             }
-            this.craftEngineItemsConfiguration.addItemConfiguration(new ComponentFlagsConfiguration(convertedFlags));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipConfiguration(convertedFlags));
         }
     }
 
@@ -186,7 +187,7 @@ public class IAItemsConverter extends ItemConverter {
         if (isNotNull(resourceSection)){
             int customModelData = resourceSection.getInt("custom_model_data", resourceSection.getInt("model_id", 0));
             if (customModelData != 0){
-                this.craftEngineItemsConfiguration.addItemConfiguration(new CustomModelDataConfiguration(customModelData));
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.data.CustomModelDataConfiguration(customModelData));
             }
         }
     }

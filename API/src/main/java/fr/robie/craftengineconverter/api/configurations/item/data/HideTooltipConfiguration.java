@@ -1,17 +1,17 @@
-package fr.robie.craftengineconverter.common.items;
+package fr.robie.craftengineconverter.api.configurations.item.data;
 
+import fr.robie.craftengineconverter.api.ComponentFlag;
 import fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable;
-import fr.robie.craftengineconverter.common.enums.ComponentFlag;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class ComponentFlagsConfiguration implements ItemConfigurationSerializable {
+public class HideTooltipConfiguration implements ItemConfigurationSerializable {
     private final Set<ComponentFlag> flags = new HashSet<>();
 
-    public ComponentFlagsConfiguration(Collection<ComponentFlag> flags) {
+    public HideTooltipConfiguration(Collection<ComponentFlag> flags) {
         this.flags.addAll(flags);
     }
 

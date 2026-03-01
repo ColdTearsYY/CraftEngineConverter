@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.common.enums;
+package fr.robie.craftengineconverter.api;
 
 public enum ComponentFlag {
     MAX_STACK_SIZE("max_stack_size"),

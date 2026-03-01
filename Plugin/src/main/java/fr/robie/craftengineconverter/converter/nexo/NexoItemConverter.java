@@ -1,12 +1,13 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
+import fr.robie.craftengineconverter.api.ComponentFlag;
 import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.data.HideTooltipConfiguration;
 import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.enums.ArmorConverter;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
-import fr.robie.craftengineconverter.common.enums.ComponentFlag;
 import fr.robie.craftengineconverter.common.format.Message;
 import fr.robie.craftengineconverter.common.items.*;
 import fr.robie.craftengineconverter.common.logger.LogType;
@@ -112,7 +113,7 @@ public class NexoItemConverter extends ItemConverter {
                 } catch (Exception ignored){
                 }
             }
-            this.craftEngineItemsConfiguration.addItemConfiguration(new ComponentFlagsConfiguration(convertedFlags));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipConfiguration(convertedFlags));
         }
     }
 
@@ -215,7 +216,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertCustomModelData() {
         int customModelData = this.nexoItemSection.getInt("Pack.custom_model_data", 0);
         if (customModelData != 0) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new CustomModelDataConfiguration(customModelData));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.data.CustomModelDataConfiguration(customModelData));
         }
     }
 
