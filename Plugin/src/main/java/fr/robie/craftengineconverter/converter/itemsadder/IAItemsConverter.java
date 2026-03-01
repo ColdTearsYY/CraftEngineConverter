@@ -68,6 +68,9 @@ public class IAItemsConverter extends ItemConverter {
     public void convertItemName(){
         String itemName = this.iaItemSection.getString("name", this.iaItemSection.getString("display_name"));
         if (isValidString(itemName)){
+            if (itemName.startsWith("display-name-")) {
+                itemName = "<l10n:"+ itemName + ">";
+            }
             this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName, Configuration.disableDefaultItalic));
         }
     }
@@ -76,6 +79,12 @@ public class IAItemsConverter extends ItemConverter {
     public void convertLore(){
         List<String> lore = this.iaItemSection.getStringList("lore");
         if (!lore.isEmpty()){
+            for (int i = 0; i < lore.size(); i++) {
+                String line = lore.get(i);
+                if (line.startsWith("lore-"+(i+1)+"-")) {
+                    lore.set(i, "<l10n:" + line + ">");
+                }
+            }
             this.craftEngineItemsConfiguration.addItemConfiguration(new LoreConfiguration(lore, Configuration.disableDefaultItalic));
         }
     }

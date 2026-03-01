@@ -60,7 +60,7 @@ public class IAConverter extends Converter {
         }
 
         Queue<@NotNull ConfigFile> toConvert = new LinkedList<>();
-        int totalItems = populateQueueIA(inputFolder, inputFolder, toConvert, "items");
+        int totalItems = populateQueueIA(inputFolder, inputFolder, toConvert, List.of("items"));
 
         if (toConvert.isEmpty()) {
             return;
@@ -222,7 +222,7 @@ public class IAConverter extends Converter {
 
 
         Queue<ConfigFile> toConvert = new LinkedList<>();
-        int totalFontImage = populateQueueIA(inputFolder, inputFolder, toConvert, "font_images");
+        int totalFontImage = populateQueueIA(inputFolder, inputFolder, toConvert, List.of("font_images"));
 
         if (toConvert.isEmpty()) {
             Logger.debug(Message.WARNING__CONVERTER__IA__IMAGES__NONE_FOUND);
@@ -305,7 +305,7 @@ public class IAConverter extends Converter {
         }
 
         Queue<ConfigFile> toConvert = new LinkedList<>();
-        populateQueueIA(inputFolder, inputFolder, toConvert, "minecraft_lang_overwrite");
+        populateQueueIA(inputFolder, inputFolder, toConvert, List.of("minecraft_lang_overwrite", "dictionary"));
 
         if (toConvert.isEmpty()) {
             Logger.debug(Message.WARNING__CONVERTER__IA__LANGUAGES__NONE_FOUND);
@@ -316,18 +316,23 @@ public class IAConverter extends Converter {
         for (ConfigFile configFile : toConvert) {
             try (SnakeUtils config = new SnakeUtils(configFile.sourceFile())) {
                 SnakeUtils langSection = config.getSection("minecraft_lang_overwrite");
-                if (langSection == null) continue;
+                if (langSection != null) {
 
-                for (String translationKey : langSection.getKeys()) {
-                    SnakeUtils translationSection = langSection.getSection(translationKey);
-                    if (translationSection == null) continue;
+                    for (String translationKey : langSection.getKeys()) {
+                        SnakeUtils translationSection = langSection.getSection(translationKey);
+                        if (translationSection == null) continue;
 
-                    Map<String, Object> entries = translationSection.getMap("entries");
-                    List<String> languages = translationSection.getStringList("languages");
+                        Map<String, Object> entries = translationSection.getMap("entries");
+                        List<String> languages = translationSection.getStringList("languages");
 
-                    if (entries != null) {
-                        totalEntries += entries.size() * languages.size();
+                        if (entries != null) {
+                            totalEntries += entries.size() * languages.size();
+                        }
                     }
+                }
+                SnakeUtils dictionarySection = config.getSection("dictionary");
+                if (dictionarySection != null) {
+                    totalEntries += dictionarySection.getKeys().size();
                 }
             } catch (Exception e) {
                 Logger.debug(Message.ERROR__CONVERTER__IA__LANGUAGES__COUNT_FAILURE, LogType.ERROR, "file", configFile.sourceFile().getName());
@@ -367,31 +372,45 @@ public class IAConverter extends Converter {
     private void convertLanguageFile(ConfigFile configFile, SnakeUtils ceTranslation, BukkitProgressBar progressBar){
         try (SnakeUtils toTranslate = new SnakeUtils(configFile.sourceFile())) {
             SnakeUtils minecraftLangOverwrite = toTranslate.getSection("minecraft_lang_overwrite");
-            if (minecraftLangOverwrite == null) return;
+            if (minecraftLangOverwrite != null) {
 
-            for (String translationGroup : minecraftLangOverwrite.getKeys()) {
-                SnakeUtils section = minecraftLangOverwrite.getSection(translationGroup);
-                if (section == null) continue;
+                for (String translationGroup : minecraftLangOverwrite.getKeys()) {
+                    SnakeUtils section = minecraftLangOverwrite.getSection(translationGroup);
+                    if (section == null) continue;
 
-                Map<String, Object> entries = section.getMap("entries");
-                List<String> languages = section.getStringList("languages");
+                    Map<String, Object> entries = section.getMap("entries");
+                    List<String> languages = section.getStringList("languages");
 
-                if (entries == null || entries.isEmpty() || languages.isEmpty()) {
-                    continue;
-                }
-
-                for (String langKey : languages) {
-                    String ceLangKey = langKey.equalsIgnoreCase("ALL") ? "en" : langKey.toLowerCase();
-
-                    for (Map.Entry<String, Object> entry : entries.entrySet()) {
-                        try {
-                            String translationKey = "translations\\n" + ceLangKey + "\\n" + entry.getKey();
-                            ceTranslation.addData(translationKey, entry.getValue(), "\\n");
-                        } catch (Exception e) {
-                            Logger.debug(Message.ERROR__CONVERTER__IA__LANGUAGES__KEY_CONVERSION_FAILURE, LogType.ERROR, "key", entry.getKey(), "lang", ceLangKey, "file", configFile.sourceFile().getName());
-                        }
-                        progressBar.increment();
+                    if (entries == null || entries.isEmpty() || languages.isEmpty()) {
+                        continue;
                     }
+
+                    for (String langKey : languages) {
+                        String ceLangKey = langKey.equalsIgnoreCase("ALL") ? "en" : langKey.toLowerCase();
+
+                        for (Map.Entry<String, Object> entry : entries.entrySet()) {
+                            try {
+                                String translationKey = "translations\\n" + ceLangKey + "\\n" + entry.getKey();
+                                ceTranslation.addData(translationKey, entry.getValue(), "\\n");
+                            } catch (Exception e) {
+                                Logger.debug(Message.ERROR__CONVERTER__IA__LANGUAGES__KEY_CONVERSION_FAILURE, LogType.ERROR, "key", entry.getKey(), "lang", ceLangKey, "file", configFile.sourceFile().getName());
+                            }
+                            progressBar.increment();
+                        }
+                    }
+                }
+            }
+            SnakeUtils dictionarySection = toTranslate.getSection("dictionary");
+            if (dictionarySection != null) {
+                String dictionaryLang = toTranslate.getString("info.dictionary-lang", "en").toLowerCase();
+                for (String dictKey : dictionarySection.getKeys()) {
+                    try {
+                        String ceDictKey = "translations\\n" + dictionaryLang + "\\n" + dictKey;
+                        ceTranslation.addData(ceDictKey, dictionarySection.getString(dictKey), "\\n");
+                    } catch (Exception e) {
+                        Logger.debug(Message.ERROR__CONVERTER__IA__LANGUAGES__KEY_CONVERSION_FAILURE, LogType.ERROR, "key", dictKey, "lang", dictionaryLang, "file", configFile.sourceFile().getName());
+                    }
+                    progressBar.increment();
                 }
             }
         } catch (Exception e) {
@@ -422,7 +441,7 @@ public class IAConverter extends Converter {
         }
 
         Queue<ConfigFile> toConvert = new LinkedList<>();
-        int totalSounds = populateQueueIA(inputFolder, inputFolder, toConvert, "sounds");
+        int totalSounds = populateQueueIA(inputFolder, inputFolder, toConvert, List.of("sounds"));
 
         if (toConvert.isEmpty()) {
             return;
@@ -516,7 +535,7 @@ public class IAConverter extends Converter {
         }
 
         Queue<ConfigFile> toConvert = new LinkedList<>();
-        populateQueueIA(inputFolder, inputFolder, toConvert, "recipes");
+        populateQueueIA(inputFolder, inputFolder, toConvert, List.of("recipes"));
         if (toConvert.isEmpty()) {
             return;
         }
@@ -990,7 +1009,7 @@ public class IAConverter extends Converter {
         }
     }
 
-    protected int populateQueueIA(File baseDir, File currentDir, Queue<ConfigFile> toConvert, String requiredSectionName) {
+    protected int populateQueueIA(File baseDir, File currentDir, Queue<ConfigFile> toConvert, List<String> requiredSectionName) {
         int totalItems = 0;
         File[] listed = currentDir.listFiles();
         if (isNull(listed)) return 0;
@@ -1005,21 +1024,24 @@ public class IAConverter extends Converter {
         return totalItems;
     }
 
-    private int addAllYmlFilesRecursively(File dir, File baseDir, Queue<ConfigFile> toConvert, String requiredSectionName) {
+    private int addAllYmlFilesRecursively(File dir, File baseDir, Queue<ConfigFile> toConvert, List<String> requiredSectionNames) {
         int count = 0;
         File[] files = dir.listFiles();
         if (files != null) {
             for (File f : files) {
                 if (f.isDirectory()) {
-                    count += addAllYmlFilesRecursively(f, baseDir, toConvert, requiredSectionName);
+                    count += addAllYmlFilesRecursively(f, baseDir, toConvert, requiredSectionNames);
                 } else if (f.isFile() && f.getName().endsWith(".yml")) {
                     Optional<FileCacheEntry<YamlConfiguration>> entry = FileCacheManager.getYamlCache().getEntryFile(f.toPath());
                     if (entry.isPresent()){
                         YamlConfiguration config = entry.get().getData();
-                        ConfigurationSection itemsSection = config.getConfigurationSection(requiredSectionName);
-                        if (itemsSection != null) {
-                            toConvert.add(new ConfigFile(f, baseDir, config));
-                            count += itemsSection.getKeys(false).size();
+                        for (String sectionName : requiredSectionNames) {
+                            ConfigurationSection itemsSection = config.getConfigurationSection(sectionName);
+                            if (itemsSection != null) {
+                                toConvert.add(new ConfigFile(f, baseDir, config));
+                                count += itemsSection.getKeys(false).size();
+                                break;
+                            }
                         }
                     } else {
                         Logger.info(Message.ERROR__FILE__LOAD_FAILURE,LogType.ERROR, "file", f.getName());
