@@ -176,14 +176,14 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         private boolean isModified = false;
 
         private FurnitureRotation rotation;
-        private AlignmentRule alignment;
+        private AlignmentRule alignment = AlignmentRule.ANY;
 
         public void setRotation(FurnitureRotation furnitureRotation) {
             this.rotation = furnitureRotation;
             this.isModified = true;
         }
 
-        public void setAlignment(AlignmentRule alignment) {
+        public void setAlignment(@NotNull AlignmentRule alignment) {
             this.alignment = alignment;
             this.isModified = true;
         }

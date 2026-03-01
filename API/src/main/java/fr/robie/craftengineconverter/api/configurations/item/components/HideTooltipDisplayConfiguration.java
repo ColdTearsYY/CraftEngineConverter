@@ -5,10 +5,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-public class HideTooltipConfiguration implements ItemConfigurationSerializable {
+public class HideTooltipDisplayConfiguration implements ItemConfigurationSerializable {
     private final boolean hideTooltip;
 
-    public HideTooltipConfiguration(boolean hideTooltip) {
+    public HideTooltipDisplayConfiguration(boolean hideTooltip) {
         this.hideTooltip = hideTooltip;
     }
 

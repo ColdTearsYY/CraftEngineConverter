@@ -139,7 +139,7 @@ public class NexoConverter extends Converter {
                 }
                 PluginNameMapper.getInstance().storeMapping(Plugins.NEXO, itemId, finalItemId);
             } catch (Exception e) {
-                Logger.debug("Failed to convert item: " + finalItemId, LogType.ERROR);
+                Logger.showException("Error converting item: " + finalItemId, e);
             }
 
             progress.increment();

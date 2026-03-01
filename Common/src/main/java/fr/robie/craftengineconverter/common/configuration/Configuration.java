@@ -39,6 +39,8 @@ public class Configuration {
     public static boolean itemsAdderImgPlaceholderAPISupport = true;
     public static boolean itemsAdderEnableBlockInteractionConversion = true;
     public static boolean itemsAdderEnableFurnitureInteractionConversion = true;
+    public static boolean itemsAdderEnableChunkLoadConversion = true; //TODO: cha,ge to false as default when the feature is implemented
+
     public static Set<String> itemsAdderBlackListedContentFoldersNamespaces = new HashSet<>();
 
     // WorldConverter options

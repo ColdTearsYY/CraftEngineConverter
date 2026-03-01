@@ -1,52 +1,47 @@
-package fr.robie.craftengineconverter.hooks.nexo;
+package fr.robie.craftengineconverter.hooks.itemsadder;
 
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.CraftEnginePlacementTracker;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.converter.FurnitureConverter;
 import fr.robie.craftengineconverter.common.converter.WorldConverter;
 import fr.robie.craftengineconverter.common.enums.Plugins;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-
-public class NexoWorldConverter implements WorldConverter {
+public class ItemsAdderWorldConverter implements WorldConverter {
     private final PluginNameMapper nameMapper;
     private final CraftEnginePlacementTracker placementTracker;
 
-    public NexoWorldConverter(CraftEngineConverterPlugin plugin) {
+    public ItemsAdderWorldConverter(CraftEngineConverterPlugin plugin) {
         this.nameMapper = PluginNameMapper.getInstance();
         this.placementTracker = plugin.getPlacementTracker();
     }
 
     @Override
     public boolean convertEntity(@NotNull Entity entity) {
-        if (Configuration.nexoEnableChunkLoadConversion) {
+        if (Configuration.itemsAdderEnableChunkLoadConversion) {
             PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
             for (NamespacedKey key : persistentDataContainer.getKeys()) {
-                if (key.asString().equalsIgnoreCase("nexo:furniture")){
+                if (key.asString().equalsIgnoreCase("itemsadder:placeable_entity_item")){
                     String itemID = persistentDataContainer.get(key,  PersistentDataType.STRING);
-                    String newName = this.nameMapper.getNewName(Plugins.NEXO, itemID);
-                    if (newName == null || !FurnitureConverter.isRegisteredStatic(newName)) {
+                    String newName = this.nameMapper.getNewName(Plugins.ITEMS_ADDER, itemID);
+                    if (newName == null) {
                         return false;
                     }
-                    Location location = entity.getLocation();
+                    this.placementTracker.placeFurniture(newName, entity.getLocation());
                     entity.remove();
-                    this.placementTracker.placeFurniture(newName, location.add(0, -0.5, 0));
                     return true;
                 }
             }
         }
-        return false;
-    }
+        return false;    }
 
     @Override
     public @NotNull Plugins getPlugin() {
-        return Plugins.NEXO;
+        return Plugins.ITEMS_ADDER;
     }
 }

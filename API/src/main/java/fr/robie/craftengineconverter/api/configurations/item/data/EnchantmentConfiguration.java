@@ -36,11 +36,11 @@ public class EnchantmentConfiguration implements ItemConfigurationSerializable {
             enchantment.set("merge", true);
             ConfigurationSection enchantmentsSection = getOrCreateSection(enchantment, "enchantments");
             for (Map.Entry<String, Integer> entry : this.enchantments.entrySet()) {
-                enchantmentsSection.set(entry.getKey(), entry.getValue());
+                enchantmentsSection.set(entry.getKey().toLowerCase(), entry.getValue());
             }
         } else {
             for (Map.Entry<String, Integer> entry : this.enchantments.entrySet()) {
-                enchantment.set(entry.getKey(), entry.getValue());
+                enchantment.set(entry.getKey().toLowerCase(), entry.getValue());
             }
         }
     }

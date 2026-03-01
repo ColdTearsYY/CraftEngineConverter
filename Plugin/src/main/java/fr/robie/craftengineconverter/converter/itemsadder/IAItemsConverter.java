@@ -110,7 +110,10 @@ public class IAItemsConverter extends ItemConverter {
             for (String flag : itemFlags){
                 try {
                     ItemFlag bukkitFlag = ItemFlag.valueOf(flag.toUpperCase());
-                    convertedFlags.add(BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag));
+                    ComponentFlag componentFlag = BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag);
+                    if (componentFlag != null){
+                        convertedFlags.add(componentFlag);
+                    }
                 } catch (Exception ignored){
                 }
             }

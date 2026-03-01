@@ -5,7 +5,7 @@ import fr.robie.craftengineconverter.api.configurations.item.ItemNameConfigurati
 import fr.robie.craftengineconverter.api.configurations.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.FurnitureConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.components.ConsumableConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.components.HideTooltipConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.components.HideTooltipDisplayConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.components.WeaponConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.data.AttributeModifiersConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
@@ -116,7 +116,10 @@ public class NexoItemConverter extends ItemConverter {
             for (String flag : itemFlags){
                 try {
                     ItemFlag bukkitFlag = ItemFlag.valueOf(flag.toUpperCase());
-                    convertedFlags.add(BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag));
+                    ComponentFlag componentFlag = BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag);
+                    if (componentFlag != null) {
+                        convertedFlags.add(componentFlag);
+                    }
                 } catch (Exception ignored){
                 }
             }
@@ -269,7 +272,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertHideTooltip() {
         if (!this.nexoItemSection.getBoolean("Components.hide_tooltip", false)) return;
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipConfiguration(true));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipDisplayConfiguration(true));
     }
 
     @Override

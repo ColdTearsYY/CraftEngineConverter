@@ -1,13 +1,12 @@
 package fr.robie.craftengineconverter.common.converter;
 
 import fr.robie.craftengineconverter.common.enums.Plugins;
-import fr.robie.craftengineconverter.common.records.ChunkPosition;
-import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
 public interface WorldConverter {
 
-    boolean applyItemDisplayConversion(ChunkPosition chunkPosition, ItemDisplay itemDisplay);
+    boolean convertEntity(@NotNull Entity entity);
 
     @NotNull
     Plugins getPlugin();
