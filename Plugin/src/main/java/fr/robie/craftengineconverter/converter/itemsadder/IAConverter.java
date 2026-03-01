@@ -585,7 +585,7 @@ public class IAConverter extends Converter {
                     continue;
                 }
 
-                String baseRecipeId = namespace + ":" + recipeId;
+                String baseRecipeId = namespace + ":" + recipeId.toLowerCase();
                 try {
                     convertRecipe(iaRecipesType, recipeSection, recipes, baseRecipeId, recipeId, fileName);
                 } catch (Exception e) {

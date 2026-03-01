@@ -3,8 +3,7 @@ version: "${version}"
 
 time:
   format:
-    year: '%02d %year% %02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second%
-      %02d %millisecond%'
+    year: '%02d %year% %02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%'
     month: '%02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%'
     week: '%02d %week% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%'
     day: '%02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%'
