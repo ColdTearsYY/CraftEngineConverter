@@ -1,7 +1,5 @@
-package fr.robie.craftengineconverter.common;
+package fr.robie.craftengineconverter.api.configurations;
 
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.utils.ItemConfigurationSerializable;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -12,9 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CraftEngineItemsConfiguration {
+    private final Material defaultMaterial;
     private Material material;
 
     private final List<ItemConfigurationSerializable> itemsConfigurations = new ArrayList<>();
+
+    public CraftEngineItemsConfiguration(@NotNull Material defaultMaterial) {
+        this.defaultMaterial = defaultMaterial;
+    }
 
     public void setMaterial(@Nullable Material material){
         this.material = material;
@@ -22,7 +25,7 @@ public class CraftEngineItemsConfiguration {
 
     @NotNull
     public Material getMaterial(){
-        return (this.material == null ? Configuration.defaultMaterial : this.material);
+        return (this.material == null ? this.defaultMaterial : this.material);
     }
 
     public void addItemConfiguration(@NotNull ItemConfigurationSerializable itemConfiguration){
@@ -31,7 +34,8 @@ public class CraftEngineItemsConfiguration {
 
 
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
-        itemSection.set("material", (this.material == null ? Configuration.defaultMaterial : this.material).name().toLowerCase());
+
+        itemSection.set("material", (this.material == null ? this.defaultMaterial : this.material).name().toLowerCase());
         for (ItemConfigurationSerializable itemConfiguration : this.itemsConfigurations) {
             itemConfiguration.serialize(yamlConfiguration, path, itemSection, itemId);
         }

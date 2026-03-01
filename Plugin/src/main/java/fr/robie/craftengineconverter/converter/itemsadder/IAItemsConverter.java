@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.converter.itemsadder;
 
+import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
 import fr.robie.craftengineconverter.common.enums.ComponentFlag;
 import fr.robie.craftengineconverter.common.enums.CraftEngineBlockState;
@@ -77,8 +78,11 @@ public class IAItemsConverter extends ItemConverter {
     @Override
     public void convertDyedColor(){
         Object color = this.iaItemSection.get("graphics.color");
-        if (isNotNull(color)){
-            this.craftEngineItemsConfiguration.addItemConfiguration(new DyedColorConfiguration(color));
+        if (isNotNull(color)) {
+            try {
+                this.craftEngineItemsConfiguration.addItemConfiguration(DyedColorConfiguration.parse(color));
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -145,7 +149,7 @@ public class IAItemsConverter extends ItemConverter {
     public void convertEnchantments(){
         ConfigurationSection enchantsSection = this.iaItemSection.getConfigurationSection("enchants");
         if (isNotNull(enchantsSection)){
-            EnchantmentConfiguration enchantmentConfiguration = new EnchantmentConfiguration();
+            fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration();
             for (String enchantmentKey : enchantsSection.getKeys(false)){
                 int enchantLevel = enchantsSection.getInt(enchantmentKey, 1);
                 enchantmentConfiguration.addEnchantment(enchantmentKey, enchantLevel);
@@ -155,7 +159,7 @@ public class IAItemsConverter extends ItemConverter {
         }
         List<String> enchantments = this.iaItemSection.getStringList("enchants");
         if (!enchantments.isEmpty()){
-            EnchantmentConfiguration enchantmentConfiguration = new EnchantmentConfiguration();
+            fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration();
             for (String enchantmentEntry : enchantments){
                 String enchantName;
                 int enchantLevel = 1;

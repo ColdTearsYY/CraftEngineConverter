@@ -1,19 +1,20 @@
-package fr.robie.craftengineconverter.common.items;
+package fr.robie.craftengineconverter.api.configurations.item.data;
 
 import fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-public class MaxStackSizeConfiguration implements ItemConfigurationSerializable {
-    private final int maxStackSize;
+public class CustomNameConfiguration implements ItemConfigurationSerializable {
+    private final String customName;
 
-    public MaxStackSizeConfiguration(int maxStackSize) {
-        this.maxStackSize = maxStackSize;
+    public CustomNameConfiguration(@NotNull String customName) {
+        this.customName = customName;
     }
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
-        getOrCreateSection(itemSection, "components").set("minecraft:max_stack_size", this.maxStackSize);
+        ConfigurationSection dataSection = getOrCreateSection(itemSection, "data");
+        dataSection.set("custom-name", this.customName);
     }
 }

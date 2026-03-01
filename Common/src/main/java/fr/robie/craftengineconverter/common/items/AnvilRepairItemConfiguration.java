@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.common.items;
 
-import fr.robie.craftengineconverter.common.utils.ItemConfigurationSerializable;
+import fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable;
 import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;

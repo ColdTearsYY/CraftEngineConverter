@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.common.utils;
+package fr.robie.craftengineconverter.api.configurations;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;

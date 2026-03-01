@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
+import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
 import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
@@ -84,7 +85,10 @@ public class NexoItemConverter extends ItemConverter {
     public void convertDyedColor() {
         Object color = this.nexoItemSection.get("color");
         if (isNotNull(color)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new DyedColorConfiguration(color));
+            try {
+                this.craftEngineItemsConfiguration.addItemConfiguration(DyedColorConfiguration.parse(color));
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -192,7 +196,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertEnchantments() {
         ConfigurationSection configurationSection = this.nexoItemSection.getConfigurationSection("Enchantments");
         if (configurationSection == null) return;
-        EnchantmentConfiguration enchantmentConfiguration = new EnchantmentConfiguration();
+        fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration();
         for (String enchantmentKey : configurationSection.getKeys(false)) {
             int level = configurationSection.getInt(enchantmentKey, 1);
             String enchantmentName;

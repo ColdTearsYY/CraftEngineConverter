@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.common.items;
 
-import fr.robie.craftengineconverter.common.utils.ItemConfigurationSerializable;
+import fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;

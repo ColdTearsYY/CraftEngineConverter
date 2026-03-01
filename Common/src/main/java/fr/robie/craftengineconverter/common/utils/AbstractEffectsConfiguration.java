@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractEffectsConfiguration implements ItemConfigurationSerializable {
+public abstract class AbstractEffectsConfiguration implements fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable {
 
     public interface ConsumeEffect {
         Map<String, Object> serialize();

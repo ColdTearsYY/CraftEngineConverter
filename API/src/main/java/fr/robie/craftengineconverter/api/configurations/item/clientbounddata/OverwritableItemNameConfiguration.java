@@ -1,20 +1,20 @@
-package fr.robie.craftengineconverter.common.items;
+package fr.robie.craftengineconverter.api.configurations.item.clientbounddata;
 
 import fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-public class ItemNameConfiguration implements ItemConfigurationSerializable {
+public class OverwritableItemNameConfiguration implements ItemConfigurationSerializable {
     private final String itemName;
 
-    public ItemNameConfiguration(String itemName) {
+    public OverwritableItemNameConfiguration(@NotNull String itemName) {
         this.itemName = itemName;
     }
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
-        itemSection.set("item-name", (Configuration.disableDefaultItalic ? "<!i>" : "")+this.itemName);
+        ConfigurationSection clientBoundDataSection = getOrCreateSection(itemSection, "client-bound-data");
+        clientBoundDataSection.set("overwritable-item-name", this.itemName);
     }
 }

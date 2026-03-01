@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.common.items;
 
+import fr.robie.craftengineconverter.api.configurations.ItemConfigurationSerializable;
 import fr.robie.craftengineconverter.common.utils.FloatsUtils;
-import fr.robie.craftengineconverter.common.utils.ItemConfigurationSerializable;
 import fr.robie.craftengineconverter.common.utils.enums.FurniturePlacement;
 import fr.robie.craftengineconverter.common.utils.enums.FurnitureRotation;
 import fr.robie.craftengineconverter.common.utils.enums.ItemDisplayType;

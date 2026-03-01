@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.converter;
 
-import fr.robie.craftengineconverter.common.CraftEngineItemsConfiguration;
+import fr.robie.craftengineconverter.api.configurations.CraftEngineItemsConfiguration;
+import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.utils.ObjectUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,7 +21,7 @@ public abstract class ItemConverter extends ObjectUtils {
     protected YamlConfiguration fileConfig;
     protected String assetId;
 
-    protected CraftEngineItemsConfiguration craftEngineItemsConfiguration = new CraftEngineItemsConfiguration();
+    protected CraftEngineItemsConfiguration craftEngineItemsConfiguration = new CraftEngineItemsConfiguration(Configuration.defaultMaterial);
 
     public ItemConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig) {
         this.itemId = itemId;
