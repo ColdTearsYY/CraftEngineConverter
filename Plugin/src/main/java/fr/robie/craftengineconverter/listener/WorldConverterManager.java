@@ -22,6 +22,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
@@ -70,7 +71,7 @@ public class WorldConverterManager implements Listener {
         List<EntityHistory> entityHistories = new ArrayList<>();
 
         for (Entity entity : entities) {
-            if (entity instanceof ItemDisplay || entity instanceof ArmorStand) {
+            if (entity instanceof ItemDisplay || entity instanceof ArmorStand || entity instanceof ItemFrame) {
                 Location loc = entity.getLocation();
                 String locationJson = new com.google.gson.Gson().toJson(loc.serialize());
                 String entityNbt = entity.getAsString();

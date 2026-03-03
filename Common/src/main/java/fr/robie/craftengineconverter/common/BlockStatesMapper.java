@@ -1,7 +1,6 @@
 package fr.robie.craftengineconverter.common;
 
 import fr.robie.craftengineconverter.common.enums.Plugins;
-import fr.robie.craftengineconverter.common.logger.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Material;
@@ -119,12 +118,6 @@ public class BlockStatesMapper {
         BlockData blockData = Bukkit.createBlockData(Material.FIRE);
         if (blockData instanceof Fire fire) {
             fire.setAge(customVariation);
-            fire.setFace(BlockFace.EAST, false);
-            fire.setFace(BlockFace.WEST, false);
-            fire.setFace(BlockFace.SOUTH, false);
-            fire.setFace(BlockFace.NORTH, false);
-            fire.setFace(BlockFace.UP, false);
-            Logger.info("Converted fire block state with age " + customVariation+ " to " + fire.getAsString()+ " for CE name " + newCeName);
             this.storeMapping(Plugins.ITEMS_ADDER, blockData, newCeName);
         }
     }

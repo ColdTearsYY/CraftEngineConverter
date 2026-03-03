@@ -9,6 +9,7 @@ import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.Nullable;
@@ -66,6 +67,7 @@ public class ItemsAdderFurnitureConverter extends FurnitureConverter implements 
     public Entity getFurnitureEntityAt(Location location){
         Collection<Entity> entities = location.getNearbyEntities(1, 1, 1);
         for (Entity entity : entities) {
+            if (entity instanceof Player) continue;
             if (CustomFurniture.byAlreadySpawned(entity) != null) {
                 return entity;
             }
