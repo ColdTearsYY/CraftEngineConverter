@@ -189,8 +189,9 @@ public enum Message {
 
     ERROR__PACK_CONVERSION__EXCEPTION("An error occurred during pack conversion for plugin §e%plugin%§c"),
     ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"),
-    ERROR__CONVERTER__IA__NOTEBLOCK_STATE_CONVERSION_FAILURE("Failed to convert ItemsAdder noteblock state §e%state%§c for item §e%item%§c. Skipping noteblock state conversion."),;
-
+    ERROR__CONVERTER__IA__BLOCK_STATE_CONVERSION_FAILURE("Failed to convert ItemsAdder block state for §e%block%§c with variation §e%variation%§c. Skipping block state conversion."),
+    ERROR__CONVERTER__IA__MISSING_NAME_MAPPING("No CraftEngine name mapping found for ItemsAdder block §e%block%§c. Skipping block state conversion."),
+    ;
     private List<String> messages;
     private String message;
     private Map<String, Object> titles = new HashMap<>();

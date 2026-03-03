@@ -15,6 +15,7 @@ import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.manager.FileCacheManager;
 import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.common.records.ImageConversion;
+import fr.robie.craftengineconverter.common.utils.CacheConversion;
 import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IARecipesTypes;
 import fr.robie.craftengineconverter.converter.Converter;
@@ -34,6 +35,14 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class IAConverter extends Converter {
+    private final List<CacheConversion> conversions = List.of(
+            new CacheConversion("real_blocks_note_ids_cache.yml",207, (name, v) -> BlockStatesMapper.getInstance().convertNoteBlockState(Plugins.ITEMS_ADDER, name, v)),
+            new CacheConversion("real_blocks_ids_cache.yml",0, (name, v) -> BlockStatesMapper.getInstance().convertIAMushroomBlockState(name, v)),
+            new CacheConversion("real_transparent_blocks_ids_cache.yml", 192,  (name, v) -> BlockStatesMapper.getInstance().convertIAChorusPlantState(name, v)),
+            new CacheConversion("real_wire_ids_cache.yml",1007, (name, v) -> BlockStatesMapper.getInstance().convertIATripwireState(name, v)),
+            new CacheConversion("custom_fires_ids_cache.yml",0, (name, v) -> BlockStatesMapper.getInstance().convertIAFireState(name, v))
+    );
+
     public IAConverter(CraftEngineConverter plugin) {
         super(plugin, "ItemsAdder", Plugins.ITEMS_ADDER);
     }
@@ -75,62 +84,27 @@ public class IAConverter extends Converter {
 
         try {
             processItemFiles(toConvert, outputFolder, progressBar);
-            Optional<FileCacheEntry<YamlConfiguration>> entryFile = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_blocks_note_ids_cache.yml"));
-            if (entryFile.isPresent()) {
-                FileCacheEntry<YamlConfiguration> cacheEntry = entryFile.get();
-                YamlConfiguration cacheConfig = cacheEntry.getData();
+
+            for (CacheConversion conversion : this.conversions) {
+                Optional<FileCacheEntry<YamlConfiguration>> entryFile = FileCacheManager.getYamlCache()
+                        .getEntryFile(Path.of("plugins", this.converterName, "storage", conversion.fileName()));
+                if (entryFile.isEmpty()) continue;
+
+                YamlConfiguration cacheConfig = entryFile.get().getData();
                 for (String blockId : cacheConfig.getKeys(false)) {
-                    int customVariation = cacheConfig.getInt(blockId) -207;
-                    if (customVariation <= 0) continue;
-                    String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
-                    if (newName != null) {
-                        try {
-                            BlockStatesMapper.getInstance().convertNoteBlockState(Plugins.ITEMS_ADDER, newName, customVariation);
-                        } catch (IllegalArgumentException e) {
-                            Logger.debug(Message.ERROR__CONVERTER__IA__NOTEBLOCK_STATE_CONVERSION_FAILURE, LogType.ERROR, "block", blockId, "variation", customVariation);
-                        }
-                    }
-                }
-            }
-            Optional<FileCacheEntry<YamlConfiguration>> customModelDataCacheEntry = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_blocks_ids_cache.yml"));
-            if (customModelDataCacheEntry.isPresent()) {
-                FileCacheEntry<YamlConfiguration> cacheEntry = customModelDataCacheEntry.get();
-                YamlConfiguration cacheConfig = cacheEntry.getData();
-                for (String blockId : cacheConfig.getKeys(false)) {
-                    int customVariation = cacheConfig.getInt(blockId);
+                    int customVariation = cacheConfig.getInt(blockId) - conversion.offset();
                     if (customVariation < 0) continue;
+
                     String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
-                    try {
-                        BlockStatesMapper.getInstance().convertIAMushroomBlockState(newName, customVariation);
-                    } catch (IllegalArgumentException e) {
+                    if (newName == null) {
+                        Logger.debug(Message.ERROR__CONVERTER__IA__MISSING_NAME_MAPPING, LogType.ERROR, "block", blockId);
+                        continue;
                     }
-                }
-            }
-            Optional<FileCacheEntry<YamlConfiguration>> entryFile1 = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_transparent_blocks_ids_cache.yml"));
-            if (entryFile1.isPresent()) {
-                FileCacheEntry<YamlConfiguration> cacheEntry = entryFile1.get();
-                YamlConfiguration cacheConfig = cacheEntry.getData();
-                for (String blockId : cacheConfig.getKeys(false)) {
-                    int customVariation = cacheConfig.getInt(blockId) - 192;
-                    if (customVariation < 0) continue;
-                    String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
+
                     try {
-                        BlockStatesMapper.getInstance().convertIAChorusPlantState(newName, customVariation);
+                        conversion.converter().accept(newName, customVariation);
                     } catch (IllegalArgumentException e) {
-                    }
-                }
-            }
-            Optional<FileCacheEntry<YamlConfiguration>> entryFile2 = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_wire_ids_cache.yml"));
-            if (entryFile2.isPresent()) {
-                FileCacheEntry<YamlConfiguration> cacheEntry = entryFile2.get();
-                YamlConfiguration cacheConfig = cacheEntry.getData();
-                for (String blockId : cacheConfig.getKeys(false)) {
-                    int customVariation = cacheConfig.getInt(blockId) - 1007;
-                    if (customVariation < 0) continue;
-                    String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
-                    try {
-                        BlockStatesMapper.getInstance().convertIATripwireState(newName, customVariation);
-                    } catch (IllegalArgumentException e) {
+                        Logger.debug(Message.ERROR__CONVERTER__IA__BLOCK_STATE_CONVERSION_FAILURE, LogType.ERROR, "block", blockId, "variation", customVariation);
                     }
                 }
             }
@@ -1111,6 +1085,4 @@ public class IAConverter extends Converter {
         }
         return count;
     }
-
-
 }

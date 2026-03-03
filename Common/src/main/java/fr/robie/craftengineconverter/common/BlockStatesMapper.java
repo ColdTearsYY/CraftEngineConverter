@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.common;
 
 import fr.robie.craftengineconverter.common.enums.Plugins;
+import fr.robie.craftengineconverter.common.logger.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Material;
@@ -8,6 +9,7 @@ import org.bukkit.Note;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.MultipleFacing;
+import org.bukkit.block.data.type.Fire;
 import org.bukkit.block.data.type.Tripwire;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -109,6 +111,20 @@ public class BlockStatesMapper {
             tripwire.setFace(BlockFace.EAST,  (variation & 0b0100000) != 0);
             tripwire.setAttached(  (variation & 0b1000000) != 0);
 
+            this.storeMapping(Plugins.ITEMS_ADDER, blockData, newCeName);
+        }
+    }
+
+    public void convertIAFireState(@NotNull String newCeName, int customVariation) throws IllegalArgumentException {
+        BlockData blockData = Bukkit.createBlockData(Material.FIRE);
+        if (blockData instanceof Fire fire) {
+            fire.setAge(customVariation);
+            fire.setFace(BlockFace.EAST, false);
+            fire.setFace(BlockFace.WEST, false);
+            fire.setFace(BlockFace.SOUTH, false);
+            fire.setFace(BlockFace.NORTH, false);
+            fire.setFace(BlockFace.UP, false);
+            Logger.info("Converted fire block state with age " + customVariation+ " to " + fire.getAsString()+ " for CE name " + newCeName);
             this.storeMapping(Plugins.ITEMS_ADDER, blockData, newCeName);
         }
     }

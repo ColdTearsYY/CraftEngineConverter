@@ -6,7 +6,6 @@ import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.converter.BlockConverter;
 import fr.robie.craftengineconverter.common.enums.Plugins;
-import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -33,7 +32,6 @@ public class ItemsAdderBlockConverter extends BlockConverter implements Listener
         }
 
         Block block = event.getBlockClicked();
-        Logger.info("Block : "+ block.getBlockData().getAsString());
         Location location = block.getLocation();
 
         if (!removeBlockAt(location)){
