@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -74,6 +75,23 @@ public class IAConverter extends Converter {
 
         try {
             processItemFiles(toConvert, outputFolder, progressBar);
+            Optional<FileCacheEntry<YamlConfiguration>> entryFile = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_blocks_note_ids_cache.yml"));
+            if (entryFile.isPresent()) {
+                FileCacheEntry<YamlConfiguration> cacheEntry = entryFile.get();
+                YamlConfiguration cacheConfig = cacheEntry.getData();
+                for (String blockId : cacheConfig.getKeys(false)) {
+                    int customVariation = cacheConfig.getInt(blockId) -207;
+                    if (customVariation <= 0) continue;
+                    String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
+                    if (newName != null) {
+                        try {
+                            BlockStatesMapper.getInstance().convertNoteBlockState(Plugins.ITEMS_ADDER, newName, customVariation);
+                        } catch (IllegalArgumentException e) {
+                            Logger.debug(Message.ERROR__CONVERTER__IA__NOTEBLOCK_STATE_CONVERSION_FAILURE, LogType.ERROR, "block", blockId, "variation", customVariation);
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             Logger.showException(Message.ERROR__CONVERTER__IA__ITEM_CONVERSION_EXCEPTION, e);
         } finally {

@@ -38,7 +38,9 @@ import net.momirealms.craftengine.core.entity.EquipmentSlot;
 import net.momirealms.craftengine.core.entity.display.Billboard;
 import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
 import net.momirealms.craftengine.core.util.Direction;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.MultipleFacing;
@@ -1430,39 +1432,8 @@ public class NexoItemConverter extends ItemConverter {
         } else {
             state = "solid";
             if (customVariation >= 0){
-                int notesPerInstrument = Note.Tone.TONES_COUNT * 2;
-                int variationsPerInstrument = notesPerInstrument * 2;
-
-                int instrumentIndex = (customVariation - 1) / variationsPerInstrument;
-                int noteIndex = ((customVariation - 1) % variationsPerInstrument) % notesPerInstrument;
-                boolean powered = ((customVariation - 1) % variationsPerInstrument) >= notesPerInstrument;
-
-                if (instrumentIndex == 0 && !powered) {
-                    noteIndex = noteIndex + 1;
-                }
-
-                int note = noteIndex;
-
-
-                Instrument instrument = Instrument.values()[instrumentIndex];
-                String instrumentName = switch (instrument) {
-                    case PIANO -> "harp";
-                    case BASS_DRUM -> "basedrum";
-                    case SNARE_DRUM -> "snare";
-                    case STICKS -> "hat";
-                    case BASS_GUITAR -> "bass";
-                    case FLUTE -> "flute";
-
-                    default -> instrument.name().toLowerCase();
-                };
-                String dataString = "[instrument="
-                        + instrumentName +
-                        ",note=" + note +
-                        ",powered=" + powered + "]";
-
                 try {
-                    BlockData blockData = Bukkit.createBlockData(Material.NOTE_BLOCK, dataString);
-                    BlockStatesMapper.getInstance().storeMapping(this.getConverter().getPluginType(), blockData, this.itemId);
+                    BlockStatesMapper.getInstance().convertNoteBlockState(this.getConverter().getPluginType(), this.itemId, customVariation);
                 } catch (IllegalArgumentException e) {
                     Logger.debug(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__BLOCK_DATA_FAILURE, LogType.WARNING, "variation", customVariation, "item", this.itemId);
                     e.printStackTrace();
