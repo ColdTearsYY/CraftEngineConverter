@@ -8,6 +8,7 @@ import org.bukkit.Note;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.MultipleFacing;
+import org.bukkit.block.data.type.Tripwire;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,7 +66,7 @@ public class BlockStatesMapper {
         this.storeMapping(plugins, blockData, newCeName);
     }
 
-    public void convertMushroomBlockState(@NotNull Plugins plugins, @NotNull String newCeName, int customVariation) throws IllegalArgumentException {
+    public void convertIAMushroomBlockState(@NotNull String newCeName, int customVariation) throws IllegalArgumentException {
         BlockData blockData = Bukkit.createBlockData(Material.BROWN_MUSHROOM_BLOCK);
         if (blockData instanceof MultipleFacing multipleFacing) {
 
@@ -76,7 +77,39 @@ public class BlockStatesMapper {
             multipleFacing.setFace(BlockFace.EAST,  (customVariation & 0b010000) != 0);
             multipleFacing.setFace(BlockFace.DOWN,  (customVariation & 0b100000) != 0);
 
-            this.storeMapping(plugins, blockData, newCeName);
+            this.storeMapping(Plugins.ITEMS_ADDER, blockData, newCeName);
+        }
+    }
+
+    public void convertIAChorusPlantState(@NotNull String newCeName, int customVariation) throws IllegalArgumentException {
+        BlockData blockData = Bukkit.createBlockData(Material.CHORUS_PLANT);
+        if (blockData instanceof MultipleFacing multipleFacing) {
+
+            multipleFacing.setFace(BlockFace.WEST,  (customVariation & 0b000001) != 0);
+            multipleFacing.setFace(BlockFace.UP,    (customVariation & 0b000010) != 0);
+            multipleFacing.setFace(BlockFace.SOUTH, (customVariation & 0b000100) != 0);
+            multipleFacing.setFace(BlockFace.NORTH, (customVariation & 0b001000) != 0);
+            multipleFacing.setFace(BlockFace.EAST,  (customVariation & 0b010000) != 0);
+            multipleFacing.setFace(BlockFace.DOWN,  (customVariation & 0b100000) != 0);
+
+            this.storeMapping(Plugins.ITEMS_ADDER, blockData, newCeName);
+        }
+    }
+
+    public void convertIATripwireState(@NotNull String newCeName, int customVariation) throws IllegalArgumentException {
+        BlockData blockData = Bukkit.createBlockData(Material.TRIPWIRE);
+        if (blockData instanceof Tripwire tripwire) {
+            int variation = customVariation - 1007;
+
+            tripwire.setPowered(   (variation & 0b0000001) != 0);
+            tripwire.setFace(BlockFace.WEST,  (variation & 0b0000010) != 0);
+            tripwire.setDisarmed(  (variation & 0b0000100) != 0);
+            tripwire.setFace(BlockFace.SOUTH, (variation & 0b0001000) != 0);
+            tripwire.setFace(BlockFace.NORTH, (variation & 0b0010000) != 0);
+            tripwire.setFace(BlockFace.EAST,  (variation & 0b0100000) != 0);
+            tripwire.setAttached(  (variation & 0b1000000) != 0);
+
+            this.storeMapping(Plugins.ITEMS_ADDER, blockData, newCeName);
         }
     }
 

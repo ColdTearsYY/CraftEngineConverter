@@ -101,7 +101,35 @@ public class IAConverter extends Converter {
                     if (customVariation < 0) continue;
                     String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
                     try {
-                        BlockStatesMapper.getInstance().convertMushroomBlockState(Plugins.ITEMS_ADDER, newName, customVariation);
+                        BlockStatesMapper.getInstance().convertIAMushroomBlockState(newName, customVariation);
+                    } catch (IllegalArgumentException e) {
+                    }
+                }
+            }
+            Optional<FileCacheEntry<YamlConfiguration>> entryFile1 = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_transparent_blocks_ids_cache.yml"));
+            if (entryFile1.isPresent()) {
+                FileCacheEntry<YamlConfiguration> cacheEntry = entryFile1.get();
+                YamlConfiguration cacheConfig = cacheEntry.getData();
+                for (String blockId : cacheConfig.getKeys(false)) {
+                    int customVariation = cacheConfig.getInt(blockId) - 192;
+                    if (customVariation < 0) continue;
+                    String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
+                    try {
+                        BlockStatesMapper.getInstance().convertIAChorusPlantState(newName, customVariation);
+                    } catch (IllegalArgumentException e) {
+                    }
+                }
+            }
+            Optional<FileCacheEntry<YamlConfiguration>> entryFile2 = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_wire_ids_cache.yml"));
+            if (entryFile2.isPresent()) {
+                FileCacheEntry<YamlConfiguration> cacheEntry = entryFile2.get();
+                YamlConfiguration cacheConfig = cacheEntry.getData();
+                for (String blockId : cacheConfig.getKeys(false)) {
+                    int customVariation = cacheConfig.getInt(blockId) - 1007;
+                    if (customVariation < 0) continue;
+                    String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
+                    try {
+                        BlockStatesMapper.getInstance().convertIATripwireState(newName, customVariation);
                     } catch (IllegalArgumentException e) {
                     }
                 }
