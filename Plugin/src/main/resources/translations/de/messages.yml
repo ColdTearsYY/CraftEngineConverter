@@ -187,6 +187,8 @@ error:
       contents-folder-not-found: "ItemsAdder 'contents' Ordner fehlt unter: §e%path%§c"
       output-folder-creation-failed: "Konnte den Output-Ordner nicht erstellen: §e%path%§c"
       item-conversion-exception: "Kritischer Fehler bei der ItemsAdder Konvertierung."
+      missing-name-mapping: "Keine CraftEngine-Namenszuordnung für den ItemsAdder-Block §e%block%§c gefunden. Blockzustands-Konvertierung wird übersprungen."
+      block-state-conversion-failure: "Konvertierung des ItemsAdder-Blockzustands für §e%block%§c mit der Variation §e%variation%§c fehlgeschlagen. Blockzustands-Konvertierung wird übersprungen."
       items:
         conversion-failure: "Fehler beim Konvertieren von §e%item%§c (Datei: §e%file%§c)"
       languages:

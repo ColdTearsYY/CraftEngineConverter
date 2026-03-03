@@ -65,6 +65,9 @@ public class CraftEngineConverterCommandWorldConverterStart extends VCommand {
 
         message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__START, "chunks", totalChunks);
 
+        int oldConvertedBlocks = worldConverterManager.getPlacementTracker().getBlocksConverted();
+        int oldConvertedFurniture = worldConverterManager.getPlacementTracker().getFurnitureConverted();
+
         long startTime = System.currentTimeMillis();
 
         progressBar.start();
@@ -78,10 +81,12 @@ public class CraftEngineConverterCommandWorldConverterStart extends VCommand {
             long endTime = System.currentTimeMillis();
             int processedChunks = worldConverterManager.getProcessedChunksCount();
             int convertedBlocks = worldConverterManager.getPlacementTracker().getBlocksConverted();
+            int convertedFurniture = worldConverterManager.getPlacementTracker().getFurnitureConverted();
 
             message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__COMPLETE,
                     "chunks", processedChunks,
-                    "blocks", convertedBlocks,
+                    "blocks", convertedBlocks - oldConvertedBlocks,
+                    "furniture", convertedFurniture - oldConvertedFurniture,
                     "time", TimerBuilder.formatTimeAuto(endTime - startTime));
         });
 

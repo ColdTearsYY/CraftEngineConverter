@@ -59,7 +59,7 @@ public enum Message {
 
     COMMAND__WORLD_CONVERTER__DESCRIPTION("Converts world blocks from other plugins to CraftEngine format."),
     COMMAND__WORLD_CONVERTER__START("§aStarting world conversion for §e%chunks%§a chunks..."),
-    COMMAND__WORLD_CONVERTER__COMPLETE("§aWorld conversion completed! Processed §e%chunks%§a chunks with §e%blocks%§a blocks converted in §c%time%§a."),
+    COMMAND__WORLD_CONVERTER__COMPLETE("§aWorld conversion completed! Processed §e%chunks%§a chunks with §e%blocks%§a blocks and §e%furniture%§a furnitures converted in §c%time%§a."),
     COMMAND__WORLD_CONVERTER__ALREADY_RUNNING("§cA world conversion is already running. Use --force to cancel the current conversion and start a new one."),
     COMMAND__WORLD_CONVERTER__FORCE_STOPPING("§eForce flag detected. Stopping ongoing world conversion..."),
 
@@ -157,6 +157,7 @@ public enum Message {
     WARNING__CONVERTER__IA__RECIPES__UNKNOWN_ITEM_REFERENCE("Unknown ItemsAdder item: §e%item%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
     WARNING__CONVERTER__IA__RECIPES__ITEM_REFERENCE_CONVERSION_FAILURE("Could not convert item reference: §e%item%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
 
+    ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"),
 
     ERROR__CONVERTER__IA__CONTENTS_FOLDER_NOT_FOUND("ItemsAdder contents folder not found: §e%path%§c"),
     ERROR__CONVERTER__IA__OUTPUT_FOLDER_CREATION_FAILED("Failed to create output folder: §e%path%§c"),
@@ -177,6 +178,9 @@ public enum Message {
     ERROR__CONVERTER__IA__RECIPES__CONVERSION_EXCEPTION("An error occurred during ItemsAdder recipe conversion"),
     ERROR__CONVERTER__IA__RECIPES__CONVERSION_FAILURE("Failed to convert ItemsAdder recipe: §e%recipe%§c in file: §e%file%§c"),
 
+    ERROR__CONVERTER__IA__BLOCK_STATE_CONVERSION_FAILURE("Failed to convert ItemsAdder block state for §e%block%§c with variation §e%variation%§c. Skipping block state conversion."),
+    ERROR__CONVERTER__IA__MISSING_NAME_MAPPING("No CraftEngine name mapping found for ItemsAdder block §e%block%§c. Skipping block state conversion."),
+
     ERROR__CACHE__NULL_RESULT("Cache returned null for path: §e%path%§c"),
     ERROR__CACHE__EXCEPTION("An error occurred while accessing the cache for path: §e%path%§c. Error: §e%message%§c"),
     ERROR__MKDIR_FAILURE("Failed to create directory §e%directory% (%path%)§c!"),
@@ -188,9 +192,6 @@ public enum Message {
     ERROR__JSON__LOAD_FAILURE("Unable to load JSON file '%file%': file not found or invalid JSON format"),
 
     ERROR__PACK_CONVERSION__EXCEPTION("An error occurred during pack conversion for plugin §e%plugin%§c"),
-    ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"),
-    ERROR__CONVERTER__IA__BLOCK_STATE_CONVERSION_FAILURE("Failed to convert ItemsAdder block state for §e%block%§c with variation §e%variation%§c. Skipping block state conversion."),
-    ERROR__CONVERTER__IA__MISSING_NAME_MAPPING("No CraftEngine name mapping found for ItemsAdder block §e%block%§c. Skipping block state conversion."),
     ;
     private List<String> messages;
     private String message;

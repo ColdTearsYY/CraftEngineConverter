@@ -197,6 +197,8 @@ error:
       contents-folder-not-found: "Dossier de contenu ItemsAdder non trouvé : §e%path%§c"
       output-folder-creation-failed: "Échec de la création du dossier de sortie : §e%path%§c"
       item-conversion-exception: "Une erreur est survenue lors de la conversion des items ItemsAdder"
+      missing-name-mapping: "Aucun mappage de nom CraftEngine trouvé pour le bloc ItemsAdder §e%block%§c. Conversion de l’état du bloc ignorée."
+      block-state-conversion-failure: "Échec de la conversion de l’état du bloc ItemsAdder pour §e%block%§c avec la variation §e%variation%§c. Conversion de l’état du bloc ignorée."
       items:
         conversion-failure: "Échec de la conversion de l'item ItemsAdder : §e%item%§c dans le fichier : §e%file%§c"
       images:
