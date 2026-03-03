@@ -5,7 +5,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Material;
 import org.bukkit.Note;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.MultipleFacing;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +64,22 @@ public class BlockStatesMapper {
         BlockData blockData = Bukkit.createBlockData(Material.NOTE_BLOCK, dataString);
         this.storeMapping(plugins, blockData, newCeName);
     }
+
+    public void convertMushroomBlockState(@NotNull Plugins plugins, @NotNull String newCeName, int customVariation) throws IllegalArgumentException {
+        BlockData blockData = Bukkit.createBlockData(Material.BROWN_MUSHROOM_BLOCK);
+        if (blockData instanceof MultipleFacing multipleFacing) {
+
+            multipleFacing.setFace(BlockFace.WEST,  (customVariation & 0b000001) != 0);
+            multipleFacing.setFace(BlockFace.UP,    (customVariation & 0b000010) != 0);
+            multipleFacing.setFace(BlockFace.SOUTH, (customVariation & 0b000100) != 0);
+            multipleFacing.setFace(BlockFace.NORTH, (customVariation & 0b001000) != 0);
+            multipleFacing.setFace(BlockFace.EAST,  (customVariation & 0b010000) != 0);
+            multipleFacing.setFace(BlockFace.DOWN,  (customVariation & 0b100000) != 0);
+
+            this.storeMapping(plugins, blockData, newCeName);
+        }
+    }
+
     public static BlockStatesMapper getInstance() {
         return INSTANCE;
     }

@@ -92,6 +92,20 @@ public class IAConverter extends Converter {
                     }
                 }
             }
+            Optional<FileCacheEntry<YamlConfiguration>> customModelDataCacheEntry = FileCacheManager.getYamlCache().getEntryFile(Path.of("plugins", this.converterName, "storage", "real_blocks_ids_cache.yml"));
+            if (customModelDataCacheEntry.isPresent()) {
+                FileCacheEntry<YamlConfiguration> cacheEntry = customModelDataCacheEntry.get();
+                YamlConfiguration cacheConfig = cacheEntry.getData();
+                for (String blockId : cacheConfig.getKeys(false)) {
+                    int customVariation = cacheConfig.getInt(blockId);
+                    if (customVariation < 0) continue;
+                    String newName = PluginNameMapper.getInstance().getNewName(Plugins.ITEMS_ADDER, blockId);
+                    try {
+                        BlockStatesMapper.getInstance().convertMushroomBlockState(Plugins.ITEMS_ADDER, newName, customVariation);
+                    } catch (IllegalArgumentException e) {
+                    }
+                }
+            }
         } catch (Exception e) {
             Logger.showException(Message.ERROR__CONVERTER__IA__ITEM_CONVERSION_EXCEPTION, e);
         } finally {

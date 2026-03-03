@@ -1385,7 +1385,7 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection ceBlockSection = getOrCreateSection(ceBehaviorSection, "block");
         ConfigurationSection ceStateSection = getOrCreateSection(ceBlockSection, "state");
         String state;
-        if (nexoCustomBlockType.equals("CHORUSBLOCK")){
+        if (nexoCustomBlockType.equalsIgnoreCase("CHORUSBLOCK")){
             state = "leaves";
             if (customVariation >= 0){
                 BlockData blockData = Bukkit.createBlockData(Material.CHORUS_PLANT);
@@ -1405,7 +1405,7 @@ public class NexoItemConverter extends ItemConverter {
                     );
                 }
             }
-        } else if (nexoCustomBlockType.equals("TRIPWIRE")){
+        } else if (nexoCustomBlockType.equalsIgnoreCase("TRIPWIRE")){
             state = "tripwire";
             if (customVariation >= 0){
                 BlockData blockData = Bukkit.createBlockData(Material.TRIPWIRE);
@@ -1431,7 +1431,7 @@ public class NexoItemConverter extends ItemConverter {
             }
         } else {
             state = "solid";
-            if (customVariation >= 0){
+            if (customVariation >= 0 && nexoCustomBlockType.equalsIgnoreCase("NOTEBLOCK")){
                 try {
                     BlockStatesMapper.getInstance().convertNoteBlockState(this.getConverter().getPluginType(), this.itemId, customVariation);
                 } catch (IllegalArgumentException e) {
