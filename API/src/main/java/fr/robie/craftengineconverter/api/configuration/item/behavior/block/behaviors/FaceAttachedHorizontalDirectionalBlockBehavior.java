@@ -1,5 +1,7 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors;
 
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockBehavior;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

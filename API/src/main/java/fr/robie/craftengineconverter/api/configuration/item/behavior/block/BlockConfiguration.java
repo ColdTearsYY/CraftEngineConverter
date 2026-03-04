@@ -1,7 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block;
 
 import fr.robie.craftengineconverter.api.configuration.ItemConfigurationSerializable;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.BlockBehavior;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.StateBlock;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;

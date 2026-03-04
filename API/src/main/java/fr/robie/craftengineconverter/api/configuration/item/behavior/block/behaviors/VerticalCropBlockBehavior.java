@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors;
 
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockBehavior;
 import net.momirealms.craftengine.core.util.Direction;
 
 import java.util.Map;

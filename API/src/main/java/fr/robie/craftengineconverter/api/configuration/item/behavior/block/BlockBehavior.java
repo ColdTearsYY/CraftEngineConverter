@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors;
+package fr.robie.craftengineconverter.api.configuration.item.behavior.block;
 
 import java.util.Map;
 
