@@ -9,7 +9,7 @@ import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.manager.Manageable;
 import fr.robie.craftengineconverter.common.utils.ObjectUtils;
-import fr.robie.craftengineconverter.utils.SnakeUtils;
+import fr.robie.craftengineconverter.common.utils.SnakeUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;

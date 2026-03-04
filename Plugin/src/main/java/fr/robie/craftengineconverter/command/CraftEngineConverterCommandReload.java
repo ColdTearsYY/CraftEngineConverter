@@ -20,6 +20,7 @@ public class CraftEngineConverterCommandReload extends VCommand {
     protected CommandType perform(CraftEngineConverter plugin) {
         try {
             long startTime = System.currentTimeMillis();
+            plugin.reloadBlockStateMappings();
             plugin.reloadConfig();
             plugin.reloadMessages();
             long endTime = System.currentTimeMillis();

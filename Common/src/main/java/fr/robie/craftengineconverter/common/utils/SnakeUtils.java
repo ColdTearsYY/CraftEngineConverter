@@ -1,11 +1,14 @@
-package fr.robie.craftengineconverter.utils;
+package fr.robie.craftengineconverter.common.utils;
 
 import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.common.utils.directive.SmartConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.*;
 import java.util.*;
@@ -81,6 +84,34 @@ public class SnakeUtils implements AutoCloseable {
         this.data = (loadedData != null) ? loadedData : new LinkedHashMap<>();
         this.targetFile = File.createTempFile("snakeutils_temp_"+System.currentTimeMillis(), ".yml");
         this.autoSave = false;
+    }
+
+    /**
+     * Creates a SnakeUtils from a file using the SmartConstructor,
+     * so all $$ directives are resolved transparently.
+     *
+     * @param file the YAML file to load
+     * @return a SnakeUtils instance with directives applied, or null on error
+     */
+    @Nullable
+    public static SnakeUtils loadSmart(@NotNull File file) {
+        try {
+            LoaderOptions options = new LoaderOptions();
+            SmartConstructor constructor = new SmartConstructor(options);
+            DumperOptions dumper = new DumperOptions();
+            dumper.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            Yaml yaml = new Yaml(constructor, new Representer(dumper), dumper);
+            try (FileInputStream fis = new FileInputStream(file)) {
+                Map<String, Object> data = yaml.load(fis);
+                SnakeUtils su = SnakeUtils.createEmpty(file);
+                su.getData().clear();
+                if (data != null) su.getData().putAll(data);
+                return su;
+            }
+        } catch (IOException e) {
+            Logger.showException("Failed to load smart YAML: " + file, e);
+            return null;
+        }
     }
 
     /**

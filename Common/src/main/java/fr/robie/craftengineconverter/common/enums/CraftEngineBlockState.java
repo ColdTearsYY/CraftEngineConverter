@@ -1,114 +1,95 @@
 package fr.robie.craftengineconverter.common.enums;
 
 import fr.robie.craftengineconverter.common.configuration.Configuration;
-import org.bukkit.block.BlockType;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public enum CraftEngineBlockState {
     /*
-     * POOL HIERARCHY:
+     * ╔══════════════════════════════════════════════════════════════════╗
+     * ║                    POOL HIERARCHY                                ║
+     * ╚══════════════════════════════════════════════════════════════════╝
      *
-     * SOLID (1338 slots) - Top-level pool
-     *   ├─ MUSHROOM (189 slots) - Mushroom block pool
-     *   │   ├─ RED_MUSHROOM_BLOCK (63 slots)
-     *   │   ├─ BROWN_MUSHROOM_BLOCK (63 slots)
-     *   │   └─ MUSHROOM_STEM (63 slots)
-     *   └─ NOTE_BLOCK (1149 slots)
+     * ── SHARED POOLS ────────────────────────────────────────────────────
      *
-     * TRIPWIRE (126 slots) - Tripwire pool
-     *   ├─ LOWER_TRIPWIRE (63 slots)
-     *   └─ HIGHER_TRIPWIRE (63 slots)
+     *  SOLID
+     *  ├─ MUSHROOM
+     *  │   ├─ RED_MUSHROOM_BLOCK  ─┐
+     *  │   ├─ BROWN_MUSHROOM_BLOCK ─┼─ ↔ equiv each other + NOTE_BLOCK
+     *  │   └─ MUSHROOM_STEM        ─┘
+     *  └─ NOTE_BLOCK ────────────── ↔ equiv RED/BROWN/STEM
      *
-     * TINTABLE_LEAVES (65 slots)
-     *   └─ WATERLOGGED_TINTABLE_LEAVES (65 slots)
+     *  TRIPWIRE
+     *  ├─ LOWER_TRIPWIRE  [attached=true]  ─┐
+     *  └─ HIGHER_TRIPWIRE [attached=false] ─┴─ ↔ equiv each other + TRIPWIRE
      *
-     * NON_TINTABLE_LEAVES (234 slots)
-     *   └─ WATERLOGGED_NON_TINTABLE_LEAVES (234 slots)
+     *  LEAVES
+     *  └─ WATERLOGGED_LEAVES  ↔ equiv LEAVES
      *
-     * LEAVES (dynamic: leafCount * 13, max 143 on >= 1.21.2)
-     *   └─ WATERLOGGED_LEAVES (dynamic: leafCount * 13, max 143 on >= 1.21.2)
+     * ── INDEPENDENT BLOCKS (no shared pool) ────────────────────────────
      *
-     * Independent blocks (no shared pool):
-     *   - CACTUS (15), SUGAR_CANE (15)
-     *   - WEEPING_VINE (50), TWISTING_VINE (50), CAVE_VINE (100)
-     *   - SAPLING (dynamic: saplingCount * 1, max 8 on >= 1.21.2), KELP (25), CHORUS (0)
+     *  CACTUS     ↔ SUGAR_CANE
+     *  SUGAR_CANE ↔ CACTUS
      *
-     * VERSION-GATED BLOCKS:
-     *   - PALE_OAK_LEAVES / PALE_OAK_SAPLING: requires >= 1.21.2
-     *   - CHERRY_LEAVES / CHERRY_SAPLING:     requires >= 1.20.0
-     *   - MANGROVE_LEAVES:                    requires >= 1.19.0
-     *   - AZALEA_LEAVES / FLOWERING_AZALEA_LEAVES: requires >= 1.17.0
+     *  WEEPING_VINE  ─┐
+     *  TWISTING_VINE ─┼─ ↔ equiv each other
+     *  CAVE_VINE     ─┘
+     *
+     *  SAPLING  ↔ LEAVES
+     *  KELP     ↔ NOTE_BLOCK
+     *  CHORUS   ↔ LEAVES
      */
 
-    // Leaves group (tintable variants) - 65 slots shared
-    TINTABLE_LEAVES(65),
-    WATERLOGGED_TINTABLE_LEAVES(65),  // Shares TINTABLE_LEAVES pool
+    LEAVES,
+    WATERLOGGED_LEAVES,
 
-    // Leaves group (non-tintable variants) - 234 slots shared
-    NON_TINTABLE_LEAVES(234),
-    WATERLOGGED_NON_TINTABLE_LEAVES(234),  // Shares NON_TINTABLE_LEAVES pool
+    LOWER_TRIPWIRE,
+    HIGHER_TRIPWIRE,
+    TRIPWIRE,
 
-    // Leaves group
-    LEAVES(computeLeavesLimit()),
-    WATERLOGGED_LEAVES(computeLeavesLimit()),  // Shares LEAVES pool
+    MUSHROOM_STEM,
+    RED_MUSHROOM_BLOCK,
+    BROWN_MUSHROOM_BLOCK,
+    MUSHROOM,
 
-    // Tripwire group - 126 slots shared (63*2)
-    LOWER_TRIPWIRE(63),
-    HIGHER_TRIPWIRE(63),
-    TRIPWIRE(126),  // Pool for both tripwire types
+    NOTE_BLOCK,
+    SOLID,
 
-    // Mushroom blocks group (individual blocks have their own limits)
-    MUSHROOM_STEM(63),
-    RED_MUSHROOM_BLOCK(63),
-    BROWN_MUSHROOM_BLOCK(63),
-    // MUSHROOM is the shared pool (189 = 63*3), contains draw from this pool
-    MUSHROOM(189),
+    CACTUS,
+    SUGAR_CANE,
 
-    // Universal fallback and composite
-    NOTE_BLOCK(1149),
-    SOLID(1338),
+    WEEPING_VINE,
+    TWISTING_VINE,
+    CAVE_VINE,
 
-    // Plant group (tall plants)
-    CACTUS(15),
-    SUGAR_CANE(15),
-
-    // Vines group
-    WEEPING_VINE(50),
-    TWISTING_VINE(50),
-    CAVE_VINE(100),
-
-    // Other plants
-    SAPLING(computeSaplingLimit()),
-    KELP(25),
-    CHORUS(0);
+    SAPLING,
+    KELP,
+    CHORUS;
 
     private final Map<Plugins, Integer> pluginLimits = new HashMap<>();
     private final List<CraftEngineBlockState> contains = new ArrayList<>();
     private final List<CraftEngineBlockState> equivalents = new ArrayList<>();
-    private final Set<BlockType> blocks = new HashSet<>();
     private int limit;
     private int start = 0;
     private CraftEngineBlockState parent = null;
+    private String lastBlockState = null;
 
     static {
 
-        // Mushroom blocks share the MUSHROOM pool (189 = 63*3)
         RED_MUSHROOM_BLOCK.parent = MUSHROOM;
         BROWN_MUSHROOM_BLOCK.parent = MUSHROOM;
         MUSHROOM_STEM.parent = MUSHROOM;
 
-        // MUSHROOM and NOTE_BLOCK share the SOLID pool (1338 = 189 + 1149)
         MUSHROOM.parent = SOLID;
         NOTE_BLOCK.parent = SOLID;
 
-        // Waterlogged leaves share their non-waterlogged counterpart's pool
-        WATERLOGGED_TINTABLE_LEAVES.parent = TINTABLE_LEAVES;
-        WATERLOGGED_NON_TINTABLE_LEAVES.parent = NON_TINTABLE_LEAVES;
         WATERLOGGED_LEAVES.parent = LEAVES;
 
-        // Tripwire variants share pools
-        LOWER_TRIPWIRE.parent = TRIPWIRE;  // TRIPWIRE pool = 126 (63*2)
+        LOWER_TRIPWIRE.parent = TRIPWIRE;
         HIGHER_TRIPWIRE.parent = TRIPWIRE;
 
         TRIPWIRE.contains.add(LOWER_TRIPWIRE);
@@ -121,22 +102,8 @@ public enum CraftEngineBlockState {
         SOLID.contains.add(MUSHROOM);
         SOLID.contains.add(NOTE_BLOCK);
 
-        TINTABLE_LEAVES.equivalents.add(WATERLOGGED_TINTABLE_LEAVES);
-        TINTABLE_LEAVES.equivalents.add(LEAVES);
-        WATERLOGGED_TINTABLE_LEAVES.equivalents.add(TINTABLE_LEAVES);
-        WATERLOGGED_TINTABLE_LEAVES.equivalents.add(WATERLOGGED_LEAVES);
-
-        NON_TINTABLE_LEAVES.equivalents.add(WATERLOGGED_NON_TINTABLE_LEAVES);
-        NON_TINTABLE_LEAVES.equivalents.add(LEAVES);
-        WATERLOGGED_NON_TINTABLE_LEAVES.equivalents.add(NON_TINTABLE_LEAVES);
-        WATERLOGGED_NON_TINTABLE_LEAVES.equivalents.add(WATERLOGGED_LEAVES);
-
         LEAVES.equivalents.add(WATERLOGGED_LEAVES);
-        LEAVES.equivalents.add(TINTABLE_LEAVES);
-        LEAVES.equivalents.add(NON_TINTABLE_LEAVES);
         WATERLOGGED_LEAVES.equivalents.add(LEAVES);
-        WATERLOGGED_LEAVES.equivalents.add(WATERLOGGED_TINTABLE_LEAVES);
-        WATERLOGGED_LEAVES.equivalents.add(WATERLOGGED_NON_TINTABLE_LEAVES);
 
         LOWER_TRIPWIRE.equivalents.add(HIGHER_TRIPWIRE);
         LOWER_TRIPWIRE.equivalents.add(TRIPWIRE);
@@ -169,141 +136,35 @@ public enum CraftEngineBlockState {
         CACTUS.equivalents.add(SUGAR_CANE);
         SUGAR_CANE.equivalents.add(CACTUS);
 
-        SAPLING.equivalents.add(LEAVES); // Transparent fallback
+        SAPLING.equivalents.add(LEAVES);
         KELP.equivalents.add(NOTE_BLOCK);
-        CHORUS.equivalents.add(LEAVES); // Transparent fallback
-
-        // ── Leaves blocks ──────────────────────────────────────────────────────────
-        Set<BlockType> leaves = new HashSet<>(Set.of(
-                BlockType.OAK_LEAVES,
-                BlockType.SPRUCE_LEAVES,
-                BlockType.BIRCH_LEAVES,
-                BlockType.JUNGLE_LEAVES,
-                BlockType.ACACIA_LEAVES,
-                BlockType.DARK_OAK_LEAVES
-        ));
-
-        // AZALEA_LEAVES / FLOWERING_AZALEA_LEAVES
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_17)) {
-            leaves.add(BlockType.AZALEA_LEAVES);
-            leaves.add(BlockType.FLOWERING_AZALEA_LEAVES);
-        }
-
-        // MANGROVE_LEAVES
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_19)) {
-            leaves.add(BlockType.MANGROVE_LEAVES);
-        }
-
-        // CHERRY_LEAVES
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_20)) {
-            leaves.add(BlockType.CHERRY_LEAVES);
-        }
-
-        // PALE_OAK_LEAVES
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_21_2)) {
-            leaves.add(BlockType.PALE_OAK_LEAVES);
-        }
-
-        TINTABLE_LEAVES.addAllBlocks(leaves);
-        WATERLOGGED_TINTABLE_LEAVES.addAllBlocks(leaves);
-        NON_TINTABLE_LEAVES.addAllBlocks(leaves);
-        WATERLOGGED_NON_TINTABLE_LEAVES.addAllBlocks(leaves);
-        LEAVES.addAllBlocks(leaves);
-        WATERLOGGED_LEAVES.addAllBlocks(leaves);
-
-        // ── Tripwire ───────────────────────────────────────────────────────────────
-        LOWER_TRIPWIRE.addBlock(BlockType.TRIPWIRE);
-        HIGHER_TRIPWIRE.addBlock(BlockType.TRIPWIRE);
-        TRIPWIRE.addBlock(BlockType.TRIPWIRE);
-
-        // ── Mushroom blocks ────────────────────────────────────────────────────────
-        MUSHROOM_STEM.addBlock(BlockType.MUSHROOM_STEM);
-        RED_MUSHROOM_BLOCK.addBlock(BlockType.RED_MUSHROOM_BLOCK);
-        BROWN_MUSHROOM_BLOCK.addBlock(BlockType.BROWN_MUSHROOM_BLOCK);
-        MUSHROOM.addAllBlocks(Set.of(BlockType.MUSHROOM_STEM, BlockType.RED_MUSHROOM_BLOCK, BlockType.BROWN_MUSHROOM_BLOCK));
-
-        NOTE_BLOCK.addBlock(BlockType.NOTE_BLOCK);
-        SOLID.addAllBlocks(Set.of(BlockType.MUSHROOM_STEM, BlockType.RED_MUSHROOM_BLOCK, BlockType.BROWN_MUSHROOM_BLOCK, BlockType.NOTE_BLOCK));
-
-        // ── Plant blocks ───────────────────────────────────────────────────────────
-        CACTUS.addBlock(BlockType.CACTUS);
-        SUGAR_CANE.addBlock(BlockType.SUGAR_CANE);
-        WEEPING_VINE.addBlock(BlockType.WEEPING_VINES);
-        TWISTING_VINE.addBlock(BlockType.TWISTING_VINES);
-        CAVE_VINE.addBlock(BlockType.CAVE_VINES);
-
-        // ── Saplings ───────────────────────────────────────────────────────────────
-        Set<BlockType> saplings = new HashSet<>(Set.of(
-                BlockType.OAK_SAPLING,
-                BlockType.SPRUCE_SAPLING,
-                BlockType.BIRCH_SAPLING,
-                BlockType.JUNGLE_SAPLING,
-                BlockType.ACACIA_SAPLING,
-                BlockType.DARK_OAK_SAPLING
-        ));
-
-        // CHERRY_SAPLING
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_20)) {
-            saplings.add(BlockType.CHERRY_SAPLING);
-        }
-
-        // PALE_OAK_SAPLING
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_21_2)) {
-            saplings.add(BlockType.PALE_OAK_SAPLING);
-        }
-
-        SAPLING.addAllBlocks(saplings);
-
-        // ── Other ──────────────────────────────────────────────────────────────────
-        KELP.addBlock(BlockType.KELP);
-        CHORUS.addBlock(BlockType.CHORUS_PLANT);
+        CHORUS.equivalents.add(LEAVES);
     }
 
-    CraftEngineBlockState(int limit) {
-        this.limit = limit;
+    CraftEngineBlockState() {
+        this.limit = 0;
     }
 
-    /**
-     * Computes the LEAVES / WATERLOGGED_LEAVES limit based on the running server version.
-     * Each leaf block type contributes 13 custom block states.
-     * Base (all versions): oak, spruce, birch, jungle, acacia, dark_oak = 6
-     * + azalea, flowering_azalea (>= 1.17) = +2
-     * + mangrove (>= 1.19)                 = +1
-     * + cherry (>= 1.20)                   = +1
-     * + pale_oak (>= 1.21.2)               = +1
-     * Max = 11 types * 13 = 143
-     */
-    private static int computeLeavesLimit() {
-        int count = 6; // oak, spruce, birch, jungle, acacia, dark_oak
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_17))   count += 2; // azalea, flowering_azalea
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_19))   count += 1; // mangrove
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_20))   count += 1; // cherry
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_21_2)) count += 1; // pale_oak
-        return count * 13;
+    public String getLastBlockState() {
+        return lastBlockState;
     }
 
-    /**
-     * Computes the SAPLING limit based on the running server version.
-     * Each sapling type contributes 1 custom block state.
-     * Base (all versions): oak, spruce, birch, jungle, acacia, dark_oak = 6
-     * + cherry (>= 1.20)     = +1
-     * + pale_oak (>= 1.21.2) = +1
-     * Max = 8 types * 1 = 8
-     */
-    private static int computeSaplingLimit() {
-        int count = 6; // oak, spruce, birch, jungle, acacia, dark_oak
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_20))   count += 1; // cherry
-        if (NmsVersion.nmsVersion.isAtLeast(NmsVersion.V_1_21_2)) count += 1; // pale_oak
-        return count;
+    public void setLastBlockStateAndIncrementLimit(@NotNull String lastBlockState) {
+        this.lastBlockState = lastBlockState;
+        this.limit++;
+
+        if (this.parent != null) {
+            this.parent.propagateIncrementLimit();
+        }
     }
 
-    /**
-     * Set the starting index for this CraftEngineBlockState.
-     * When a child node's start is set, it reserves slots in the parent pool.
-     * For example, if MUSHROOM.start = 189 and MUSHROOM is part of SOLID,
-     * this reserves 189 slots in SOLID for MUSHROOM.
-     * @param start The starting index (must be >= 0)
-     */
+    private void propagateIncrementLimit() {
+        this.limit++;
+        if (this.parent != null) {
+            this.parent.propagateIncrementLimit();
+        }
+    }
+
     public void setStart(int start) {
         if (start < 0) {
             throw new IllegalArgumentException("Start must be >= 0");
@@ -589,11 +450,10 @@ public enum CraftEngineBlockState {
         }
     }
 
-    public void addAllBlocks(Set<BlockType> blockTypes) {
-        this.blocks.addAll(blockTypes);
-    }
-
-    public void addBlock(BlockType blockType) {
-        this.blocks.add(blockType);
+    public void resetLimit() {
+        this.pluginLimits.clear();
+        this.lastBlockState = null;
+        this.limit = 0;
+        this.start = 0;
     }
 }

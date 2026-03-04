@@ -17,6 +17,7 @@ import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.manager.FileCacheManager;
 import fr.robie.craftengineconverter.common.manager.FoliaCompatibilityManager;
+import fr.robie.craftengineconverter.common.scanner.BlockStateMappingScanner;
 import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.converter.Converter;
@@ -77,6 +78,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        this.reloadBlockStateMappings();
         this.reloadConfig();
         if (Plugins.PACKET_EVENTS.isPresent()){
             Logger.info("[Hook] PacketEvents", LogType.SUCCESS);
@@ -272,6 +274,10 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         File configFile = new File(this.getDataFolder(), "config.yml");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
         Configuration.getInstance().load(config, configFile);
+    }
+
+    public void reloadBlockStateMappings(){
+        new BlockStateMappingScanner(this.getDataFolder().getParentFile().toPath().resolve("CraftEngine").toFile()).scan();
     }
 
     public static CraftEngineConverter getInstance() {

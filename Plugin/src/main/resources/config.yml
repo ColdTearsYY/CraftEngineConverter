@@ -12,43 +12,29 @@ language: "EN"
 # Note:
 #  - Block-states can have parent-child relationships.
 #  - A parent's limit automatically includes the limits of all its children.
-#    For example, if "note-block" (a child of "solid") has a limit of 10, then "solid" will have its own limit plus 10.
+#    For example, if "note-block" (a child of "solid") uses 10 slots, "solid" will reflect that in its own count.
+#  - Actual limits are resolved dynamically by scanning your CraftEngine configuration files.
 #
-# Available block-state groups and their capacity:
-#  - SOLID (1338 available): Top-level group
-#      - MUSHROOM (189 available): Mushroom block variants
-#          - RED_MUSHROOM_BLOCK (63 available)
-#          - BROWN_MUSHROOM_BLOCK (63 available)
-#          - MUSHROOM_STEM (63 available)
-#      - NOTE_BLOCK (1149 available)
+# Available block-state groups (capacity scanned at runtime):
 #
-#  - TRIPWIRE (126 available): Tripwire variants
-#      - LOWER_TRIPWIRE (63 available)
-#      - HIGHER_TRIPWIRE (63 available)
+#  SOLID
+#  ├─ MUSHROOM
+#  │   ├─ RED_MUSHROOM_BLOCK
+#  │   ├─ BROWN_MUSHROOM_BLOCK
+#  │   └─ MUSHROOM_STEM
+#  └─ NOTE_BLOCK
 #
-#  - TINTABLE_LEAVES (65 available)
-#      - WATERLOGGED_TINTABLE_LEAVES (65 available)
+#  TRIPWIRE
+#  ├─ LOWER_TRIPWIRE  [attached=true]
+#  └─ HIGHER_TRIPWIRE [attached=false]
 #
-#  - NON_TINTABLE_LEAVES (234 available)
-#      - WATERLOGGED_NON_TINTABLE_LEAVES (234 available)
+#  LEAVES
+#  └─ WATERLOGGED_LEAVES
 #
-#  - LEAVES (143 available)
-#      - WATERLOGGED_LEAVES (143 available)
-#
-#  - Independent blocks (not part of any shared group):
-#      - CACTUS (15), SUGAR_CANE (15)
-#      - WEEPING_VINE (50), TWISTING_VINE (50), CAVE_VINE (100)
-#      - SAPLING (8), KELP (25), CHORUS (0)
+#  Independent blocks (no shared group):
+#  CACTUS, SUGAR_CANE, WEEPING_VINE, TWISTING_VINE, CAVE_VINE, SAPLING, KELP, CHORUS
 block-state-limit:
   type: PLUGIN
-  tintable-leaves:
-    start-limit: 0
-  waterlogged-tintable-leaves:
-    start-limit: 0
-  non-tintable-leaves:
-    start-limit: 0
-  waterlogged-non-tintable-leaves:
-    start-limit: 0
   leaves:
     start-limit: 0
   waterlogged-leaves:
