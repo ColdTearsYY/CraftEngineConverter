@@ -16,8 +16,9 @@ public class BlockVariant {
         this.appearanceName = appearanceName;
     }
 
-    public <T> void addVariantCondition(@NotNull BlockStateProperty<T> property, @NotNull T value) {
+    public <T> BlockVariant addVariantCondition(@NotNull BlockStateProperty<T> property, @NotNull T value) {
         this.variantConditions.put(property.getName(), property.getName() + "=" + value.toString().toLowerCase());
+        return this;
     }
 
     public Map<String, String> getVariantConditions() {

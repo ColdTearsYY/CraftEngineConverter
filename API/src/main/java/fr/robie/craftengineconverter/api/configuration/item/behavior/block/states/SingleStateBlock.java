@@ -10,12 +10,12 @@ import java.util.Map;
 public class SingleStateBlock implements StateBlock {
     private final BlockAppearance blockAppearance;
 
-    public SingleStateBlock(Plugins requiredPlugin, CraftEngineBlockState autoState, @NotNull Map<String, Object> model, String itemId) {
-        this.blockAppearance = new BlockAppearance(requiredPlugin, autoState, model, itemId);
+    public SingleStateBlock(@NotNull Plugins requiredPlugin, @NotNull CraftEngineBlockState autoState, @NotNull String itemId, @NotNull Map<String, Object> model) {
+        this.blockAppearance = BlockAppearance.autoState(requiredPlugin, autoState, itemId, model).build();
     }
 
     public SingleStateBlock(String visualState, @NotNull Map<String, Object> model) {
-        this.blockAppearance = new BlockAppearance(visualState, model);
+        this.blockAppearance = BlockAppearance.visualState(visualState, model).build();
     }
 
     @Override

@@ -1451,7 +1451,7 @@ public class NexoItemConverter extends ItemConverter {
                 }
             }
         }
-        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, savedModel, this.itemId));
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, this.itemId, savedModel));
         ConfigurationSection sounds = nexoCustomBlockSection.getConfigurationSection("block_sounds");
         BlockSettings blockSettings = blockConfiguration.getBlockSettings();
         if (sounds != null) {

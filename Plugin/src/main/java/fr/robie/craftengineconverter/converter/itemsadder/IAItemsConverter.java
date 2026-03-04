@@ -2,6 +2,15 @@ package fr.robie.craftengineconverter.converter.itemsadder;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.OnLiquidBlockBehavior;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockAppearance;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockVariant;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.MultiStateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.AxisBlockStateProperty;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.HorizontalDirectionBlockStateProperty;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.ItemElement;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.Placement;
@@ -18,7 +27,6 @@ import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.Logger;
-import fr.robie.craftengineconverter.api.utils.BlockStateResult;
 import fr.robie.craftengineconverter.api.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
 import fr.robie.craftengineconverter.common.utils.enums.BlockParent;
@@ -32,6 +40,8 @@ import fr.robie.craftengineconverter.converter.ItemConverter;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
 import net.momirealms.craftengine.core.entity.display.Billboard;
+import net.momirealms.craftengine.core.util.Direction;
+import net.momirealms.craftengine.core.util.HorizontalDirection;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -42,7 +52,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemFlag;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -462,6 +471,7 @@ public class IAItemsConverter extends ItemConverter {
                     "%model_path%", texturePath,
                     "%texture_path%", texturePath
             );
+            this.setSavedModelTemplates(parsedTemplate);
             this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
         }
     }
@@ -473,19 +483,28 @@ public class IAItemsConverter extends ItemConverter {
         Map<String, Object> parsedTemplate = createCubeModelTemplate(faceTextureMap);
         this.setSavedModelTemplates(parsedTemplate);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
+        MultiStateBlock multiStateBlock = new MultiStateBlock();
 
-        ConfigurationSection stateSection = setupLogBlockState(behaviorSection);
-        stateSection.set("appearances", InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.BLOCK_STATE_LOG_APPEARANCE,
-                "%model%", parsedTemplate,
-                "%auto-state-x%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-y%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-z%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL)
-        ));
+        multiStateBlock.addAppearance("axisX", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).postProcessor(section -> {
+            ConfigurationSection model = getOrCreateSection(section, "model");
+            model.set("x", 90);
+            model.set("y", 90);
+        }).build());
 
-        setupLogVariants(stateSection);
+        multiStateBlock.addAppearance("axisY", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
+        multiStateBlock.addAppearance("axisZ", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).postProcessor(section -> {
+            ConfigurationSection model = getOrCreateSection(section, "model");
+            model.set("x", 90);
+        }).build());
+        AxisBlockStateProperty axis = new AxisBlockStateProperty("axis", Direction.Axis.Y);
+        multiStateBlock.addProperty(axis);
+        multiStateBlock.addVariant(new BlockVariant("axisX").addVariantCondition(axis, Direction.Axis.X));
+        multiStateBlock.addVariant(new BlockVariant("axisY").addVariantCondition(axis, Direction.Axis.Y));
+        multiStateBlock.addVariant(new BlockVariant("axisZ").addVariantCondition(axis, Direction.Axis.Z));
+        blockConfiguration.setStateBlock(multiStateBlock);
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
+
     }
 
     private void handleFurnaceDirectionalMode(ConfigurationSection resourceSection) {
@@ -495,22 +514,21 @@ public class IAItemsConverter extends ItemConverter {
         Map<String, Object> parsedTemplate = createCubeModelTemplate(faceTextureMap);
         this.setSavedModelTemplates(parsedTemplate);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
-        ConfigurationSection stateSection = getOrCreateSection(getOrCreateSection(behaviorSection, "block"), "states");
-        stateSection.set("auto-state", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL));
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
+        MultiStateBlock multiStateBlock = new MultiStateBlock();
+        multiStateBlock.addAppearance("east", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
+        multiStateBlock.addAppearance("west", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
+        multiStateBlock.addAppearance("north", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
+        multiStateBlock.addAppearance("south", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
+        HorizontalDirectionBlockStateProperty facing = new HorizontalDirectionBlockStateProperty("facing", HorizontalDirection.NORTH);
+        multiStateBlock.addProperty(facing);
+        multiStateBlock.addVariant(new BlockVariant("east").addVariantCondition(facing, HorizontalDirection.EAST));
+        multiStateBlock.addVariant(new BlockVariant("west").addVariantCondition(facing, HorizontalDirection.WEST));
+        multiStateBlock.addVariant(new BlockVariant("north").addVariantCondition(facing, HorizontalDirection.NORTH));
+        multiStateBlock.addVariant(new BlockVariant("south").addVariantCondition(facing, HorizontalDirection.SOUTH));
+        blockConfiguration.setStateBlock(multiStateBlock);
 
-        setupFurnaceFacingProperty(stateSection);
-        stateSection.set("appearances", InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.BLOCK_STATE_4_DIRECTIONS_APPEARANCE,
-                "%model%", parsedTemplate,
-                "%auto-state-east%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-west%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-north%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-south%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL)
-        ));
-
-        setupFurnaceVariants(stateSection);
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
 
     private Map<BlockFace, String> buildFaceTextureMap(ConfigurationSection resourceSection, String modeName) {
@@ -568,51 +586,6 @@ public class IAItemsConverter extends ItemConverter {
         );
     }
 
-    private ConfigurationSection setupLogBlockState(ConfigurationSection behaviorSection) {
-        ConfigurationSection stateSection = getOrCreateSection(
-                getOrCreateSection(behaviorSection, "block"),
-                "states"
-        );
-        stateSection.set("auto-state", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL));
-
-        ConfigurationSection properties = getOrCreateSection(stateSection, "properties");
-        ConfigurationSection axis = getOrCreateSection(properties, "axis");
-        axis.set("type", "axis");
-        axis.set("default", "y");
-
-        return stateSection;
-    }
-
-    private void setupLogVariants(ConfigurationSection stateSection) {
-        ConfigurationSection variants = getOrCreateSection(stateSection, "variants");
-
-        ConfigurationSection axisX = getOrCreateSection(variants, "axis=x");
-        axisX.set("appearance", "axisX");
-
-        ConfigurationSection axisY = getOrCreateSection(variants, "axis=y");
-        axisY.set("appearance", "axisY");
-
-        ConfigurationSection axisZ = getOrCreateSection(variants, "axis=z");
-        axisZ.set("appearance", "axisZ");
-    }
-
-    private void setupFurnaceFacingProperty(ConfigurationSection stateSection) {
-        ConfigurationSection properties = getOrCreateSection(stateSection, "properties");
-        ConfigurationSection facing = getOrCreateSection(properties, "facing");
-        facing.set("type", "4-direction");
-        facing.set("default", "north");
-    }
-
-    private void setupFurnaceVariants(ConfigurationSection stateSection) {
-        ConfigurationSection variants = getOrCreateSection(stateSection, "variants");
-
-        String[] directions = {"north", "south", "west", "east"};
-        for (String direction : directions) {
-            ConfigurationSection variant = getOrCreateSection(variants, "facing=" + direction);
-            variant.set("appearance", direction);
-        }
-    }
-
     private void handleExistingResource(ConfigurationSection resourceSection) {
         ConfigurationSection blockSection = this.iaItemSection.getConfigurationSection("specific_properties.block");
 
@@ -647,13 +620,12 @@ public class IAItemsConverter extends ItemConverter {
     private void handleBlockItem(ConfigurationSection resourceSection, ConfigurationSection blockSection) {
         IAPlacedModelTypes placedModelType = getPlacedModelType(blockSection);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
-        ConfigurationSection blockBehaviorSection = getOrCreateSection(behaviorSection, "block");
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
+        BlockSettings blockSettings = blockConfiguration.getBlockSettings();
 
-        configureBlockProperties(blockSection, blockBehaviorSection);
-        configureBlockSounds(blockSection, blockBehaviorSection);
-        configureLiquidPlacement(blockSection, blockBehaviorSection);
+        configureBlockProperties(blockSection, blockSettings);
+        configureBlockSounds(blockSection, blockSettings);
+        configureLiquidPlacement(blockSection, blockConfiguration);
 
         String modelPath = resourceSection.getString("model_path");
         if (!isValidString(modelPath)) {
@@ -665,7 +637,13 @@ public class IAItemsConverter extends ItemConverter {
                     return;
                 }
                 texturePath = namespaced(texturePath, this.namespace);
-                setupBlockStateFromTexture(blockBehaviorSection, placedModelType, texturePath);
+
+                blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, InternalTemplateManager.parseTemplate(
+                        fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CUBE_ALL,
+                        "%model_path%", texturePath,
+                        "%texture_path%", texturePath
+                )));
+                this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
                 return;
             } else {
                 Logger.debug("[IAItemsConverter] Missing model path for block item " + this.itemId + ". Cannot convert item texture.");
@@ -674,9 +652,12 @@ public class IAItemsConverter extends ItemConverter {
         }
 
         modelPath = namespaced(modelPath, this.namespace);
-        setupBlockState(blockBehaviorSection, placedModelType, modelPath);
 
-
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, InternalTemplateManager.parseTemplate(
+                fr.robie.craftengineconverter.common.utils.enums.Template.BLOCK_MODEL,
+                "%model_path%", modelPath
+        )));
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
 
     private IAPlacedModelTypes getPlacedModelType(ConfigurationSection blockSection) {
@@ -695,106 +676,59 @@ public class IAItemsConverter extends ItemConverter {
         }
     }
 
-    private void configureBlockProperties(ConfigurationSection blockSection, ConfigurationSection blockBehaviorSection) {
-        int lightLevel = blockSection.getInt("light_level", 0);
+    private void configureBlockProperties(ConfigurationSection iaBlockSection, BlockSettings blockSettings) {
+        int lightLevel = iaBlockSection.getInt("light_level", 0);
         if (lightLevel > 0) {
-            ConfigurationSection settings = getOrCreateSection(blockBehaviorSection, "settings");
-            settings.set("luminance", lightLevel);
+            blockSettings.setLuminance(lightLevel);
         }
 
-        double hardness = blockSection.getDouble("hardness", 2d);
-        if (hardness != 2d) {
-            ConfigurationSection settings = getOrCreateSection(blockBehaviorSection, "settings");
-            settings.set("hardness", hardness);
-        }
+        double hardness = iaBlockSection.getDouble("hardness", 2f);
+        blockSettings.setHardness((float) hardness);
 
-        double blastResistance = blockSection.getDouble("blast_resistance", 2d);
-        if (blastResistance != 2d) {
-            ConfigurationSection settings = getOrCreateSection(blockBehaviorSection, "settings");
-            settings.set("resistance", blastResistance);
-        }
+        double blastResistance = iaBlockSection.getDouble("blast_resistance", 2d);
+        blockSettings.setResistance((float) blastResistance);
 
         // TODO: implement break tools blacklist/whitelist conversion
-        List<String> breakToolsBlackList = blockSection.getStringList("break_tools_blacklist");
-        List<String> breakToolsWhiteList = blockSection.getStringList("break_tools_whitelist");
+        List<String> breakToolsBlackList = iaBlockSection.getStringList("break_tools_blacklist");
+        List<String> breakToolsWhiteList = iaBlockSection.getStringList("break_tools_whitelist");
     }
 
-    private void configureBlockSounds(ConfigurationSection blockSection, ConfigurationSection blockBehaviorSection) {
+    private void configureBlockSounds(ConfigurationSection blockSection, BlockSettings blockSettings) {
         ConfigurationSection soundSection = blockSection.getConfigurationSection("sounds");
         if (isNotNull(soundSection)) {
-            List<String> soundEvents = List.of("fall", "hit", "break", "step", "place");
-            for (String eventKey : soundEvents) {
-                processBlockSound(soundSection, eventKey, blockBehaviorSection);
-            }
+            String fallSound = soundSection.getString("fall");
+            blockSettings.setFallSound(fallSound);
+            String hitSound = soundSection.getString("hit");
+            blockSettings.setHitSound(hitSound);
+            String breakSound = soundSection.getString("break");
+            blockSettings.setBreakSound(breakSound);
+            String stepSound = soundSection.getString("step");
+            blockSettings.setStepSound(stepSound);
+            String placeSound = soundSection.getString("place");
+            blockSettings.setPlaceSound(placeSound);
         }
     }
 
-    private void configureLiquidPlacement(ConfigurationSection blockSection, ConfigurationSection blockBehaviorSection) {
+    private void configureLiquidPlacement(ConfigurationSection blockSection, BlockConfiguration blockConfiguration) {
         boolean placeableOnWater = blockSection.getBoolean("placeable_on_water", false);
         boolean placeableOnLava = blockSection.getBoolean("placeable_on_lava", false);
 
         if (placeableOnWater || placeableOnLava) {
-            List<Map<?, ?>> behaviors = blockBehaviorSection.getMapList("behaviors");
-            Map<String, Object> liquidPlacementBehavior = new HashMap<>();
-            liquidPlacementBehavior.put("type", "on_liquid_block");
-
-            List<String> liquids = new ArrayList<>();
-            if (placeableOnWater) liquids.add("water");
-            if (placeableOnLava) liquids.add("lava");
-
-            liquidPlacementBehavior.put("liquid-type", liquids);
-            behaviors.add(liquidPlacementBehavior);
-            blockBehaviorSection.set("behaviors", behaviors);
+            OnLiquidBlockBehavior onLiquidBlockBehavior = new OnLiquidBlockBehavior();
+            if (placeableOnWater) onLiquidBlockBehavior.addLiquidType("water");
+            if (placeableOnLava) onLiquidBlockBehavior.addLiquidType("lava");
+            blockConfiguration.addBehavior(onLiquidBlockBehavior);
         }
     }
 
-    private void setupBlockState(ConfigurationSection blockBehaviorSection, IAPlacedModelTypes placedModelType, String modelPath) {
-        ConfigurationSection stateSection = getOrCreateSection(blockBehaviorSection, "state");
-
-        String autoState = getAutoStateForPlacedModelType(placedModelType);
-        if (isNull(autoState)){
-            Logger.info("Limit reached for placed model type " + placedModelType + " for item " + this.itemId + ". Defaulting to SOLID auto-state.");
-            autoState = "solid";
-        }
-
-        stateSection.set("auto-state", autoState);
-        stateSection.set("model", InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.BLOCK_MODEL,
-                "%model_path%", modelPath
-        ));
-    }
-
-    private void setupBlockStateFromTexture(ConfigurationSection blockBehaviorSection, IAPlacedModelTypes placedModelType, String texturePath){
-        ConfigurationSection stateSection = getOrCreateSection(blockBehaviorSection, "state");
-        String autoState = getAutoStateForPlacedModelType(placedModelType);
-        if (isNull(autoState)){
-            Logger.info("Limit reached for placed model type " + placedModelType + " for item " + this.itemId + ". Defaulting to SOLID auto-state.");
-            autoState = "solid";
-        }
-        stateSection.set("auto-state", autoState);
-        stateSection.set("model", InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CUBE_ALL,
-                "%model_path%", texturePath,
-                "%texture_path%", texturePath
-        ));
-    }
-
-    @Nullable
-    private String getAutoStateForPlacedModelType(IAPlacedModelTypes placedModelType) {
-        Plugins plugin = this.getConverter().getPluginType();
-        BlockStateResult result = switch (placedModelType) {
-            case REAL_NOTE -> CraftEngineBlockState.NOTE_BLOCK.getAvailableAndIncrement(plugin);
-            case REAL_TRANSPARENT -> CraftEngineBlockState.CHORUS.getAvailableAndIncrement(plugin);
-            case REAL_WIRE -> CraftEngineBlockState.TRIPWIRE.getAvailableAndIncrement(plugin);
-            case REAL -> CraftEngineBlockState.MUSHROOM.getAvailableAndIncrement(plugin);
-            default -> CraftEngineBlockState.SOLID.getAvailableAndIncrement(plugin);
+    public CraftEngineBlockState getBlockState(IAPlacedModelTypes placedModelType) {
+        return switch (placedModelType) {
+            case REAL_NOTE -> CraftEngineBlockState.NOTE_BLOCK;
+            case REAL_TRANSPARENT -> CraftEngineBlockState.CHORUS;
+            case REAL_WIRE -> CraftEngineBlockState.TRIPWIRE;
+            case REAL -> CraftEngineBlockState.MUSHROOM;
+            default -> CraftEngineBlockState.SOLID;
         };
-        CraftEngineBlockState blockState = result.getBlockState();
-        if (isNull(blockState)) {
-            return null;
-        }
-
-        return blockState.name().toLowerCase();
     }
 
     private void handleSimpleModelPath(@NotNull String namespacedModelPath) {
@@ -899,20 +833,15 @@ public class IAItemsConverter extends ItemConverter {
 
         crossTexture = namespaced(crossTexture, this.namespace);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
-        ConfigurationSection blockSection = getOrCreateSection(behaviorSection, "block");
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
 
-        ConfigurationSection stateSection = getOrCreateSection(blockSection, "state");
-        stateSection.set("properties", InternalTemplateManager.parseTemplate(fr.robie.craftengineconverter.common.utils.enums.Template.BLOCK_STATE_PROPERTIES_STAGE));
-        stateSection.set("appearances", InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.BLOCK_STATE_SAPLING_APPEARANCE,
-                "%model%", InternalTemplateManager.parseTemplate(
-                        fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CROSS,
-                        "%model_path%", crossTexture,
-                        "%texture_path%", crossTexture
-                )
-        ));
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, CraftEngineBlockState.SAPLING, this.itemId, InternalTemplateManager.parseTemplate(
+                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CROSS,
+                "%model_path%", crossTexture,
+                "%texture_path%", crossTexture
+        )));
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
 
     private void handleComplexModels(ConfigurationSection graphicsSection) {
