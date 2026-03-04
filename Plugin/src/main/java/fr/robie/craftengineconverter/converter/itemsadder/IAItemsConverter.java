@@ -3,6 +3,12 @@ package fr.robie.craftengineconverter.converter.itemsadder;
 import fr.robie.craftengineconverter.api.ComponentFlag;
 import fr.robie.craftengineconverter.api.configurations.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.FurnitureConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.ItemElement;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.Placement;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.element.ArmorStandElement;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.element.ItemDisplayElement;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.Hitbox;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.ShulkerHitbox;
 import fr.robie.craftengineconverter.api.configurations.item.data.*;
 import fr.robie.craftengineconverter.api.configurations.item.settings.GlowDropColorConfiguration;
 import fr.robie.craftengineconverter.api.configurations.utils.FurniturePlacement;
@@ -1117,15 +1123,15 @@ public class IAItemsConverter extends ItemConverter {
         }
 
         // --- Element ---
-        FurnitureConfiguration.ItemElement element;
+        ItemElement element;
         if (entityType == IAEntityTypes.ARMOR_STAND) {
-            FurnitureConfiguration.ArmorStandElement armorStand = new FurnitureConfiguration.ArmorStandElement(this.itemId);
+            ArmorStandElement armorStand = new ArmorStandElement(this.itemId);
             if (scale.isUpdated())
                 armorStand.setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
             if (!isBig) armorStand.setSmall(true);
             element = armorStand;
         } else {
-            FurnitureConfiguration.ItemDisplayElement itemDisplay = new FurnitureConfiguration.ItemDisplayElement(this.itemId);
+            ItemDisplayElement itemDisplay = new ItemDisplayElement(this.itemId);
             int light = furnitureSection.getInt("light_level", -1);
             if (light >= 0) itemDisplay.display().setBrightness(light, -1);
             if (displayType != ItemDisplayType.NONE) itemDisplay.setDisplayTransform(displayType);
@@ -1139,7 +1145,7 @@ public class IAItemsConverter extends ItemConverter {
 
         // --- Hitboxes ---
         double sitHeight = behavioursSection.getDouble("furniture_sit.sit_height", 0d);
-        List<FurnitureConfiguration.Hitbox> hitboxList = new ArrayList<>();
+        List<Hitbox> hitboxList = new ArrayList<>();
         ConfigurationSection iaHitboxesSection = furnitureSection.getConfigurationSection("hitbox");
         if (isNotNull(iaHitboxesSection)) {
             parseItemsAdderHitboxes(iaHitboxesSection, hitboxList, sitHeight);
@@ -1150,7 +1156,7 @@ public class IAItemsConverter extends ItemConverter {
 
         // --- Placements ---
         for (FurniturePlacement furniturePlacement : placements) {
-            FurnitureConfiguration.Placement placement = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
+            Placement placement = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
             placement.addElement(element);
             hitboxList.forEach(placement::addHitbox);
         }
@@ -1158,7 +1164,7 @@ public class IAItemsConverter extends ItemConverter {
         this.getCraftEngineItemsConfiguration().addItemConfiguration(furnitureConfiguration);
     }
 
-    private void parseItemsAdderHitboxes(ConfigurationSection iaHitboxesSection, List<FurnitureConfiguration.Hitbox> hitboxes, double seatPosition) {
+    private void parseItemsAdderHitboxes(ConfigurationSection iaHitboxesSection, List<Hitbox> hitboxes, double seatPosition) {
         if (iaHitboxesSection == null) return;
 
         int length = iaHitboxesSection.getInt("length", 1);
@@ -1171,7 +1177,7 @@ public class IAItemsConverter extends ItemConverter {
         for (int x = 0; x < length; x++) {
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < width; z++) {
-                    FurnitureConfiguration.ShulkerHitbox hitbox = new FurnitureConfiguration.ShulkerHitbox();
+                    ShulkerHitbox hitbox = new ShulkerHitbox();
                     hitbox.setPosition(x + lengthOffset, y + heightOffset, z + widthOffset);
                     if (x == 0 && y == 0 && z == 0)
                         hitbox.addSeat(0, (float) seatPosition, 0, 0);

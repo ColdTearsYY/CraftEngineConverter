@@ -3,6 +3,14 @@ package fr.robie.craftengineconverter.converter.nexo;
 import fr.robie.craftengineconverter.api.ComponentFlag;
 import fr.robie.craftengineconverter.api.configurations.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.FurnitureConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.Placement;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.Rules;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.Settings;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.element.ItemDisplayElement;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.HappyGhastHitbox;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.Hitbox;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.InteractionHitbox;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.ShulkerHitbox;
 import fr.robie.craftengineconverter.api.configurations.item.components.ConsumableConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.components.HideTooltipDisplayConfiguration;
 import fr.robie.craftengineconverter.api.configurations.item.components.WeaponConfiguration;
@@ -1526,7 +1534,7 @@ public class NexoItemConverter extends ItemConverter {
         // --- Sounds ---
         ConfigurationSection nexoBlockSoundSection = nexoFurnitureMechanicsSection.getConfigurationSection("block_sounds");
         if (isNotNull(nexoBlockSoundSection)) {
-            FurnitureConfiguration.Settings settings = furnitureConfiguration.getOrCreateSettings(this.itemId);
+            Settings settings = furnitureConfiguration.getOrCreateSettings(this.itemId);
             settings.setPlaceSound(nexoBlockSoundSection.getString("place_sound"));
             settings.setBreakSound(nexoBlockSoundSection.getString("break_sound"));
             // hit_sound / step_sound / fall_sound are not supported in CE for furniture
@@ -1678,27 +1686,27 @@ public class NexoItemConverter extends ItemConverter {
         if (!placementKeys.isEmpty()) {
             if (isValidString(nexoBetterModel) || isValidString(nexoMEGModel)) {
                 for (FurniturePlacement placement : placementKeys) {
-                    FurnitureConfiguration.Placement p = furnitureConfiguration.getOrCreatePlacement(placement);
+                    Placement p = furnitureConfiguration.getOrCreatePlacement(placement);
                     if (isValidString(nexoBetterModel)) p.setBetterModel(nexoBetterModel);
                     else p.setModelEngine(nexoMEGModel);
                 }
             } else {
                 // Build element
-                FurnitureConfiguration.ItemDisplayElement element = new FurnitureConfiguration.ItemDisplayElement(this.itemId);
+                ItemDisplayElement element = new ItemDisplayElement(this.itemId);
                 element.setDisplayTransform(displayType);
                 element.display().setBillboard(transformType);
                 element.display().setTranslation(displayTranslation.getValue(0), displayTranslation.getValue(1), displayTranslation.getValue(2));
                 element.display().setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
 
                 // Build hitboxes
-                List<FurnitureConfiguration.Hitbox> hitboxList = new ArrayList<>();
+                List<Hitbox> hitboxList = new ArrayList<>();
                 ConfigurationSection nexoHitboxesSection = nexoFurnitureMechanicsSection.getConfigurationSection("hitbox");
                 if (isNotNull(nexoHitboxesSection)) {
                     AtomicBoolean seatsAdded = new AtomicBoolean(false);
 
                     // Barriers
                     for (Position pos : expandBarrierPositions(nexoHitboxesSection.getStringList("barriers"))) {
-                        FurnitureConfiguration.ShulkerHitbox hitbox = new FurnitureConfiguration.ShulkerHitbox();
+                        ShulkerHitbox hitbox = new ShulkerHitbox();
                         hitbox.setPosition(pos.x(), pos.y(), pos.z());
                         hitboxList.add(hitbox);
                     }
@@ -1714,7 +1722,7 @@ public class NexoItemConverter extends ItemConverter {
                         String[] coords = parts[0].split("\\s*,\\s*");
                         if (coords.length != 3) continue;
                         try {
-                            FurnitureConfiguration.ShulkerHitbox hitbox = new FurnitureConfiguration.ShulkerHitbox();
+                            ShulkerHitbox hitbox = new ShulkerHitbox();
                             hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
                             hitbox.setScale(Float.parseFloat(parts[1]));
                             hitbox.setPeek((int) (Float.parseFloat(parts[2]) * 100));
@@ -1741,7 +1749,7 @@ public class NexoItemConverter extends ItemConverter {
                         String[] coords = parts[0].split("\\s*,\\s*");
                         if (coords.length != 3) continue;
                         try {
-                            FurnitureConfiguration.HappyGhastHitbox hitbox = new FurnitureConfiguration.HappyGhastHitbox();
+                            HappyGhastHitbox hitbox = new HappyGhastHitbox();
                             hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
                             hitbox.setScale(Float.parseFloat(parts[1]));
                             if (seatPosition.isUpdated() && !seatsAdded.getAndSet(true))
@@ -1764,7 +1772,7 @@ public class NexoItemConverter extends ItemConverter {
                         String[] size = parts[1].split("\\s*,\\s*");
                         if (coords.length != 3 || size.length != 2) continue;
                         try {
-                            FurnitureConfiguration.InteractionHitbox hitbox = new FurnitureConfiguration.InteractionHitbox();
+                            InteractionHitbox hitbox = new InteractionHitbox();
                             hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
                             hitbox.setWidth(Float.parseFloat(size[0]));
                             hitbox.setHeight(Float.parseFloat(size[1]));
@@ -1776,8 +1784,8 @@ public class NexoItemConverter extends ItemConverter {
                 }
 
                 for (FurniturePlacement furniturePlacement : placementKeys) {
-                    FurnitureConfiguration.Placement p = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
-                    FurnitureConfiguration.Rules rules = p.getRules();
+                    Placement p = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
+                    Rules rules = p.getRules();
                     rules.setRotation(furnitureRotation);
                     p.addElement(element);
                     hitboxList.forEach(p::addHitbox);
