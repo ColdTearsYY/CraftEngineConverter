@@ -52,7 +52,7 @@ public class BlockSettings {
     private boolean propagateSkyLight = true;
 
 
-    public BlockSettings(@NotNull String item) {
+    public BlockSettings(String item) {
         this.item = item;
     }
 
@@ -239,7 +239,8 @@ public class BlockSettings {
     public BlockSettings setPropagateSkyLight(boolean propagateSkyLight) { this.propagateSkyLight = propagateSkyLight; return this; }
 
     public void serialize(@NotNull ConfigurationSection settingsConfigurationSection) {
-        settingsConfigurationSection.set("item", this.item);
+        if (this.item != null)
+            settingsConfigurationSection.set("item", this.item);
 
         if (this.hardness != 2f)
             settingsConfigurationSection.set("hardness", this.hardness);
