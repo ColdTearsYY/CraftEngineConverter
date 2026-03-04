@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.element;
 
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.FurnitureConfiguration;
+import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.DisplayProperties;
 import net.momirealms.craftengine.core.entity.display.TextDisplayAlignment;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,11 +17,11 @@ public class TextDisplayElement implements Element {
     private boolean useDefaultBackground = true;
     private TextDisplayAlignment alignment = null;
 
-    private final FurnitureConfiguration.DisplayProperties display = new FurnitureConfiguration.DisplayProperties();
+    private final DisplayProperties display = new DisplayProperties();
 
     public TextDisplayElement(@NotNull String text) { this.text = text; }
 
-    public FurnitureConfiguration.DisplayProperties display() { return this.display; }
+    public DisplayProperties display() { return this.display; }
     public void setLineWidth(int lineWidth) { this.lineWidth = lineWidth; }
     public void setBackgroundColor(int a, int r, int g, int b) { this.backgroundColor = new int[]{a, r, g, b}; }
     public void setTextOpacity(int textOpacity) { this.textOpacity = textOpacity; }
