@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.hooks.packetevent;
 
 import com.github.retrooper.packetevents.wrapper.play.server.*;
-import fr.robie.craftengineconverter.common.format.ComponentMeta;
+import fr.robie.craftengineconverter.api.format.ComponentMeta;
 import fr.robie.craftengineconverter.common.packet.PacketContent;
 import fr.robie.craftengineconverter.common.packet.PacketProcessor;
 import net.kyori.adventure.text.Component;

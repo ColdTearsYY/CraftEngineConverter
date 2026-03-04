@@ -1,12 +1,12 @@
 package fr.robie.craftengineconverter.hooks.nexo;
 
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.CraftEnginePlacementTracker;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.converter.FurnitureConverter;
 import fr.robie.craftengineconverter.common.converter.WorldConverter;
-import fr.robie.craftengineconverter.common.enums.Plugins;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;

@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.utils;
 
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

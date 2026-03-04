@@ -2,10 +2,10 @@ package fr.robie.craftengineconverter.hooks.itemsadder;
 
 import dev.lone.itemsadder.api.CustomFurniture;
 import dev.lone.itemsadder.api.Events.FurnitureInteractEvent;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.common.converter.FurnitureConverter;
-import fr.robie.craftengineconverter.common.enums.Plugins;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;

@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.common.converter;
 
-import fr.robie.craftengineconverter.common.enums.Plugins;
+import fr.robie.craftengineconverter.api.enums.Plugins;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 

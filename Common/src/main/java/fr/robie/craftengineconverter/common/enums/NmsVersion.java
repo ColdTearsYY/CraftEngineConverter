@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.common.enums;
 
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import org.bukkit.Bukkit;
 
 import java.util.regex.Matcher;

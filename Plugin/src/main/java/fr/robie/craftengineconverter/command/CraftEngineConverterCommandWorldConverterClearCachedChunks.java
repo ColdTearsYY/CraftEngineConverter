@@ -1,8 +1,8 @@
 package fr.robie.craftengineconverter.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.common.builder.TimerBuilder;
-import fr.robie.craftengineconverter.common.format.Message;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import fr.robie.craftengineconverter.listener.WorldConverterManager;
 import fr.robie.craftengineconverter.utils.command.CommandType;

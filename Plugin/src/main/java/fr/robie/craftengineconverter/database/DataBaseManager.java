@@ -4,12 +4,12 @@ import fr.maxlego08.sarah.*;
 import fr.maxlego08.sarah.database.DatabaseType;
 import fr.maxlego08.sarah.logger.JULogger;
 import fr.maxlego08.sarah.logger.Logger;
-import fr.robie.craftengineconverter.api.BlockHistory;
-import fr.robie.craftengineconverter.api.EntityHistory;
 import fr.robie.craftengineconverter.api.database.StorageManager;
 import fr.robie.craftengineconverter.api.database.StorageType;
+import fr.robie.craftengineconverter.api.history.BlockHistory;
+import fr.robie.craftengineconverter.api.history.EntityHistory;
+import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.common.logger.LogType;
 import fr.robie.craftengineconverter.common.manager.FileCacheManager;
 import fr.robie.craftengineconverter.database.migrations.WorldBlockConverterHistorical;
 import fr.robie.craftengineconverter.database.migrations.WorldEntityConverterHistorical;
@@ -87,7 +87,7 @@ public class DataBaseManager implements StorageManager {
         }
         Optional<YamlConfiguration> optionalDatabaseConfiguration = FileCacheManager.getYamlCache().getData(file.toPath());
         if (optionalDatabaseConfiguration.isEmpty()) {
-            fr.robie.craftengineconverter.common.logger.Logger.info("Cannot load database configuration file.", LogType.WARNING);
+            fr.robie.craftengineconverter.api.logger.Logger.info("Cannot load database configuration file.", LogType.WARNING);
             this.isEnabled = false;
             return;
         }
@@ -120,7 +120,7 @@ public class DataBaseManager implements StorageManager {
                 databaseConnection = new SqliteConnection(new DatabaseConfiguration(prefix, user, password, port, host, dataBase, enableDebug, DatabaseType.SQLITE), this.plugin.getDataFolder(), logger);
             }
             default -> {
-                fr.robie.craftengineconverter.common.logger.Logger.info("You are not using a database.");
+                fr.robie.craftengineconverter.api.logger.Logger.info("You are not using a database.");
                 this.isEnabled = false;
                 return;
             }
@@ -129,11 +129,11 @@ public class DataBaseManager implements StorageManager {
         this.requestHelper = new RequestHelper(databaseConnection, logger);
 
         if (!databaseConnection.isValid()) {
-            fr.robie.craftengineconverter.common.logger.Logger.info("Unable to connect to database !", LogType.ERROR);
+            fr.robie.craftengineconverter.api.logger.Logger.info("Unable to connect to database !", LogType.ERROR);
             this.isEnabled = false;
             return;
         } else {
-            fr.robie.craftengineconverter.common.logger.Logger.info("The database connection is valid ! ("+ (type == StorageType.SQLITE ? "SQLITE" : databaseConnection.getDatabaseConfiguration().getHost()) +")");
+            fr.robie.craftengineconverter.api.logger.Logger.info("The database connection is valid ! ("+ (type == StorageType.SQLITE ? "SQLITE" : databaseConnection.getDatabaseConfiguration().getHost()) +")");
         }
 
         MigrationManager.setDatabaseConfiguration(databaseConnection.getDatabaseConfiguration());

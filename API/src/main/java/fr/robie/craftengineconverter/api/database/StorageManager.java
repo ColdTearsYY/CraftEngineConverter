@@ -5,8 +5,8 @@
  */
 package fr.robie.craftengineconverter.api.database;
 
-import fr.robie.craftengineconverter.api.BlockHistory;
-import fr.robie.craftengineconverter.api.EntityHistory;
+import fr.robie.craftengineconverter.api.history.BlockHistory;
+import fr.robie.craftengineconverter.api.history.EntityHistory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;

@@ -1,9 +1,9 @@
 package fr.robie.craftengineconverter.common.converter;
 
+import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.PluginNameMapper;
-import fr.robie.craftengineconverter.common.enums.Plugins;
 
 public abstract class ObjectConverter {
     protected final CraftEngineConverterPlugin plugin;

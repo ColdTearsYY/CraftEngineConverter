@@ -1,35 +1,41 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
-import fr.robie.craftengineconverter.api.ComponentFlag;
-import fr.robie.craftengineconverter.api.configurations.item.LoreConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.FurnitureConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.Placement;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.Rules;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.Settings;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.element.ItemDisplayElement;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.HappyGhastHitbox;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.Hitbox;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.InteractionHitbox;
-import fr.robie.craftengineconverter.api.configurations.item.behavior.furniture.hitbox.ShulkerHitbox;
-import fr.robie.craftengineconverter.api.configurations.item.components.ConsumableConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.components.HideTooltipDisplayConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.components.WeaponConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.AttributeModifiersConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.DyedColorConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.ItemNameConfiguration;
-import fr.robie.craftengineconverter.api.configurations.item.data.UnbreakableConfiguration;
-import fr.robie.craftengineconverter.api.configurations.utils.AbstractEffectsConfiguration;
-import fr.robie.craftengineconverter.api.configurations.utils.FurniturePlacement;
-import fr.robie.craftengineconverter.api.configurations.utils.FurnitureRotation;
+import fr.robie.craftengineconverter.api.builder.TimerBuilder;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.FallingBlockBehavior;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureSettings;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.Placement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.Rules;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ItemDisplayElement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.HappyGhastHitbox;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.Hitbox;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.InteractionHitbox;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.ShulkerHitbox;
+import fr.robie.craftengineconverter.api.configuration.item.components.ConsumableConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.components.HideTooltipDisplayConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.components.WeaponConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifiersConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.data.DyedColorConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.data.ItemNameConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.data.UnbreakableConfiguration;
+import fr.robie.craftengineconverter.api.configuration.utils.AbstractEffectsConfiguration;
+import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
+import fr.robie.craftengineconverter.api.configuration.utils.FurnitureRotation;
+import fr.robie.craftengineconverter.api.enums.ArmorConverter;
+import fr.robie.craftengineconverter.api.enums.ComponentFlag;
+import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
+import fr.robie.craftengineconverter.api.enums.Plugins;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.BlockStatesMapper;
-import fr.robie.craftengineconverter.common.builder.TimerBuilder;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.enums.ArmorConverter;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
-import fr.robie.craftengineconverter.common.format.Message;
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.utils.enums.Template;
 import fr.robie.craftengineconverter.common.utils.enums.TemplateType;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoBestTool;
@@ -133,7 +139,7 @@ public class NexoItemConverter extends ItemConverter {
                 } catch (Exception ignored){
                 }
             }
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.data.HideTooltipConfiguration(convertedFlags));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.HideTooltipConfiguration(convertedFlags));
         }
     }
 
@@ -142,7 +148,7 @@ public class NexoItemConverter extends ItemConverter {
         List<Map<?, ?>> mapList = this.nexoItemSection.getMapList("AttributeModifiers");
         if (mapList.isEmpty()) return;
 
-        List<fr.robie.craftengineconverter.api.configurations.utils.AttributeModifier> attributeModifiers = new ArrayList<>();
+        List<fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier> attributeModifiers = new ArrayList<>();
         for (Map<?, ?> attributeModifier : mapList) {
             Object attribute = attributeModifier.get("attribute");
             if (!(attribute instanceof String stringAttribute)) continue;
@@ -189,7 +195,7 @@ public class NexoItemConverter extends ItemConverter {
             } catch (Exception ignored) {
             }
             if (attributeSlot == null) continue;
-            fr.robie.craftengineconverter.api.configurations.utils.AttributeModifier.Display display = null;
+            fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier.Display display = null;
                 Object rawDisplay = attributeModifier.get("display");
                 if (rawDisplay instanceof Map<?, ?> displayMap) {
                     Object typeObj = displayMap.get("type");
@@ -201,11 +207,11 @@ public class NexoItemConverter extends ItemConverter {
                         } catch (Exception e) {
                             continue;
                         }
-                        display = new fr.robie.craftengineconverter.api.configurations.utils.AttributeModifier.Display(displayType, textStr);
+                        display = new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier.Display(displayType, textStr);
                     }
                 }
 
-            attributeModifiers.add(new fr.robie.craftengineconverter.api.configurations.utils.AttributeModifier(stringAttribute.toLowerCase(), attributeSlot, null, amount, operation, display));
+            attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier(stringAttribute.toLowerCase(), attributeSlot, null, amount, operation, display));
         }
 
         if (!attributeModifiers.isEmpty()) {
@@ -217,7 +223,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertEnchantments() {
         ConfigurationSection configurationSection = this.nexoItemSection.getConfigurationSection("Enchantments");
         if (configurationSection == null) return;
-        fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configurations.item.data.EnchantmentConfiguration();
+        fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration();
         for (String enchantmentKey : configurationSection.getKeys(false)) {
             int level = configurationSection.getInt(enchantmentKey, 1);
             String enchantmentName;
@@ -236,7 +242,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertCustomModelData() {
         int customModelData = this.nexoItemSection.getInt("Pack.custom_model_data", 0);
         if (customModelData != 0) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.data.CustomModelDataConfiguration(customModelData));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.CustomModelDataConfiguration(customModelData));
         }
     }
 
@@ -244,7 +250,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertItemModel() {
         String itemModel = this.nexoItemSection.getString("Components.item_model");
         if (isValidString(itemModel)){
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.ItemModelConfiguration(itemModel));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.ItemModelConfiguration(itemModel));
         }
     }
 
@@ -252,14 +258,14 @@ public class NexoItemConverter extends ItemConverter {
     public void convertMaxStackSize() {
         int maxStackSize = this.nexoItemSection.getInt("Components.max_stack_size", 0);
         if (maxStackSize > 0 && maxStackSize <= 99) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.MaxStackSizeConfiguration(maxStackSize));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.MaxStackSizeConfiguration(maxStackSize));
         }
     }
 
     @Override
     public void convertEnchantmentGlintOverride() {
         if (this.nexoItemSection.getBoolean("Components.enchantment_glint_override", false)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.EnchantmentGlintOverrideConfiguration(true));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.EnchantmentGlintOverrideConfiguration(true));
         }
     }
 
@@ -267,14 +273,14 @@ public class NexoItemConverter extends ItemConverter {
     public void convertFireResistance() {
         if (!this.nexoItemSection.getBoolean("Components.fire_resistant", false)) return;
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.InvulnerableSettingConfiguration(Set.of(fr.robie.craftengineconverter.api.configurations.item.settings.InvulnerableSettingConfiguration.InvulnerableType.FIRE, fr.robie.craftengineconverter.api.configurations.item.settings.InvulnerableSettingConfiguration.InvulnerableType.FIRE_TICK, fr.robie.craftengineconverter.api.configurations.item.settings.InvulnerableSettingConfiguration.InvulnerableType.LAVA), true));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration(Set.of(fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration.InvulnerableType.FIRE, fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration.InvulnerableType.FIRE_TICK, fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration.InvulnerableType.LAVA), true));
     }
 
     @Override
     public void convertMaxDamage() {
         int maxDamage = this.nexoItemSection.getInt("Components.max_damage", 0);
         if (maxDamage > 0) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.data.MaxDamageConfiguration(maxDamage));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.MaxDamageConfiguration(maxDamage));
         }
     }
 
@@ -293,7 +299,7 @@ public class NexoItemConverter extends ItemConverter {
             float saturation = (float) foodSection.getDouble("saturation", -1);
             boolean canAlwaysEat = foodSection.getBoolean("can_always_eat", false);
             if (nutrition >= 0 && saturation >= 0) {
-                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.FoodConfiguration(nutrition, saturation, canAlwaysEat));
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.FoodConfiguration(nutrition, saturation, canAlwaysEat));
             }
         }
     }
@@ -307,7 +313,7 @@ public class NexoItemConverter extends ItemConverter {
             // can_destroy_blocks_in_creative not supported in Nexo, defaults to false
             boolean canDestroyBlocksInCreative = false;
 
-            List<fr.robie.craftengineconverter.api.configurations.item.components.ToolConfiguration.Rule> ceRulesList = new ArrayList<>();
+            List<fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration.Rule> ceRulesList = new ArrayList<>();
             var rulesList = nexoToolSection.getMapList("rules");
 
             if (!rulesList.isEmpty()) {
@@ -346,7 +352,7 @@ public class NexoItemConverter extends ItemConverter {
                     }
 
                     if (!materialBlocks.isEmpty()) {
-                        ceRulesList.add(new fr.robie.craftengineconverter.api.configurations.item.components.ToolConfiguration.Rule(speed, correctForDrops, materialBlocks));
+                        ceRulesList.add(new fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration.Rule(speed, correctForDrops, materialBlocks));
                     }
 
                     // --- Tags (tag / tags) ---
@@ -364,7 +370,7 @@ public class NexoItemConverter extends ItemConverter {
                         String normalized = tagStr.toLowerCase(Locale.ROOT);
                         if (!normalized.startsWith("#")) normalized = "#" + normalized;
                         if (!normalized.contains(":")) normalized = normalized.replace("#", "#minecraft:");
-                        ceRulesList.add(new fr.robie.craftengineconverter.api.configurations.item.components.ToolConfiguration.Rule(speed, correctForDrops, normalized));
+                        ceRulesList.add(new fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration.Rule(speed, correctForDrops, normalized));
                     }
                 }
 
@@ -373,7 +379,7 @@ public class NexoItemConverter extends ItemConverter {
                 }
             }
 
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.ToolConfiguration(defaultMiningSpeed, damagePerBlock, canDestroyBlocksInCreative, ceRulesList));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration(defaultMiningSpeed, damagePerBlock, canDestroyBlocksInCreative, ceRulesList));
         }
     }
 
@@ -381,15 +387,15 @@ public class NexoItemConverter extends ItemConverter {
     public void convertCustomData() {
         ConfigurationSection customDataSection = this.nexoItemSection.getConfigurationSection("Components.custom_data");
         if (customDataSection != null) {
-            List<fr.robie.craftengineconverter.api.configurations.item.components.CustomDataConfiguration.CustomDataEntry> customDataEntries = new ArrayList<>();
+            List<fr.robie.craftengineconverter.api.configuration.item.components.CustomDataConfiguration.CustomDataEntry> customDataEntries = new ArrayList<>();
             for (String key : customDataSection.getKeys(false)) {
                 Object value = customDataSection.get(key);
                 if (isNotNull(value)) {
-                    customDataEntries.add(new fr.robie.craftengineconverter.api.configurations.item.components.CustomDataConfiguration.CustomDataEntry(key, value));
+                    customDataEntries.add(new fr.robie.craftengineconverter.api.configuration.item.components.CustomDataConfiguration.CustomDataEntry(key, value));
                 }
             }
             if (!customDataEntries.isEmpty()) {
-                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.CustomDataConfiguration(customDataEntries));
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.CustomDataConfiguration(customDataEntries));
             }
         }
     }
@@ -398,7 +404,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertJukeboxPlayable() {
         String song = this.nexoItemSection.getString("Components.jukebox_playable.song_key");
         if (isValidString(song)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.JukeboxPlayableConfiguration(song));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.JukeboxPlayableConfiguration(song));
         }
     }
 
@@ -515,14 +521,14 @@ public class NexoItemConverter extends ItemConverter {
             this.setAssetId(assetId);
         }
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.EquippableConfiguration(equipmentSlot, equipSound, assetId, allowedEntities, dispensable, swappable, damageOnHurt, equipOnInteract, cameraOverlay, canBeSheared, shearingSound, null));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(equipmentSlot, equipSound, assetId, allowedEntities, dispensable, swappable, damageOnHurt, equipOnInteract, cameraOverlay, canBeSheared, shearingSound, null));
     }
 
     @Override
     public void convertDamageResistance() {
         String damageResistance = this.nexoItemSection.getString("Components.damage_resistant");
         if (isValidString(damageResistance)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.DamageResistantConfiguration(damageResistance));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DamageResistantConfiguration(damageResistance));
         }
     }
 
@@ -530,14 +536,14 @@ public class NexoItemConverter extends ItemConverter {
     public void convertEnchantableComponent() {
         int maxEnchantableLevel = this.nexoItemSection.getInt("Components.enchantable", -1);
         if (maxEnchantableLevel >= 0) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.EnchantableConfiguration(maxEnchantableLevel));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.EnchantableConfiguration(maxEnchantableLevel));
         }
     }
 
     @Override
     public void convertGliderComponent() {
         if (this.nexoItemSection.getBoolean("Components.glider", false)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.GliderConfiguration(true));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.GliderConfiguration(true));
         }
     }
 
@@ -546,7 +552,7 @@ public class NexoItemConverter extends ItemConverter {
         String toolTipStyle = this.nexoItemSection.getString("Components.tooltip_style");
         if (isValidString(toolTipStyle)) {
             try {
-                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.data.TooltipStyleConfiguration(NamespacedKey.fromString(toolTipStyle)));
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.TooltipStyleConfiguration(NamespacedKey.fromString(toolTipStyle)));
             } catch (IllegalArgumentException e) {
                 Logger.debug(Message.WARNING__CONVERTER__NEXO__TOOLTIP_STYLE__UNKNOWN_STYLE, LogType.WARNING, "style", toolTipStyle, "item", this.itemId);
             }
@@ -565,7 +571,7 @@ public class NexoItemConverter extends ItemConverter {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__USE_COOLDOWN__INVALID_SECONDS, LogType.WARNING, "seconds", seconds, "item", this.itemId);
         }
         String cooldownGroup = useCooldownSection.getString("group");
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.UseCooldownConfiguration(seconds, cooldownGroup));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.UseCooldownConfiguration(seconds, cooldownGroup));
     }
 
     @Override
@@ -578,7 +584,7 @@ public class NexoItemConverter extends ItemConverter {
             if (!minecraftType.contains(":")) {
                 minecraftType = "minecraft:" + minecraftType;
             }
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.UseRemainderConfiguration(minecraftType.toLowerCase(), 1));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.UseRemainderConfiguration(minecraftType.toLowerCase(), 1));
         }
     }
 
@@ -599,8 +605,8 @@ public class NexoItemConverter extends ItemConverter {
             }
         }
         if (!anvilRepairItems.isEmpty()) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.AnvilRepairItemConfiguration(anvilRepairItems));
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.RepairableSettingConfiguration(false, true, false));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.AnvilRepairItemConfiguration(anvilRepairItems));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.RepairableSettingConfiguration(false, true, false));
         }
     }
 
@@ -612,7 +618,7 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection deathEffectsSection = nexoDeathProtectionSection.getConfigurationSection("death_effects");
 
         if (isNull(deathEffectsSection)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.DeathProtectionConfiguration(null));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DeathProtectionConfiguration(null));
             return;
         }
 
@@ -657,7 +663,7 @@ public class NexoItemConverter extends ItemConverter {
         }
 
         if (!deathEffects.isEmpty()) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.DeathProtectionConfiguration(deathEffects));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DeathProtectionConfiguration(deathEffects));
         }
     }
 
@@ -665,7 +671,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertToolTipDisplay() {
         List<String> tooltipDisplay = this.nexoItemSection.getStringList("Components.tooltip_display");
         if (!tooltipDisplay.isEmpty()) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.TooltipDisplayConfiguration(tooltipDisplay));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.TooltipDisplayConfiguration(tooltipDisplay));
         }
     }
 
@@ -673,7 +679,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertBreakSound() {
         String breakSound = this.nexoItemSection.getString("Components.break_sound");
         if (isValidString(breakSound)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.BreakSoundConfiguration(breakSound, 16.0f));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.BreakSoundConfiguration(breakSound, 16.0f));
         }
     }
 
@@ -698,13 +704,13 @@ public class NexoItemConverter extends ItemConverter {
         String disabledSound = nexoBlocksAttacksSection.getString("disabled_sound");
         String bypassedBy = nexoBlocksAttacksSection.getString("bypassed_by");
 
-        fr.robie.craftengineconverter.api.configurations.item.components.BlocksAttacksConfiguration.ItemDamage itemDamage = new fr.robie.craftengineconverter.api.configurations.item.components.BlocksAttacksConfiguration.ItemDamage(
+        fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.ItemDamage itemDamage = new fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.ItemDamage(
                 nexoBlocksAttacksSection.getDouble("item_damage.threshold", 0),
                 nexoBlocksAttacksSection.getDouble("item_damage.base", 0),
                 nexoBlocksAttacksSection.getDouble("item_damage.factor", 1.5)
         );
 
-        List<fr.robie.craftengineconverter.api.configurations.item.components.BlocksAttacksConfiguration.DamageReduction> damageReductions = new ArrayList<>();
+        List<fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.DamageReduction> damageReductions = new ArrayList<>();
         for (var dr : nexoBlocksAttacksSection.getMapList("damage_reductions")) {
             Object baseObj = dr.get("base");
             Object factorObj = dr.get("factor");
@@ -722,10 +728,10 @@ public class NexoItemConverter extends ItemConverter {
                 types.add(str);
             }
 
-            damageReductions.add(new fr.robie.craftengineconverter.api.configurations.item.components.BlocksAttacksConfiguration.DamageReduction(base, factor, horizontalBlockingAngle, types));
+            damageReductions.add(new fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.DamageReduction(base, factor, horizontalBlockingAngle, types));
         }
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.BlocksAttacksConfiguration(blockDelay, disableCooldownScale, blockSound, disabledSound, bypassedBy, itemDamage, damageReductions));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration(blockDelay, disableCooldownScale, blockSound, disabledSound, bypassedBy, itemDamage, damageReductions));
     }
 
     @Override
@@ -752,21 +758,21 @@ public class NexoItemConverter extends ItemConverter {
             if (isValidString(blockItem)) processBlockOrTag(blockItem, blockArray, tagsArray);
         }
 
-        List<fr.robie.craftengineconverter.api.configurations.utils.BlockPredicateConfiguration.BlockPredicate> predicates = new ArrayList<>();
+        List<fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.BlockPredicate> predicates = new ArrayList<>();
 
         if (!blockArray.isEmpty())
-            predicates.add(new fr.robie.craftengineconverter.api.configurations.utils.BlockPredicateConfiguration.BlockPredicate(blockArray));
+            predicates.add(new fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.BlockPredicate(blockArray));
 
         for (String tag : tagsArray)
-            predicates.add(new fr.robie.craftengineconverter.api.configurations.utils.BlockPredicateConfiguration.BlockPredicate(tag));
+            predicates.add(new fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.BlockPredicate(tag));
 
         if (predicates.isEmpty()) return;
 
-        fr.robie.craftengineconverter.api.configurations.utils.BlockPredicateConfiguration.Type type = componentName.equals("can_place_on")
-                ? fr.robie.craftengineconverter.api.configurations.utils.BlockPredicateConfiguration.Type.CAN_PLACE_ON
-                : fr.robie.craftengineconverter.api.configurations.utils.BlockPredicateConfiguration.Type.CAN_BREAK;
+        fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.Type type = componentName.equals("can_place_on")
+                ? fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.Type.CAN_PLACE_ON
+                : fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.Type.CAN_BREAK;
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.utils.BlockPredicateConfiguration(type, predicates));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration(type, predicates));
     }
 
     private void processBlockOrTag(String input, List<String> blockArray, List<String> tagsArray) {
@@ -792,7 +798,7 @@ public class NexoItemConverter extends ItemConverter {
     @Override
     public void convertOversizedInGui() {
         if (this.nexoItemSection.getBoolean("Pack.oversized_in_gui", false)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.OversizedInGuiConfiguration(true));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.OversizedInGuiConfiguration(true));
         }
     }
 
@@ -800,7 +806,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertPaintingVariant(){
         String paintingVariant = this.nexoItemSection.getString("Components.painting_variant");
         if (isValidString(paintingVariant)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.PaintingVariantConfiguration(paintingVariant));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.PaintingVariantConfiguration(paintingVariant));
         }
     }
 
@@ -815,16 +821,16 @@ public class NexoItemConverter extends ItemConverter {
         String sound = kineticSection.getString("sound");
         String hitSound = kineticSection.getString("hit_sound");
 
-        fr.robie.craftengineconverter.api.configurations.item.components.KineticWeaponConfiguration.KineticConditions dismountConditions = parseKineticConditions(kineticSection.getConfigurationSection("dismount_conditions"));
-        fr.robie.craftengineconverter.api.configurations.item.components.KineticWeaponConfiguration.KineticConditions knockbackConditions = parseKineticConditions(kineticSection.getConfigurationSection("knockback_conditions"));
-        fr.robie.craftengineconverter.api.configurations.item.components.KineticWeaponConfiguration.KineticConditions damageConditions = parseKineticConditions(kineticSection.getConfigurationSection("damage_conditions"));
+        fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions dismountConditions = parseKineticConditions(kineticSection.getConfigurationSection("dismount_conditions"));
+        fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions knockbackConditions = parseKineticConditions(kineticSection.getConfigurationSection("knockback_conditions"));
+        fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions damageConditions = parseKineticConditions(kineticSection.getConfigurationSection("damage_conditions"));
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.KineticWeaponConfiguration(delayTicks, damageMultiplier, forwardMovement, sound, hitSound, dismountConditions, knockbackConditions, damageConditions));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration(delayTicks, damageMultiplier, forwardMovement, sound, hitSound, dismountConditions, knockbackConditions, damageConditions));
     }
 
-    private fr.robie.craftengineconverter.api.configurations.item.components.KineticWeaponConfiguration.KineticConditions parseKineticConditions(ConfigurationSection section) {
+    private fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions parseKineticConditions(ConfigurationSection section) {
         if (section == null) return null;
-        return new fr.robie.craftengineconverter.api.configurations.item.components.KineticWeaponConfiguration.KineticConditions(
+        return new fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions(
                 TimerBuilder.parseTimeToTicks(section.getString("max_duration", "0t")),
                 section.getDouble("min_speed", 0.0),
                 section.getDouble("min_relative_speed", 0.0)
@@ -836,7 +842,7 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection piercingSection = this.nexoItemSection.getConfigurationSection("Components.piercing_weapon");
         if (isNull(piercingSection)) return;
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.PiercingWeaponConfiguration(
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.PiercingWeaponConfiguration(
                 piercingSection.getBoolean("deals_knockback", true),
                 piercingSection.getBoolean("dismounts", false),
                 piercingSection.getString("sound"),
@@ -876,7 +882,7 @@ public class NexoItemConverter extends ItemConverter {
         if (attackRangeSection.contains("min_reach")) minReach = attackRangeSection.getDouble("min_reach", 0.0);
         if (attackRangeSection.contains("max_reach")) maxReach = attackRangeSection.getDouble("max_reach", 3.0);
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.AttackRangeConfiguration(
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.AttackRangeConfiguration(
                 minReach,
                 maxReach,
                 attackRangeSection.getDouble("min_creative_reach", 0.0),
@@ -891,14 +897,14 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection swingAnimationSection = this.nexoItemSection.getConfigurationSection("Components.swing_animation");
         if (isNull(swingAnimationSection)) return;
 
-        fr.robie.craftengineconverter.api.configurations.item.components.SwingAnimationConfiguration.AnimationType type;
+        fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration.AnimationType type;
         try {
-            type = fr.robie.craftengineconverter.api.configurations.item.components.SwingAnimationConfiguration.AnimationType.valueOf(
+            type = fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration.AnimationType.valueOf(
                     swingAnimationSection.getString("type", "whack").toUpperCase()
             );
         } catch (IllegalArgumentException e) {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__SWING_ANIMATION__INVALID_TYPE, LogType.WARNING, "item", this.itemId);
-            type = fr.robie.craftengineconverter.api.configurations.item.components.SwingAnimationConfiguration.AnimationType.WHACK;
+            type = fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration.AnimationType.WHACK;
         }
 
         long durationTicks = TimerBuilder.parseTimeToTicks(swingAnimationSection.getString("duration", "6t"));
@@ -907,7 +913,7 @@ public class NexoItemConverter extends ItemConverter {
             durationTicks = 6;
         }
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.SwingAnimationConfiguration(type, (int) durationTicks));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration(type, (int) durationTicks));
     }
 
     @Override
@@ -915,7 +921,7 @@ public class NexoItemConverter extends ItemConverter {
         ConfigurationSection useEffectsSection = this.nexoItemSection.getConfigurationSection("Components.use_effects");
         if (isNull(useEffectsSection)) return;
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.UseEffectsConfiguration(
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.UseEffectsConfiguration(
                 useEffectsSection.getBoolean("can_sprint", false),
                 useEffectsSection.getDouble("speed_multiplier", 0.2),
                 useEffectsSection.getBoolean("interact_vibrations", true)
@@ -926,7 +932,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertDamageTypeComponent(){
         String damageType = this.nexoItemSection.getString("Components.damage_type");
         if (isValidString(damageType)) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.DamageTypeConfiguration(damageType));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DamageTypeConfiguration(damageType));
         }
     }
 
@@ -935,7 +941,7 @@ public class NexoItemConverter extends ItemConverter {
         double minAttackCharge = this.nexoItemSection.getDouble("Components.minimum_attack_charge", -1f);
         if (minAttackCharge >= 0f) {
             minAttackCharge = Math.max(0.0, Math.min(1.0, minAttackCharge));
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.MinimumAttackChargeConfiguration((float) minAttackCharge));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.MinimumAttackChargeConfiguration((float) minAttackCharge));
         }
     }
 
@@ -947,18 +953,18 @@ public class NexoItemConverter extends ItemConverter {
         String name = profileSection.getString("name");
         String uuid = profileSection.getString("uuid");
 
-        List<fr.robie.craftengineconverter.api.configurations.item.components.PlayerProfileConfiguration.Property> properties = new ArrayList<>();
+        List<fr.robie.craftengineconverter.api.configuration.item.components.PlayerProfileConfiguration.Property> properties = new ArrayList<>();
         ConfigurationSection propertiesSection = profileSection.getConfigurationSection("properties");
         if (propertiesSection != null) {
             String propName = propertiesSection.getString("name");
             String propValue = propertiesSection.getString("value");
             String propSignature = propertiesSection.getString("signature");
             if (isValidString(propName) && isValidString(propValue)) {
-                properties.add(new fr.robie.craftengineconverter.api.configurations.item.components.PlayerProfileConfiguration.Property(propName, propValue, propSignature));
+                properties.add(new fr.robie.craftengineconverter.api.configuration.item.components.PlayerProfileConfiguration.Property(propName, propValue, propSignature));
             }
         }
 
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.components.PlayerProfileConfiguration(
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.PlayerProfileConfiguration(
                 name,
                 uuid,
                 properties,
@@ -1061,7 +1067,7 @@ public class NexoItemConverter extends ItemConverter {
                                     }
 
 //                                    getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
-                                    this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.EquippableConfiguration(assetId,(EquipmentSlot) null));
+                                    this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId,(EquipmentSlot) null));
                                 }
                             }
 
@@ -1129,7 +1135,7 @@ public class NexoItemConverter extends ItemConverter {
                         }
 
 //                        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
-                        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.EquippableConfiguration(assetId,(EquipmentSlot) null));
+                        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId,(EquipmentSlot) null));
                         Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
                         this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
                     }
@@ -1168,7 +1174,7 @@ public class NexoItemConverter extends ItemConverter {
             String[] split = namespacedElytra.split(":", 2);
             String itemIdPartTwo = this.itemId.split(":")[1];
 //            getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable").set("wings", split[0]+":"+itemIdPartTwo);
-            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.EquippableConfiguration(this.assetId, split[0]+":"+itemIdPartTwo));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(this.assetId, split[0]+":"+itemIdPartTwo));
             String string = split[1];
             int lastIndexOf = string.lastIndexOf("/");
             if (lastIndexOf != -1) {
@@ -1187,7 +1193,7 @@ public class NexoItemConverter extends ItemConverter {
         String namespacedThrowingModel = namespaced(throwingModel);
         this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_TRIDENT, "%model_path%",namespacedModel,"%throwing_model_path%",namespacedThrowingModel));
 //        this.craftEngineItemUtils.getSettingsSection().set("projectile",InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId));
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configurations.item.settings.ProjectileSettingConfiguration(InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId)));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.ProjectileSettingConfiguration(InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId)));
         return true;
     }
 
@@ -1386,15 +1392,12 @@ public class NexoItemConverter extends ItemConverter {
     private void convertCustomBlockMechanic(ConfigurationSection nexoCustomBlockSection) {
         Map<String, Object> savedModel = getSavedModelTemplates();
         if (savedModel.isEmpty()) return;
-        ConfigurationSection ceBehaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        ceBehaviorSection.set("type", "block_item");
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
         String nexoCustomBlockType = nexoCustomBlockSection.getString("type","NOTEBLOCK");
         int customVariation = nexoCustomBlockSection.getInt("custom_variation", -1);
-        ConfigurationSection ceBlockSection = getOrCreateSection(ceBehaviorSection, "block");
-        ConfigurationSection ceStateSection = getOrCreateSection(ceBlockSection, "state");
-        String state;
+        CraftEngineBlockState state;
         if (nexoCustomBlockType.equalsIgnoreCase("CHORUSBLOCK")){
-            state = "leaves";
+            state = CraftEngineBlockState.LEAVES;
             if (customVariation >= 0){
                 BlockData blockData = Bukkit.createBlockData(Material.CHORUS_PLANT);
                 if (blockData instanceof MultipleFacing multipleFacing) {
@@ -1414,7 +1417,7 @@ public class NexoItemConverter extends ItemConverter {
                 }
             }
         } else if (nexoCustomBlockType.equalsIgnoreCase("TRIPWIRE")){
-            state = "tripwire";
+            state = CraftEngineBlockState.TRIPWIRE;
             if (customVariation >= 0){
                 BlockData blockData = Bukkit.createBlockData(Material.TRIPWIRE);
                 if (blockData instanceof Tripwire tripwire) {
@@ -1438,7 +1441,7 @@ public class NexoItemConverter extends ItemConverter {
                 }
             }
         } else {
-            state = "solid";
+            state = CraftEngineBlockState.SOLID;
             if (customVariation >= 0 && nexoCustomBlockType.equalsIgnoreCase("NOTEBLOCK")){
                 try {
                     BlockStatesMapper.getInstance().convertNoteBlockState(this.getConverter().getPluginType(), this.itemId, customVariation);
@@ -1448,38 +1451,40 @@ public class NexoItemConverter extends ItemConverter {
                 }
             }
         }
-        ceStateSection.set("auto-state",state);
-        ceStateSection.createSection("model", savedModel);
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, savedModel, this.itemId));
         ConfigurationSection sounds = nexoCustomBlockSection.getConfigurationSection("block_sounds");
+        BlockSettings blockSettings = blockConfiguration.getBlockSettings();
         if (sounds != null) {
-            ConfigurationSection settings = getOrCreateSection(ceBlockSection, "settings");
-            for (String soundKey : new String[]{"place_sound","break_sound","hit_sound","step_sound","fall_sound"}) {
-                String soundValue = sounds.getString(soundKey);
-                if (isValidString(soundValue)) {
-                    ConfigurationSection ceSoundsSection = getOrCreateSection(settings, "sounds");
-                    String ceSoundKey = soundKey.replace("_sound", "");
-                    ceSoundsSection.set(ceSoundKey, soundValue);
-                }
+            String placeSound = sounds.getString("place_sound");
+            if (isValidString(placeSound)){
+                blockSettings.setPlaceSound(placeSound);
+            }
+            String breakSound = sounds.getString("break_sound");
+            if (isValidString(breakSound)){
+                blockSettings.setBreakSound(breakSound);
+            }
+            String hitSound = sounds.getString("hit_sound");
+            if (isValidString(hitSound)){
+                blockSettings.setHitSound(hitSound);
+            }
+            String stepSound = sounds.getString("step_sound");
+            if (isValidString(stepSound)){
+                blockSettings.setStepSound(stepSound);
+            }
+            String fallSound = sounds.getString("fall_sound");
+            if (isValidString(fallSound)){
+                blockSettings.setFallSound(fallSound);
             }
         }
         double hardness = nexoCustomBlockSection.getDouble("hardness",2.0);
-        if (hardness >= 0 && hardness != 2.0){
-            ConfigurationSection settings = this.craftEngineItemUtils.getSettingsSection();
-            settings.set("hardness", hardness);
-        }
+        blockSettings.setHardness((float) hardness);
         boolean canBeBeaconBaseBlock = nexoCustomBlockSection.getBoolean("beacon_base_block",false);
         if (canBeBeaconBaseBlock){
-            ConfigurationSection settings = this.craftEngineItemUtils.getSettingsSection();
-            List<String> blockTags = settings.getStringList("tags");
-            if (!blockTags.contains("minecraft:beacon_base_blocks")){
-                blockTags.add("minecraft:beacon_base_blocks");
-                settings.set("tags",blockTags);
-            }
+            blockSettings.addTag("minecraft:beacon_base_blocks");
         }
         boolean isFallingBlock = nexoCustomBlockSection.getBoolean("is_falling",false);
         if (isFallingBlock){
-            ConfigurationSection ceBlockBehaviorSection = getOrCreateSection(ceBlockSection, "behavior");
-            ceBlockBehaviorSection.set("type","falling_block");
+            blockConfiguration.addBehavior(new FallingBlockBehavior());
         }
         ConfigurationSection nexoSaplingSection = nexoCustomBlockSection.getConfigurationSection("sapling");
         if (isNotNull(nexoSaplingSection)){
@@ -1504,9 +1509,8 @@ public class NexoItemConverter extends ItemConverter {
                     Logger.debug(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__UNKNOWN_MINIMAL_TYPE, LogType.WARNING, "type", minimalType, "item", this.itemId);
                 }
                 if (isNotNull(nexoMinimalType)){
-                    ConfigurationSection ceBlockSettings = getOrCreateSection(ceBlockSection, "settings");
-                    ceBlockSettings.set("require-correct-tools",true);
-                    ceBlockSettings.set("correct-tools", nexoMinimalType.getCorrectTools());
+                    blockSettings.setRequireCorrectTools(true);
+                    blockSettings.setCorrectTools(nexoMinimalType.getCorrectTools());
                 }
             }
             if (isValidString(bestTool)){
@@ -1517,12 +1521,12 @@ public class NexoItemConverter extends ItemConverter {
                     Logger.debug(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__UNKNOWN_BEST_TOOL, LogType.WARNING, "tool", bestTool, "item", this.itemId);
                 }
                 if (isNotNull(nexoBestTool)){
-                    ConfigurationSection ceBlockSettings = getOrCreateSection(ceBlockSection, "settings");
-                    ceBlockSettings.set("tags", ceBlockSettings.getStringList("tags").add(nexoBestTool.getBestTool()));
+                    blockSettings.addTag(nexoBestTool.getBestTool());
                 }
             }
             //TODO: implement drop conversion according to silktouch and fortune
         }
+        this.getCraftEngineItemsConfiguration().addItemConfiguration(blockConfiguration);
     }
 
     private void convertFurnitureMechanic(ConfigurationSection nexoFurnitureMechanicsSection) {
@@ -1534,9 +1538,9 @@ public class NexoItemConverter extends ItemConverter {
         // --- Sounds ---
         ConfigurationSection nexoBlockSoundSection = nexoFurnitureMechanicsSection.getConfigurationSection("block_sounds");
         if (isNotNull(nexoBlockSoundSection)) {
-            Settings settings = furnitureConfiguration.getOrCreateSettings(this.itemId);
-            settings.setPlaceSound(nexoBlockSoundSection.getString("place_sound"));
-            settings.setBreakSound(nexoBlockSoundSection.getString("break_sound"));
+            FurnitureSettings furnitureSettings = furnitureConfiguration.getOrCreateSettings(this.itemId);
+            furnitureSettings.setPlaceSound(nexoBlockSoundSection.getString("place_sound"));
+            furnitureSettings.setBreakSound(nexoBlockSoundSection.getString("break_sound"));
             // hit_sound / step_sound / fall_sound are not supported in CE for furniture
         }
 
@@ -1571,7 +1575,7 @@ public class NexoItemConverter extends ItemConverter {
 
         // --- Display properties ---
         net.momirealms.craftengine.core.entity.display.Billboard transformType = net.momirealms.craftengine.core.entity.display.Billboard.FIXED;
-        fr.robie.craftengineconverter.api.configurations.utils.ItemDisplayType displayType = fr.robie.craftengineconverter.api.configurations.utils.ItemDisplayType.FIXED;
+        fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType displayType = fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType.FIXED;
         FloatsUtils displayTranslation = new FloatsUtils(3, new float[]{0f, 0.5f, 0f});
         FloatsUtils scale = new FloatsUtils(3, new float[]{1f, 1f, 1f});
 
@@ -1579,10 +1583,10 @@ public class NexoItemConverter extends ItemConverter {
         if (isNotNull(nexoPropertiesSection)) {
             String display_transform = nexoPropertiesSection.getString("display_transform", "NONE");
             try {
-                displayType = fr.robie.craftengineconverter.api.configurations.utils.ItemDisplayType.valueOf(display_transform);
+                displayType = fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType.valueOf(display_transform);
             } catch (IllegalArgumentException e) {
                 Logger.debug(Message.WARNING__FURNITURE__UNKNOWN_DISPLAY_TRANSFORM, LogType.WARNING, "item", this.itemId, "transform", display_transform);
-                displayType = fr.robie.craftengineconverter.api.configurations.utils.ItemDisplayType.NONE;
+                displayType = fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType.NONE;
             }
             String tracking_rotation = nexoPropertiesSection.getString("tracking_rotation", net.momirealms.craftengine.core.entity.display.Billboard.FIXED.name());
             try {

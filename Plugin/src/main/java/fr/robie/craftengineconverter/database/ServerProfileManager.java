@@ -1,9 +1,9 @@
 package fr.robie.craftengineconverter.database;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.api.BlockHistory;
-import fr.robie.craftengineconverter.api.EntityHistory;
 import fr.robie.craftengineconverter.api.database.StorageManager;
+import fr.robie.craftengineconverter.api.history.BlockHistory;
+import fr.robie.craftengineconverter.api.history.EntityHistory;
 import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;

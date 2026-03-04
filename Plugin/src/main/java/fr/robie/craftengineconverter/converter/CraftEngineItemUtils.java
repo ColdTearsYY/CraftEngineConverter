@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.converter;
 
-import fr.robie.craftengineconverter.common.utils.ObjectUtils;
+import fr.robie.craftengineconverter.api.utils.ObjectUtils;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Map;

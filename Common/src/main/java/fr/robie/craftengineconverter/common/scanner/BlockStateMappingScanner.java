@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.common.scanner;
 
-import fr.robie.craftengineconverter.common.enums.CraftEngineBlockState;
+import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.common.utils.SnakeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

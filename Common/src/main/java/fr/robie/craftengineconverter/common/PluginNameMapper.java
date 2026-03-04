@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.common;
 
-import fr.robie.craftengineconverter.common.enums.Plugins;
+import fr.robie.craftengineconverter.api.enums.Plugins;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;

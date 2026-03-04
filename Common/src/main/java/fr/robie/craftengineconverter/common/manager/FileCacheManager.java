@@ -2,10 +2,10 @@ package fr.robie.craftengineconverter.common.manager;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.common.cache.FileCache;
-import fr.robie.craftengineconverter.common.format.Message;
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.nio.file.Files;

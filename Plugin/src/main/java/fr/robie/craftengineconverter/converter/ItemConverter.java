@@ -1,8 +1,8 @@
 package fr.robie.craftengineconverter.converter;
 
-import fr.robie.craftengineconverter.api.configurations.CraftEngineItemsConfiguration;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.utils.ObjectUtils;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.CraftEngineItemsConfiguration;
+import fr.robie.craftengineconverter.api.utils.ObjectUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;

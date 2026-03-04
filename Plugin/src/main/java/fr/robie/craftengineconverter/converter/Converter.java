@@ -1,16 +1,16 @@
 package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConverterSettings;
+import fr.robie.craftengineconverter.api.enums.ConverterOptions;
+import fr.robie.craftengineconverter.api.enums.Plugins;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
+import fr.robie.craftengineconverter.api.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.common.cache.FileCacheEntry;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.configuration.ConverterSettings;
-import fr.robie.craftengineconverter.common.enums.ConverterOptions;
-import fr.robie.craftengineconverter.common.enums.Plugins;
-import fr.robie.craftengineconverter.common.format.Message;
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.manager.FileCacheManager;
-import fr.robie.craftengineconverter.common.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.converter.settings.BasicConverterSettings;
 import fr.robie.craftengineconverter.utils.ConfigFile;
 import fr.robie.craftengineconverter.utils.YamlUtils;

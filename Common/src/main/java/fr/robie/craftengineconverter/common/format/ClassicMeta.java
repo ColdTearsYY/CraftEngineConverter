@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ClassicMeta implements MessageFormatter{
+public class ClassicMeta implements fr.robie.craftengineconverter.api.format.MessageFormatter {
     @Override
     public void sendMessage(@NotNull CommandSender sender, String message) {
         sender.sendMessage(color(message));

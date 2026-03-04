@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.common.converter;
 
+import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.common.enums.Plugins;
 import net.momirealms.craftengine.bukkit.api.CraftEngineFurniture;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Location;

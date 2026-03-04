@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.common.utils;
 
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.common.utils.directive.SmartConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

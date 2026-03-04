@@ -1,14 +1,14 @@
 package fr.robie.craftengineconverter.loader;
 
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.enums.Languages;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.format.MessageType;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.enums.Languages;
-import fr.robie.craftengineconverter.common.format.Message;
-import fr.robie.craftengineconverter.common.format.MessageType;
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
 import fr.robie.craftengineconverter.common.manager.Manageable;
-import fr.robie.craftengineconverter.common.utils.ObjectUtils;
+import fr.robie.craftengineconverter.api.utils.ObjectUtils;
 import fr.robie.craftengineconverter.common.utils.SnakeUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
 

@@ -1,8 +1,8 @@
 package fr.robie.craftengineconverter.utils.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.common.format.Message;
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import fr.robie.craftengineconverter.utils.collection.CollectionBiConsumer;
 import org.bukkit.command.CommandSender;

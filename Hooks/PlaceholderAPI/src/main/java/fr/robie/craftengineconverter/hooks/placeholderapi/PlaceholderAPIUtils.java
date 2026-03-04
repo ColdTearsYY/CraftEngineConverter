@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.hooks.placeholderapi;
 
+import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.common.configuration.Configuration;
 import fr.robie.craftengineconverter.hooks.placeholderapi.itemsadder.ImgExpansion;
 
 public class PlaceholderAPIUtils {

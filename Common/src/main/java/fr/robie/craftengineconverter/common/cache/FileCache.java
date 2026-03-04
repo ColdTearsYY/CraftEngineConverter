@@ -2,8 +2,8 @@ package fr.robie.craftengineconverter.common.cache;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import fr.robie.craftengineconverter.common.format.Message;
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
