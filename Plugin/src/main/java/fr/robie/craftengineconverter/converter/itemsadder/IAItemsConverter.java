@@ -961,15 +961,6 @@ public class IAItemsConverter extends ItemConverter {
         this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
-    private SimpleModelConfiguration buildSimpleModel(String parent, String texture) {
-        GenerationConfiguration generation = new GenerationConfiguration(parent);
-        generation.addTexture("layer0", texture);
-
-        SimpleModelConfiguration model = new SimpleModelConfiguration(texture);
-        model.setGeneration(generation);
-        return model;
-    }
-
     private void handleFishingRod2D(ConfigurationSection texturesSection) {
         String normalTexture = namespaced(texturesSection.getString("normal"), this.namespace);
         String castTexture = namespaced(texturesSection.getString("cast"), this.namespace);

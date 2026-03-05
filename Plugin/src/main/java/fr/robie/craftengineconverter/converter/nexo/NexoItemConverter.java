@@ -24,6 +24,13 @@ import fr.robie.craftengineconverter.api.configuration.item.data.DyedColorConfig
 import fr.robie.craftengineconverter.api.configuration.item.data.ItemNameConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.data.UnbreakableConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.condition.ConditionModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatch.UseDurationRangeDispatchConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.settings.ProjectileSettingConfiguration;
 import fr.robie.craftengineconverter.api.configuration.utils.AbstractEffectsConfiguration;
 import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
 import fr.robie.craftengineconverter.api.configuration.utils.FurnitureRotation;
@@ -38,7 +45,6 @@ import fr.robie.craftengineconverter.api.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
 import fr.robie.craftengineconverter.common.utils.enums.Template;
-import fr.robie.craftengineconverter.common.utils.enums.TemplateType;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoBestTool;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoMinimalType;
 import fr.robie.craftengineconverter.converter.Converter;
@@ -1081,10 +1087,9 @@ public class NexoItemConverter extends ItemConverter {
                         }
 
                         String texturePath = packSection.getString("texture");
-                        if (isValidString(texturePath)){
+                        if (isValidString(texturePath)) {
                             String namespacedTexturePath = namespaced(texturePath);
-                            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
-                            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+                            this.craftEngineItemsConfiguration.setModelConfiguration(buildSimpleModel("minecraft:item/generated", namespacedTexturePath));
                         }
                         return;
                     }
@@ -1135,10 +1140,8 @@ public class NexoItemConverter extends ItemConverter {
                             }
                         }
 
-//                        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
                         this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId,(EquipmentSlot) null));
-                        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
-                        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+                        this.craftEngineItemsConfiguration.setModelConfiguration(buildSimpleModel("minecraft:item/generated", namespacedTexturePath));
                     }
                 }
             }
@@ -1161,20 +1164,21 @@ public class NexoItemConverter extends ItemConverter {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__NAMESPACE_FAILURE, LogType.WARNING, "item", this.itemId);
             return;
         }
-        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_DEFAULT, "%model_path%", namespacedPath);
-        setSavedModelTemplates(parsedTemplate);
-        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+        this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(namespacedPath));
     }
 
     private void buildElytraModel(ConfigurationSection packSection) {
         String elytraModel = cleanPath(packSection.getString("texture"));
         if (isValidString(elytraModel)) {
             String namespacedElytra = namespaced(elytraModel);
-            Map<String, Object> parseTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_ELYTRA, "%model_path%", namespacedElytra, "%texture_path%", namespacedElytra, "%broken_model_path%", namespacedElytra, "%broken_texture_path%", namespacedElytra);
-            this.craftEngineItemUtils.getGeneralSection().createSection("model", parseTemplate);
+
+            ConditionModelConfiguration brokenCondition = new ConditionModelConfiguration("minecraft:broken");
+            brokenCondition.setOnFalse(buildSimpleModel("minecraft:item/generated", namespacedElytra));
+            brokenCondition.setOnTrue( buildSimpleModel("minecraft:item/generated", namespacedElytra));
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(brokenCondition);
             String[] split = namespacedElytra.split(":", 2);
             String itemIdPartTwo = this.itemId.split(":")[1];
-//            getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable").set("wings", split[0]+":"+itemIdPartTwo);
             this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(this.assetId, split[0]+":"+itemIdPartTwo));
             String string = split[1];
             int lastIndexOf = string.lastIndexOf("/");
@@ -1190,11 +1194,23 @@ public class NexoItemConverter extends ItemConverter {
         if (this.craftEngineItemsConfiguration.getMaterial() != Material.TRIDENT) return false;
         String namespacedModel = namespaced(modelPath);
         if (isNull(namespacedModel)) return false;
-        String throwingModel = packSection.getString("throwing_model", namespacedModel+"_throwing");
+        String throwingModel = packSection.getString("throwing_model", namespacedModel + "_throwing");
         String namespacedThrowingModel = namespaced(throwingModel);
-        this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_TRIDENT, "%model_path%",namespacedModel,"%throwing_model_path%",namespacedThrowingModel));
-//        this.craftEngineItemUtils.getSettingsSection().set("projectile",InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId));
-        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.ProjectileSettingConfiguration(InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId)));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(namespacedModel));
+        usingItemCondition.setOnTrue( new SimpleModelConfiguration(namespacedThrowingModel));
+
+        DisplayContentSelectConfiguration displayContentSelect = new DisplayContentSelectConfiguration();
+        displayContentSelect.addCase(new SimpleModelConfiguration(namespacedModel),
+                DisplayContentSelectConfiguration.DisplayContent.GUI,
+                DisplayContentSelectConfiguration.DisplayContent.GROUND,
+                DisplayContentSelectConfiguration.DisplayContent.FIXED
+        );
+        displayContentSelect.setFallback(usingItemCondition);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(displayContentSelect);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new ProjectileSettingConfiguration(this.itemId));
         return true;
     }
 
@@ -1206,7 +1222,11 @@ public class NexoItemConverter extends ItemConverter {
                 String namespacedBlocking = namespaced(shieldBlockingModel);
                 String namespacedModel = namespaced(modelPath);
                 if (isValidString(namespacedModel)) {
-                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_SHIELD, "%blocking_model_path%",namespacedBlocking,"%default_model_path%",namespacedModel));
+                    ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+                    usingItemCondition.setOnTrue( new SimpleModelConfiguration(namespacedBlocking));
+                    usingItemCondition.setOnFalse(new SimpleModelConfiguration(namespacedModel));
+
+                    this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
                     return true;
                 }
             }
@@ -1236,7 +1256,11 @@ public class NexoItemConverter extends ItemConverter {
                 String namespacedCast = namespaced(castModel);
                 String namespacedModel = namespaced(modelPath);
                 if (isNotNull(namespacedModel)) {
-                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_FISHING_ROD, "%casting_model_path%", namespacedCast, "%default_model_path%", namespacedModel));
+                    ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+                    castCondition.setOnTrue( new SimpleModelConfiguration(namespacedCast));
+                    castCondition.setOnFalse(new SimpleModelConfiguration(namespacedModel));
+
+                    this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
                     return true;
                 }
             }
@@ -1246,37 +1270,33 @@ public class NexoItemConverter extends ItemConverter {
 
     private void convertModelWithParent(ConfigurationSection packSection, String parentModel) {
         switch (parentModel) {
-            case "item/generated" -> buildGeneratedModel(packSection, "minecraft:item/generated", Template.MODEL_ITEM_GENERATED);
-            case "block/cube_all" -> buildGeneratedModel(packSection, "minecraft:block/cube_all", Template.MODEL_CUBE_ALL);
+            case "item/generated" -> buildGeneratedModel(packSection, "minecraft:item/generated", "layer0");
+            case "block/cube_all" -> buildGeneratedModel(packSection, "minecraft:block/cube_all",  "all");
             case "block/cube_top" -> buildCubeTopModel(packSection);
-            case "item/handheld" -> buildGeneratedModel(packSection, "minecraft:item/handheld", Template.MODEL_ITEM_HANDHELD);
+            case "item/handheld"  -> buildGeneratedModel(packSection, "minecraft:item/handheld",   "layer0");
 
             default -> Logger.info(Message.WARNING__CONVERTER__NEXO__MODEL__PARENT_NOT_SUPPORTED, LogType.WARNING, "parent", parentModel, "item", this.itemId);
         }
     }
 
-    private void buildGeneratedModel(ConfigurationSection packSection, String parent, Template template) {
+    private void buildGeneratedModel(ConfigurationSection packSection, String parent, String textureKey) {
         String texturePath = getTexturePath(packSection);
         if (isValidString(texturePath)) {
             String finalTexturePath = namespaced(texturePath);
-            String finalModelPath = finalTexturePath;
-            if (template.getType() == TemplateType.BLOCK) {
-                finalModelPath = filterModelPath(finalTexturePath);
-            }
-            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(template, "%model_path%", finalModelPath, "%texture_path%", finalTexturePath);
-            ConfigurationSection generalSection = this.craftEngineItemUtils.getGeneralSection();
-            if (template.getType() == TemplateType.BLOCK) {
-                setSavedModelTemplates(parsedTemplate);
-                ConfigurationSection ceModelSection = generalSection.createSection("model");
-                ceModelSection.set("path", finalModelPath);
-            } else {
-                parsedTemplate.put("type", "minecraft:model");
-                generalSection.createSection("model", parsedTemplate);
-            }
+
+            GenerationConfiguration generation = new GenerationConfiguration(parent);
+            generation.addTexture(textureKey, finalTexturePath);
+
+            boolean isBlock = parent.startsWith("minecraft:block/");
+            String modelPath = isBlock ? filterModelPath(finalTexturePath) : finalTexturePath;
+
+            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath);
+            model.setGeneration(generation);
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(model);
         } else {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent);
         }
-
     }
 
     private void buildCubeTopModel(ConfigurationSection packSection) {
@@ -1287,16 +1307,16 @@ public class NexoItemConverter extends ItemConverter {
             String finalSideTexture = namespaced(sideTexture);
             String finalTopTexture = namespaced(topTexture);
 
-            if (isNotNull(finalSideTexture) && isNotNull(finalTopTexture)) {
-                String modelPath = finalSideTexture;
-                modelPath = filterModelPath(modelPath);
-                Map<String, Object> parseTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_CUBE_TOP, "%model_path%", modelPath, "%texture_side_path%", finalSideTexture, "%texture_top_path%", finalTopTexture);
-                setSavedModelTemplates(parseTemplate);
-                ConfigurationSection ceModelSection = this.craftEngineItemUtils.getGeneralSection().createSection("model");
-                ceModelSection.set("path", modelPath);
-            } else {
-                Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__CUBE_TOP__PROCESS_FAILURE, LogType.WARNING, "item", this.itemId);
-            }
+            String modelPath = filterModelPath(finalSideTexture);
+
+            GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube_top");
+            generation.addTexture("side", finalSideTexture);
+            generation.addTexture("top", finalTopTexture);
+
+            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath);
+            model.setGeneration(generation);
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(model);
         } else {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__CUBE_TOP__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId);
         }
@@ -1339,14 +1359,24 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     private void buildBowModel(ConfigurationSection packSection) {
-        String baseModel = namespaced(packSection.getString("model"));
+        String baseModel   = namespaced(packSection.getString("model"));
         List<String> pullingModels = packSection.getStringList("pulling_models");
         String pulling0 = namespaced(notEmptyOrNull(pullingModels, 0) ? pullingModels.get(0) : packSection.getString("pulling_0_model"));
         String pulling1 = namespaced(notEmptyOrNull(pullingModels, 1) ? pullingModels.get(1) : packSection.getString("pulling_1_model"));
         String pulling2 = namespaced(notEmptyOrNull(pullingModels, 2) ? pullingModels.get(2) : packSection.getString("pulling_2_model"));
 
         if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)) {
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_BOW, "%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
+            UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+            pullingDispatch.setScale(0.05);
+            pullingDispatch.addEntry(0.65, new SimpleModelConfiguration(pulling1));
+            pullingDispatch.addEntry(0.90, new SimpleModelConfiguration(pulling2));
+            pullingDispatch.setFallback( new SimpleModelConfiguration(pulling0));
+
+            ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+            usingItemCondition.setOnFalse(new SimpleModelConfiguration(baseModel));
+            usingItemCondition.setOnTrue(pullingDispatch);
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
         } else {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__BOW__PROCESS_FAILURE, LogType.WARNING, "item", this.itemId);
         }
@@ -1362,8 +1392,22 @@ public class NexoItemConverter extends ItemConverter {
         String pulling1 = namespaced(notEmptyOrNull(pullingModels, 1) ? pullingModels.get(1) : packSection.getString("pulling_1_model"));
         String pulling2 = namespaced(notEmptyOrNull(pullingModels, 2) ? pullingModels.get(2) : packSection.getString("pulling_2_model"));
 
-        if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)){
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_CROSSBOW,"%charged_arrow_model_path%",arrowModel==null?pulling2:arrowModel,"%charged_rocket_model_path%",fireworkModel==null?pulling2:fireworkModel,"%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
+        if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)) {
+            ChargeTypeSelectConfiguration chargeTypeSelect = new ChargeTypeSelectConfiguration();
+            chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ARROW, new SimpleModelConfiguration(arrowModel != null ? arrowModel : pulling2));
+            chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ROCKET, new SimpleModelConfiguration(fireworkModel != null ? fireworkModel : pulling2));
+            chargeTypeSelect.setFallback(new SimpleModelConfiguration(baseModel));
+
+            UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+            pullingDispatch.addEntry(0.58, new SimpleModelConfiguration(pulling1));
+            pullingDispatch.addEntry(1.0, new SimpleModelConfiguration(pulling2));
+            pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0));
+
+            ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+            usingItemCondition.setOnFalse(chargeTypeSelect);
+            usingItemCondition.setOnTrue(pullingDispatch);
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
         } else {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__CROSSBOW__PROCESS_FAILURE, LogType.WARNING, "item", this.itemId);
         }

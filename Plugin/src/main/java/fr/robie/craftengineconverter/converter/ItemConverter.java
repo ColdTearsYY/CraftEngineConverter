@@ -2,6 +2,8 @@ package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.configuration.CraftEngineItemsConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
 import fr.robie.craftengineconverter.api.utils.ObjectUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -196,6 +198,15 @@ public abstract class ItemConverter extends ObjectUtils {
 
     public Converter getConverter() {
         return this.converter;
+    }
+
+    protected SimpleModelConfiguration buildSimpleModel(String parent, String texture) {
+        GenerationConfiguration generation = new GenerationConfiguration(parent);
+        generation.addTexture("layer0", texture);
+
+        SimpleModelConfiguration model = new SimpleModelConfiguration(texture);
+        model.setGeneration(generation);
+        return model;
     }
 
 }
