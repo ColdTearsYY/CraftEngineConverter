@@ -21,6 +21,11 @@ public class DyedColorConfiguration implements ItemConfigurationSerializable {
             return new DyedColorConfiguration(dyeColor.getColor().asRGB());
         } catch (IllegalArgumentException ignored) {}
 
+        String hex = colorStr.startsWith("#") ? colorStr.substring(1) : colorStr;
+        if (hex.matches("[0-9a-fA-F]{6}")) {
+            return new DyedColorConfiguration(Integer.parseInt(hex, 16));
+        }
+
         String[] parts = colorStr.split(",");
         if (parts.length != 3) throw new IllegalArgumentException("Invalid color format: " + colorStr);
         int r = Integer.parseInt(parts[0].trim());

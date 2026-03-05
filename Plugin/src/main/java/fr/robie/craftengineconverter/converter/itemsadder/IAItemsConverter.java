@@ -398,6 +398,27 @@ public class IAItemsConverter extends ItemConverter {
         ConfigurationSection armorSection = specificPropertiesSection.getConfigurationSection("armor");
         if (!isNotNull(armorSection)) return;
 
+        String color = armorSection.getString("color");
+        if (isValidString(color)) {
+            try {
+                this.craftEngineItemsConfiguration.addItemConfiguration(DyedColorConfiguration.parse(color));
+                Material customMaterial = this.craftEngineItemsConfiguration.getCustomMaterial();
+                if (customMaterial == null) {
+                    if (this.itemId.endsWith("_helmet")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_HELMET);
+                    } else if (this.itemId.endsWith("_chestplate")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_CHESTPLATE);
+                    } else if (this.itemId.endsWith("_leggings")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_LEGGINGS);
+                    } else if (this.itemId.endsWith("_boots")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_BOOTS);
+                    }
+                }
+            } catch (Exception e) {
+                Logger.debug("[IAItemsConverter] Invalid armor color '" + color + "' for item " + this.itemId);
+            }
+        }
+
         String assetId = armorSection.getString("custom_armor");
         if (!isValidString(assetId)) return;
 

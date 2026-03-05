@@ -35,6 +35,11 @@ public class CraftEngineItemsConfiguration {
         return (this.material == null ? this.defaultMaterial : this.material);
     }
 
+    @Nullable
+    public Material getCustomMaterial() {
+        return this.material;
+    }
+
     public void addItemConfiguration(@NotNull ItemConfigurationSerializable itemConfiguration){
         this.itemsConfigurations.add(itemConfiguration);
     }
