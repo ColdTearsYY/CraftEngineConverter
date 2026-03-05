@@ -19,6 +19,12 @@ import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.e
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.Hitbox;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.ShulkerHitbox;
 import fr.robie.craftengineconverter.api.configuration.item.data.*;
+import fr.robie.craftengineconverter.api.configuration.item.models.condition.ConditionModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatch.UseDurationRangeDispatchConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.settings.GlowDropColorConfiguration;
 import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
 import fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType;
@@ -461,18 +467,16 @@ public class IAItemsConverter extends ItemConverter {
             texturePath = namespaced(texturePath, this.namespace);
             ConfigurationSection blockSection = this.iaItemSection.getConfigurationSection("specific_properties.block");
             if (isNotNull(blockSection)){
-                this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_ITEM_DEFAULT, "%model_path%", texturePath));
+                this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(texturePath));
                 handleBlockItem(resourceSection, blockSection);
 
                 return;
             }
-            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                    fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_ITEM_GENERATED,
-                    "%model_path%", texturePath,
-                    "%texture_path%", texturePath
-            );
-            this.setSavedModelTemplates(parsedTemplate);
-            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+            SimpleModelConfiguration simpleModelConfiguration = new SimpleModelConfiguration(texturePath);
+            GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/generated");
+            generation.addTexture("layer0", texturePath);
+            simpleModelConfiguration.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
         }
     }
 
@@ -480,20 +484,20 @@ public class IAItemsConverter extends ItemConverter {
         Map<BlockFace, String> faceTextureMap = buildFaceTextureMap(resourceSection, "ALL");
         if (faceTextureMap == null) return;
 
-        Map<String, Object> parsedTemplate = createCubeModelTemplate(faceTextureMap);
-        this.setSavedModelTemplates(parsedTemplate);
+        SimpleModelConfiguration simpleModelConfiguration = createCubeModelTemplate(faceTextureMap);
+        this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
 
         BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
         MultiStateBlock multiStateBlock = new MultiStateBlock();
 
-        multiStateBlock.addAppearance("axisX", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).postProcessor(section -> {
+        multiStateBlock.addAppearance("axisX", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).postProcessor(section -> {
             ConfigurationSection model = getOrCreateSection(section, "model");
             model.set("x", 90);
             model.set("y", 90);
         }).build());
 
-        multiStateBlock.addAppearance("axisY", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
-        multiStateBlock.addAppearance("axisZ", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).postProcessor(section -> {
+        multiStateBlock.addAppearance("axisY", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        multiStateBlock.addAppearance("axisZ", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).postProcessor(section -> {
             ConfigurationSection model = getOrCreateSection(section, "model");
             model.set("x", 90);
         }).build());
@@ -511,15 +515,15 @@ public class IAItemsConverter extends ItemConverter {
         Map<BlockFace, String> faceTextureMap = buildFaceTextureMap(resourceSection, "Furnace");
         if (faceTextureMap == null) return;
 
-        Map<String, Object> parsedTemplate = createCubeModelTemplate(faceTextureMap);
-        this.setSavedModelTemplates(parsedTemplate);
+        SimpleModelConfiguration simpleModelConfiguration = createCubeModelTemplate(faceTextureMap);
+        this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
 
         BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
         MultiStateBlock multiStateBlock = new MultiStateBlock();
-        multiStateBlock.addAppearance("east", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
-        multiStateBlock.addAppearance("west", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
-        multiStateBlock.addAppearance("north", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
-        multiStateBlock.addAppearance("south", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.REAL), this.itemId, parsedTemplate).build());
+        multiStateBlock.addAppearance("east", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        multiStateBlock.addAppearance("west", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        multiStateBlock.addAppearance("north", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        multiStateBlock.addAppearance("south", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
         HorizontalDirectionBlockStateProperty facing = new HorizontalDirectionBlockStateProperty("facing", HorizontalDirection.NORTH);
         multiStateBlock.addProperty(facing);
         multiStateBlock.addVariant(new BlockVariant("east").addVariantCondition(facing, HorizontalDirection.EAST));
@@ -573,17 +577,18 @@ public class IAItemsConverter extends ItemConverter {
         return null;
     }
 
-    private Map<String, Object> createCubeModelTemplate(Map<BlockFace, String> faceTextureMap) {
-        return InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CUBE,
-                "%model_path%", faceTextureMap.get(BlockFace.NORTH),
-                "%texture_down_path%", faceTextureMap.get(BlockFace.DOWN),
-                "%texture_up_path%", faceTextureMap.get(BlockFace.UP),
-                "%texture_north_path%", faceTextureMap.get(BlockFace.NORTH),
-                "%texture_south_path%", faceTextureMap.get(BlockFace.SOUTH),
-                "%texture_west_path%", faceTextureMap.get(BlockFace.WEST),
-                "%texture_east_path%", faceTextureMap.get(BlockFace.EAST)
-        );
+    private SimpleModelConfiguration createCubeModelTemplate(Map<BlockFace, String> faceTextureMap) {
+        GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube");
+        generation.addTexture("down",  faceTextureMap.get(BlockFace.DOWN));
+        generation.addTexture("up",    faceTextureMap.get(BlockFace.UP));
+        generation.addTexture("north", faceTextureMap.get(BlockFace.NORTH));
+        generation.addTexture("south", faceTextureMap.get(BlockFace.SOUTH));
+        generation.addTexture("west",  faceTextureMap.get(BlockFace.WEST));
+        generation.addTexture("east",  faceTextureMap.get(BlockFace.EAST));
+
+        SimpleModelConfiguration model = new SimpleModelConfiguration(faceTextureMap.get(BlockFace.NORTH));
+        model.setGeneration(generation);
+        return model;
     }
 
     private void handleExistingResource(ConfigurationSection resourceSection) {
@@ -638,11 +643,13 @@ public class IAItemsConverter extends ItemConverter {
                 }
                 texturePath = namespaced(texturePath, this.namespace);
 
-                blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, InternalTemplateManager.parseTemplate(
-                        fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CUBE_ALL,
-                        "%model_path%", texturePath,
-                        "%texture_path%", texturePath
-                )));
+                GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube_all");
+                generation.addTexture("all", texturePath);
+
+                SimpleModelConfiguration model = new SimpleModelConfiguration(texturePath);
+                model.setGeneration(generation);
+
+                blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, model));
                 this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
                 return;
             } else {
@@ -653,10 +660,7 @@ public class IAItemsConverter extends ItemConverter {
 
         modelPath = namespaced(modelPath, this.namespace);
 
-        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.BLOCK_MODEL,
-                "%model_path%", modelPath
-        )));
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, new SimpleModelConfiguration(modelPath)));
         this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
 
@@ -732,12 +736,7 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private void handleSimpleModelPath(@NotNull String namespacedModelPath) {
-        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_ITEM_DEFAULT,
-                "%model_path%", namespacedModelPath
-        );
-        this.setSavedModelTemplates(parsedTemplate);
-        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+        this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(namespacedModelPath));
 
     }
 
@@ -763,11 +762,7 @@ public class IAItemsConverter extends ItemConverter {
         String modelPath = graphicsSection.getString("model");
         if (isValidString(modelPath)) {
             modelPath = namespaced(modelPath, this.namespace);
-            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                    fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_ITEM_DEFAULT,
-                    "%model_path%", modelPath
-            );
-            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+            this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(modelPath));
             return true;
         }
         return false;
@@ -775,12 +770,11 @@ public class IAItemsConverter extends ItemConverter {
 
     private void handleSimpleTexture(String texturePath) {
         texturePath = namespaced(texturePath, this.namespace);
-        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_ITEM_GENERATED,
-                "%model_path%", texturePath,
-                "%texture_path%", texturePath
-        );
-        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+        SimpleModelConfiguration modelConfiguration = new SimpleModelConfiguration(texturePath);
+        GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/generated");
+        generation.addTexture("layer0", texturePath);
+        modelConfiguration.setGeneration(generation);
+        this.craftEngineItemsConfiguration.setModelConfiguration(modelConfiguration);
     }
 
     private void handleBlockGraphics(ConfigurationSection graphicsSection, String texturePath) {
@@ -796,11 +790,11 @@ public class IAItemsConverter extends ItemConverter {
             }
         } else if (isValidString(texturePath)) {
             texturePath = namespaced(texturePath, this.namespace);
-            this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                    fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CUBE_ALL,
-                    "%model_path%", texturePath,
-                    "%texture_path%", texturePath
-            ));
+            SimpleModelConfiguration modelConfiguration = new SimpleModelConfiguration(texturePath);
+            GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube_all");
+            generation.addTexture("all", texturePath);
+            modelConfiguration.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(modelConfiguration);
         }
     }
 
@@ -817,13 +811,11 @@ public class IAItemsConverter extends ItemConverter {
         String iconPath = graphicsSection.getString("icon");
         if (isValidString(iconPath)) {
             iconPath = namespaced(iconPath, this.namespace);
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",
-                    InternalTemplateManager.parseTemplate(
-                            fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_ITEM_GENERATED,
-                            "%model_path%", iconPath,
-                            "%texture_path%", iconPath
-                    )
-            );
+            SimpleModelConfiguration modelConfiguration = new SimpleModelConfiguration(iconPath);
+            GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/generated");
+            generation.addTexture("layer0", iconPath);
+            modelConfiguration.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(modelConfiguration);
         }
     }
 
@@ -835,11 +827,13 @@ public class IAItemsConverter extends ItemConverter {
 
         BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
 
-        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, CraftEngineBlockState.SAPLING, this.itemId, InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_CROSS,
-                "%model_path%", crossTexture,
-                "%texture_path%", crossTexture
-        )));
+        GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cross");
+        generation.addTexture("cross", crossTexture);
+
+        SimpleModelConfiguration model = new SimpleModelConfiguration(crossTexture);
+        model.setGeneration(generation);
+
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, CraftEngineBlockState.SAPLING, this.itemId, model));
 
         this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
@@ -892,79 +886,139 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private void handleBow2D(ConfigurationSection texturesSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_2D_BOW_SIMPLIFIED,
-                "%default_texture_path%", namespaced(texturesSection.getString("normal"), this.namespace),
-                "%pulling_0_texture_path%", namespaced(texturesSection.getString("pulling_0"), this.namespace),
-                "%pulling_1_texture_path%", namespaced(texturesSection.getString("pulling_1"), this.namespace),
-                "%pulling_2_texture_path%", namespaced(texturesSection.getString("pulling_2"), this.namespace)
-        ));
+        String normalTexture = namespaced(texturesSection.getString("normal"), this.namespace);
+        String pulling0Texture = namespaced(texturesSection.getString("pulling_0"), this.namespace);
+        String pulling1Texture = namespaced(texturesSection.getString("pulling_1"), this.namespace);
+        String pulling2Texture = namespaced(texturesSection.getString("pulling_2"), this.namespace);
+
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.setScale(0.05);
+        pullingDispatch.addEntry(0.65, buildSimpleModel("minecraft:item/bow_pulling_1", pulling1Texture));
+        pullingDispatch.addEntry(0.90, buildSimpleModel("minecraft:item/bow_pulling_2", pulling2Texture));
+        pullingDispatch.setFallback(buildSimpleModel("minecraft:item/bow_pulling_0", pulling0Texture));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnTrue(pullingDispatch);
+        usingItemCondition.setOnFalse(buildSimpleModel("minecraft:item/bow", normalTexture));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
+    }
+
+    private SimpleModelConfiguration buildSimpleModel(String parent, String texture) {
+        GenerationConfiguration generation = new GenerationConfiguration(parent);
+        generation.addTexture("layer0", texture);
+
+        SimpleModelConfiguration model = new SimpleModelConfiguration(texture);
+        model.setGeneration(generation);
+        return model;
     }
 
     private void handleFishingRod2D(ConfigurationSection texturesSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_2D_FISHING_ROD_SIMPLIFIED,
-                "%default_texture_path%", namespaced(texturesSection.getString("normal"), this.namespace),
-                "%cast_texture_path%", namespaced(texturesSection.getString("cast"), this.namespace)
-        ));
+        String normalTexture = namespaced(texturesSection.getString("normal"), this.namespace);
+        String castTexture = namespaced(texturesSection.getString("cast"), this.namespace);
+
+        ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+        castCondition.setOnFalse(buildSimpleModel("minecraft:item/fishing_rod", normalTexture));
+        castCondition.setOnTrue(buildSimpleModel("minecraft:item/fishing_rod",  castTexture));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
     }
 
     private void handleCrossbow2D(ConfigurationSection texturesSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_2D_CROSSBOW_SIMPLIFIED,
-                "%default_texture_path%", namespaced(texturesSection.getString("normal"), this.namespace),
-                "%pulling_0_texture_path%", namespaced(texturesSection.getString("pulling_0"), this.namespace),
-                "%pulling_1_texture_path%", namespaced(texturesSection.getString("pulling_1"), this.namespace),
-                "%pulling_2_texture_path%", namespaced(texturesSection.getString("pulling_2"), this.namespace),
-                "%charged_rocket_texture_path%", namespaced(texturesSection.getString("rocket"), this.namespace),
-                "%charged_arrow_texture_path%", namespaced(texturesSection.getString("arrow"), this.namespace)
-        ));
+        String normalTexture = namespaced(texturesSection.getString("normal"), this.namespace);
+        String pulling0Texture = namespaced(texturesSection.getString("pulling_0"), this.namespace);
+        String pulling1Texture = namespaced(texturesSection.getString("pulling_1"), this.namespace);
+        String pulling2Texture = namespaced(texturesSection.getString("pulling_2"), this.namespace);
+        String rocketTexture = namespaced(texturesSection.getString("rocket"), this.namespace);
+        String arrowTexture = namespaced(texturesSection.getString("arrow"), this.namespace);
+
+        ChargeTypeSelectConfiguration chargeTypeSelect = new ChargeTypeSelectConfiguration();
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ARROW, buildSimpleModel("minecraft:item/crossbow_arrow", arrowTexture));
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ROCKET, buildSimpleModel("minecraft:item/crossbow_firework", rocketTexture));
+        chargeTypeSelect.setFallback(buildSimpleModel("minecraft:item/crossbow", normalTexture));
+
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.addEntry(0.58, buildSimpleModel("minecraft:item/crossbow_pulling_1", pulling1Texture));
+        pullingDispatch.addEntry(1.0, buildSimpleModel("minecraft:item/crossbow_pulling_2", pulling2Texture));
+        pullingDispatch.setFallback(buildSimpleModel("minecraft:item/crossbow_pulling_0", pulling0Texture));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(chargeTypeSelect);
+        usingItemCondition.setOnTrue(pullingDispatch);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     private void handleBow3D(String defaultModelPath, String pulling0ModelPath, String pulling1ModelPath, String pulling2ModelPath) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_3D_BOW,
-                "%default_model_path%", defaultModelPath,
-                "%pulling_0_model_path%", pulling0ModelPath,
-                "%pulling_1_model_path%", pulling1ModelPath,
-                "%pulling_2_model_path%", pulling2ModelPath
-        ));
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.setScale(0.05);
+        pullingDispatch.addEntry(0.65, new SimpleModelConfiguration(pulling1ModelPath));
+        pullingDispatch.addEntry(0.90, new SimpleModelConfiguration(pulling2ModelPath));
+        pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0ModelPath));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(defaultModelPath));
+        usingItemCondition.setOnTrue(pullingDispatch);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     private void handleFishingRod3D(String defaultModelPath, String castingModelPath) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_3D_FISHING_ROD,
-                "%default_model_path%", defaultModelPath,
-                "%casting_model_path%", castingModelPath
-        ));
+        ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+        castCondition.setOnFalse(new SimpleModelConfiguration(defaultModelPath));
+        castCondition.setOnTrue(new SimpleModelConfiguration(castingModelPath));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
     }
 
     private void handleCrossbow3D(ConfigurationSection modelsSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_3D_CROSSBOW,
-                "%default_model_path%", namespaced(modelsSection.getString("normal"), this.namespace),
-                "%pulling_0_model_path%", namespaced(modelsSection.getString("pulling_0"), this.namespace),
-                "%pulling_1_model_path%", namespaced(modelsSection.getString("pulling_1"), this.namespace),
-                "%pulling_2_model_path%", namespaced(modelsSection.getString("pulling_2"), this.namespace),
-                "%charged_rocket_model_path%", namespaced(modelsSection.getString("rocket"), this.namespace),
-                "%charged_arrow_model_path%", namespaced(modelsSection.getString("arrow"), this.namespace)
-        ));
-    }
+        String normalModel = namespaced(modelsSection.getString("normal"),    this.namespace);
+        String pulling0Model = namespaced(modelsSection.getString("pulling_0"), this.namespace);
+        String pulling1Model = namespaced(modelsSection.getString("pulling_1"), this.namespace);
+        String pulling2Model = namespaced(modelsSection.getString("pulling_2"), this.namespace);
+        String rocketModel = namespaced(modelsSection.getString("rocket"),    this.namespace);
+        String arrowModel = namespaced(modelsSection.getString("arrow"),     this.namespace);
 
+        ChargeTypeSelectConfiguration chargeTypeSelect = new ChargeTypeSelectConfiguration();
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ARROW, new SimpleModelConfiguration(arrowModel));
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ROCKET, new SimpleModelConfiguration(rocketModel));
+        chargeTypeSelect.setFallback(new SimpleModelConfiguration(normalModel));
+
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.addEntry(0.58, new SimpleModelConfiguration(pulling1Model));
+        pullingDispatch.addEntry(1.0,  new SimpleModelConfiguration(pulling2Model));
+        pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0Model));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(chargeTypeSelect);
+        usingItemCondition.setOnTrue(pullingDispatch);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
+    }
     private void handleTrident3D(ConfigurationSection modelsSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_TRIDENT,
-                "%model_path%", namespaced(modelsSection.getString("normal"), this.namespace),
-                "%throwing_model_path%", namespaced(modelsSection.getString("throwing"), this.namespace)
-        ));
-    }
+        String normalModel = namespaced(modelsSection.getString("normal"), this.namespace);
+        String throwingModel = namespaced(modelsSection.getString("throwing"), this.namespace);
 
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnTrue( new SimpleModelConfiguration(throwingModel));
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(normalModel));
+
+        DisplayContentSelectConfiguration displayContentSelect = new DisplayContentSelectConfiguration();
+        displayContentSelect.addCase(new SimpleModelConfiguration(normalModel),
+                DisplayContentSelectConfiguration.DisplayContent.GUI,
+                DisplayContentSelectConfiguration.DisplayContent.GROUND,
+                DisplayContentSelectConfiguration.DisplayContent.FIXED
+        );
+        displayContentSelect.setFallback(usingItemCondition);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(displayContentSelect);
+    }
     private void handleShield3D(String defaultModelPath, String blockingModelPath) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                fr.robie.craftengineconverter.common.utils.enums.Template.MODEL_3D_SHIELD,
-                "%default_model_path%", defaultModelPath,
-                "%blocking_model_path%", blockingModelPath
-        ));
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnTrue( new SimpleModelConfiguration(blockingModelPath));
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(defaultModelPath));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     @Override
@@ -1118,34 +1172,4 @@ public class IAItemsConverter extends ItemConverter {
         }
     }
 
-    /**
-     * Process a single block sound event from the source section and write it into the converted
-     * block behaviour section under settings.sounds.<eventKey>.
-     * If volume/pitch differ from defaults (1.0) a map with id/volume/pitch is written,
-     * otherwise the raw sound name is stored.
-     */
-    private void processBlockSound(ConfigurationSection soundSection, String eventKey, ConfigurationSection blockBehaviorSection) {
-        if (soundSection == null || eventKey == null) return;
-
-        ConfigurationSection eventSection = soundSection.getConfigurationSection(eventKey);
-        if (isNull(eventSection)) return;
-
-        String soundName = eventSection.getString("name");
-        double volume = eventSection.getDouble("volume", 1.0);
-        double pitch = eventSection.getDouble("pitch", 1.0);
-
-        if (!isValidString(soundName)) return;
-
-        ConfigurationSection soundSettingsSection = getOrCreateSection(getOrCreateSection(blockBehaviorSection, "settings"), "sounds");
-
-        if (volume != 1d || pitch != 1d) {
-            Map<String, Object> soundMap = new HashMap<>();
-            soundMap.put("id", soundName.toLowerCase().replace("_","."));
-            soundMap.put("volume", volume);
-            soundMap.put("pitch", pitch);
-            soundSettingsSection.set(eventKey, soundMap);
-        } else {
-            soundSettingsSection.set(eventKey, soundName);
-        }
-    }
 }

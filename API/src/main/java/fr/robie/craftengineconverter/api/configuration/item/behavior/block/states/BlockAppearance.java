@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block.states;
 
+import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
 import fr.robie.craftengineconverter.api.configuration.utils.SectionProvider;
 import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.api.enums.Plugins;
@@ -8,7 +9,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class BlockAppearance implements SectionProvider {
@@ -16,7 +16,7 @@ public class BlockAppearance implements SectionProvider {
     private final @Nullable CraftEngineBlockState autoState;
     private final @Nullable String visualState;
     private final @Nullable String itemId;
-    private final Map<String, Object> model;
+    private final ModelConfiguration model;
     private final @Nullable Consumer<ConfigurationSection> preSerializationConsumer;
     private final @Nullable Consumer<ConfigurationSection> postSerializationConsumer;
 
@@ -48,17 +48,18 @@ public class BlockAppearance implements SectionProvider {
         } else if (this.visualState != null) {
             section.set("state", this.visualState);
         }
-        section.createSection("model", this.model);
+        ConfigurationSection modelSection = getOrCreateSection(section, "model");
+        this.model.serialize(modelSection);
 
         if (this.postSerializationConsumer != null)
             this.postSerializationConsumer.accept(section);
     }
 
-    public static Builder autoState(@NotNull Plugins requiredPlugin, @NotNull CraftEngineBlockState autoState, @NotNull String itemId, @NotNull Map<String, Object> model) {
+    public static Builder autoState(@NotNull Plugins requiredPlugin, @NotNull CraftEngineBlockState autoState, @NotNull String itemId, @NotNull ModelConfiguration model) {
         return new Builder(model).requiredPlugin(requiredPlugin).autoState(autoState).itemId(itemId);
     }
 
-    public static Builder visualState(@NotNull String visualState, @NotNull Map<String, Object> model) {
+    public static Builder visualState(@NotNull String visualState, @NotNull ModelConfiguration model) {
         return new Builder(model).visualState(visualState);
     }
 
@@ -67,11 +68,11 @@ public class BlockAppearance implements SectionProvider {
         private @Nullable CraftEngineBlockState autoState;
         private @Nullable String visualState;
         private @Nullable String itemId;
-        private final Map<String, Object> model;
+        private final ModelConfiguration model;
         private @Nullable Consumer<ConfigurationSection> preSerializationConsumer;
         private @Nullable Consumer<ConfigurationSection> postSerializationConsumer;
 
-        private Builder(@NotNull Map<String, Object> model) {
+        private Builder(@NotNull ModelConfiguration model) {
             this.model = model;
         }
 

@@ -23,6 +23,7 @@ import fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifi
 import fr.robie.craftengineconverter.api.configuration.item.data.DyedColorConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.data.ItemNameConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.data.UnbreakableConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
 import fr.robie.craftengineconverter.api.configuration.utils.AbstractEffectsConfiguration;
 import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
 import fr.robie.craftengineconverter.api.configuration.utils.FurnitureRotation;
@@ -1390,8 +1391,8 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     private void convertCustomBlockMechanic(ConfigurationSection nexoCustomBlockSection) {
-        Map<String, Object> savedModel = getSavedModelTemplates();
-        if (savedModel.isEmpty()) return;
+        ModelConfiguration modelConfiguration = this.craftEngineItemsConfiguration.getModelConfiguration();
+        if (modelConfiguration == null) return;
         BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
         String nexoCustomBlockType = nexoCustomBlockSection.getString("type","NOTEBLOCK");
         int customVariation = nexoCustomBlockSection.getInt("custom_variation", -1);
@@ -1451,7 +1452,7 @@ public class NexoItemConverter extends ItemConverter {
                 }
             }
         }
-        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, this.itemId, savedModel));
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, this.itemId, modelConfiguration));
         ConfigurationSection sounds = nexoCustomBlockSection.getConfigurationSection("block_sounds");
         BlockSettings blockSettings = blockConfiguration.getBlockSettings();
         if (sounds != null) {

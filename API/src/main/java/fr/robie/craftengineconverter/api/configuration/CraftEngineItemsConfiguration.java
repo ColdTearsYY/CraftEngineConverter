@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration;
 
+import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -15,6 +16,8 @@ public class CraftEngineItemsConfiguration {
 
     private final Material defaultMaterial;
     private Material material;
+
+    private ModelConfiguration modelConfiguration;
 
     private final List<ItemConfigurationSerializable> itemsConfigurations = new ArrayList<>();
 
@@ -36,6 +39,14 @@ public class CraftEngineItemsConfiguration {
         this.itemsConfigurations.add(itemConfiguration);
     }
 
+    public void setModelConfiguration(@Nullable ModelConfiguration modelConfiguration) {
+        this.modelConfiguration = modelConfiguration;
+    }
+
+    public @Nullable ModelConfiguration getModelConfiguration() {
+        return this.modelConfiguration;
+    }
+
     public void serialize(@NotNull File file, @NotNull String path) {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         ConfigurationSection itemSection = yamlConfiguration.createSection(path);
@@ -51,6 +62,10 @@ public class CraftEngineItemsConfiguration {
         itemSection.set("material", (this.material == null ? this.defaultMaterial : this.material).name().toLowerCase());
         for (ItemConfigurationSerializable itemConfiguration : this.itemsConfigurations) {
             itemConfiguration.serialize(yamlConfiguration, path, itemSection, this.itemId);
+        }
+        if (this.modelConfiguration != null) {
+            ConfigurationSection modelSection = itemSection.createSection("model");
+            this.modelConfiguration.serialize(modelSection);
         }
     }
 }
