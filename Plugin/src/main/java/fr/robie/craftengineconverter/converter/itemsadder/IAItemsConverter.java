@@ -44,6 +44,7 @@ import fr.robie.craftengineconverter.common.utils.enums.ia.IAPlacedModelTypes;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
 import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
 import net.momirealms.craftengine.core.entity.display.Billboard;
 import net.momirealms.craftengine.core.util.Direction;
@@ -149,7 +150,7 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     @Override
-    public void convertAttributeModifiers(){
+    public void convertAttributeModifiers() {
         ConfigurationSection attributesSection = this.iaItemSection.getConfigurationSection("attribute_modifiers");
         if (isNotNull(attributesSection)) {
             List<fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier> attributeModifiers = new ArrayList<>();
@@ -157,6 +158,7 @@ public class IAItemsConverter extends ItemConverter {
             for (String equipmentSlot : attributesSection.getKeys(false)) {
                 ConfigurationSection slotSection = attributesSection.getConfigurationSection(equipmentSlot);
                 if (isNull(slotSection)) continue;
+
                 net.momirealms.craftengine.core.attribute.AttributeModifier.Slot slot;
                 try {
                     slot = net.momirealms.craftengine.core.attribute.AttributeModifier.Slot.valueOf(equipmentSlot.toUpperCase());
@@ -164,13 +166,35 @@ public class IAItemsConverter extends ItemConverter {
                     Logger.debug("[IAItemsConverter] Invalid equipment slot " + equipmentSlot + " for attribute modifiers for item " + this.itemId);
                     continue;
                 }
+
                 for (String attributeKey : slotSection.getKeys(false)) {
-                    try {
-                        Attribute attribute = Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(attributeKey));
-                        int amount = slotSection.getInt(attributeKey);
+                    if (slotSection.isConfigurationSection(attributeKey)) {
+                        ConfigurationSection attributeSection = slotSection.getConfigurationSection(attributeKey);
+                        if (isNull(attributeSection)) continue;
+
+                        Attribute attribute = getAttributeByKey(attributeKey);
+                        if (attribute == null) continue;
+
+                        double value = attributeSection.getDouble("value", 0.0);
+                        String operationStr = attributeSection.getString("operation", "add_value").toUpperCase();
+                        net.momirealms.craftengine.core.attribute.AttributeModifier.Operation operation;
+                        try {
+                            if (operationStr.equalsIgnoreCase("multiply_base")) {
+                                operation = AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                            } else {
+                                operation = AttributeModifier.Operation.valueOf(operationStr);
+                            }
+                        } catch (Exception e) {
+                            Logger.debug("[IAItemsConverter] Invalid operation " + operationStr + " for attribute " + attributeKey + " for item " + this.itemId + ", defaulting to ADD_VALUE");
+                            operation = net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE;
+                        }
+                        attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier(attribute.name(), slot, null, value, operation, null));
+                    } else {
+                        Attribute attribute = getAttributeByKey(attributeKey);
+                        if (attribute == null) continue;
+
+                        double amount = slotSection.getDouble(attributeKey);
                         attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier(attribute.name(), slot, null, amount, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null));
-                    } catch (Exception e) {
-                        Logger.debug("[IAItemsConverter] Invalid attribute " + attributeKey + " for attribute modifiers for item " + this.itemId);
                     }
                 }
             }
@@ -178,6 +202,20 @@ public class IAItemsConverter extends ItemConverter {
             if (!attributeModifiers.isEmpty())
                 this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(attributeModifiers));
         }
+    }
+
+    public Attribute getAttributeByKey(String key) {
+        try {
+            return Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(key));
+        } catch (Exception ignored) {}
+
+        try {
+            String fallbackKey = "minecraft:" + key.replaceAll("([A-Z])", "_$1").toLowerCase();
+            return Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(fallbackKey));
+        } catch (Exception ignored) {}
+
+        Logger.debug("[IAItemsConverter] Invalid attribute key: " + key + " for item " + this.itemId);
+        return null;
     }
 
     @Override
