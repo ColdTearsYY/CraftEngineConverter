@@ -116,7 +116,6 @@ public class JsonFileValidator {
                 textureValue = textureValue.substring(0, textureValue.length() - 4);
             }
 
-            // skip vanilla minecraft block/item textures
             if (textureValue.startsWith("minecraft:block/") || textureValue.startsWith("block/") ||
                     textureValue.startsWith("minecraft:item/") || textureValue.startsWith("item/")) {
                 String materialName = textureValue.contains(":")
@@ -133,10 +132,17 @@ public class JsonFileValidator {
                             Material.valueOf(trimmed.toUpperCase().replace("/", "_"));
                             continue;
                         } catch (IllegalArgumentException ignored2) {
-                            // not a vanilla material, proceed to resolve
                         }
                     }
                 }
+            }
+
+            if (textureValue.startsWith("minecraft:entity/") || textureValue.startsWith("entity/")) {
+                continue;
+            }
+
+            if (textureValue.startsWith("#")) {
+                continue;
             }
 
             String textureNamespace;
