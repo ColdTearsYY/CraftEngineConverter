@@ -786,10 +786,8 @@ public class IAItemsConverter extends ItemConverter {
 
     public CraftEngineBlockState getBlockState(IAPlacedModelTypes placedModelType) {
         return switch (placedModelType) {
-            case REAL_NOTE -> CraftEngineBlockState.NOTE_BLOCK;
             case REAL_TRANSPARENT -> CraftEngineBlockState.CHORUS;
             case REAL_WIRE -> CraftEngineBlockState.TRIPWIRE;
-            case REAL -> CraftEngineBlockState.MUSHROOM;
             default -> CraftEngineBlockState.SOLID;
         };
     }
