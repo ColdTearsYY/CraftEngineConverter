@@ -1,18 +1,20 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.furniture;
 
 import fr.robie.craftengineconverter.api.configuration.ItemConfigurationSerializable;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootConfiguration;
 import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public class FurnitureConfiguration implements ItemConfigurationSerializable {
     private FurnitureSettings furnitureSettings;
-    private Map<String,Object> loot;
     private final Map<FurniturePlacement, Placement> placements = new EnumMap<>(FurniturePlacement.class);
+    private LootConfiguration loot;
 
     @NotNull
     public FurnitureSettings getOrCreateSettings(String itemId) {
@@ -25,7 +27,7 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         return this.placements.computeIfAbsent(type, Placement::new);
     }
 
-    public void setLoot(Map<String, Object> loot) {
+    public void setLoot(@Nullable LootConfiguration loot) {
         this.loot = loot;
     }
 
@@ -56,9 +58,8 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
         }
 
         if (this.loot != null) {
-            furnitureSection.createSection("loot", this.loot);
+            this.loot.serialize(furnitureSection);
         }
-
 
         if (!this.placements.isEmpty()) {
             ConfigurationSection placementSection = getOrCreateSection(furnitureSection, "placement");

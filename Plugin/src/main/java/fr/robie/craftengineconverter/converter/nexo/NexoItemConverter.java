@@ -23,6 +23,18 @@ import fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifi
 import fr.robie.craftengineconverter.api.configuration.item.data.DyedColorConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.data.ItemNameConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.data.UnbreakableConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootPool;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootTable;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.EnchantmentCondition;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.InvertedCondition;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.RandomCondition;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.SurvivesExplosionCondition;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.FurnitureItemEntry;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.ItemEntry;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.formulas.OreDropsFormula;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.ApplyBonusFunction;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.ExplosionDecayFunction;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.LimitCountFunction;
 import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.condition.ConditionModelConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
@@ -44,7 +56,6 @@ import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
-import fr.robie.craftengineconverter.common.utils.enums.Template;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoBestTool;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoMinimalType;
 import fr.robie.craftengineconverter.converter.Converter;
@@ -54,7 +65,6 @@ import fr.robie.craftengineconverter.utils.Tuple;
 import fr.robie.craftengineconverter.utils.loots.CraftEngineItemLoot;
 import fr.robie.craftengineconverter.utils.loots.ItemLoot;
 import fr.robie.craftengineconverter.utils.loots.MinecraftItemLoot;
-import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
 import net.momirealms.craftengine.core.entity.display.Billboard;
 import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
@@ -1708,17 +1718,89 @@ public class NexoItemConverter extends ItemConverter {
                 Logger.debug(Message.WARNING__FURNITURE__CUSTOM_DROP_CONDITIONS_NOT_SUPPORTED, LogType.WARNING, "item", this.itemId);
             }
             if (dropSelfWithSilktouch && !fortuneAffectsDrop) {
-                furnitureConfiguration.setLoot(InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_SILK_TOUCH_ONLY, "%type%", "item", "%item%", this.itemId));
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool pool = new LootPool();
+                pool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+
+                pool.addEntry(new FurnitureItemEntry(this.itemId));
+
+                lootTable.addPool(pool);
+                furnitureConfiguration.setLoot(lootTable);
             } else if (!dropSelfWithSilktouch && fortuneAffectsDrop) {
-                if (itemLoots.isEmpty()) {
-                    Logger.info(Message.WARNING__FURNITURE__FORTUNE_DROP_NO_LOOTS, "item", this.itemId);
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
                 }
-                // TODO: Wait for CE support
+
+                furnitureConfiguration.setLoot(lootTable);
+
             } else if (dropSelfWithSilktouch) {
-                // TODO: Wait for CE support (fortuneAffectsDrop == true)
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool silkTouchPool = new LootPool();
+                silkTouchPool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+                silkTouchPool.addEntry(new FurnitureItemEntry(this.itemId));
+                lootTable.addPool(silkTouchPool);
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addCondition(new InvertedCondition(new EnchantmentCondition("minecraft:silk_touch>=1")));
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
+                }
+
+                furnitureConfiguration.setLoot(lootTable);
+            } else {
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+                for (ItemLoot loot : itemLoots) {
+                    LootPool pool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    pool.addEntry(entry);
+                    pool.addCondition(new SurvivesExplosionCondition());
+                    lootTable.addPool(pool);
+                }
+                furnitureConfiguration.setLoot(lootTable);
             }
         } else {
-            furnitureConfiguration.setLoot(InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_BASIC_DROP, "%type%", "furniture_item", "%item%", this.itemId));
+            LootTable lootConfiguration = new LootTable();
+            LootPool pool = new LootPool();
+            pool.addCondition(new SurvivesExplosionCondition());
+            pool.addEntry(new FurnitureItemEntry(this.itemId));
+            lootConfiguration.addPool(pool);
+            furnitureConfiguration.setLoot(lootConfiguration);
         }
 
         // --- Placements ---

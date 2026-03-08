@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter.api.configuration.item.behavior.block;
 
 import fr.robie.craftengineconverter.api.configuration.ItemConfigurationSerializable;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.StateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
     private final BlockSettings blockSettings;
     private final List<BlockBehavior> behaviors = new ArrayList<>();
     private StateBlock stateBlock;
+    private LootConfiguration lootConfiguration;
 
     public BlockConfiguration(@NotNull String itemId) {
         this.blockSettings = new BlockSettings(itemId);
@@ -31,6 +33,7 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
     public void setStateBlock(@NotNull StateBlock stateBlock) {
         this.stateBlock = stateBlock;
     }
+
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
@@ -51,6 +54,10 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
 
         if (this.stateBlock != null) {
             this.stateBlock.serialize(blockBehaviorSection);
+        }
+
+        if (this.lootConfiguration != null) {
+            this.lootConfiguration.serialize(blockBehaviorSection);
         }
     }
 }

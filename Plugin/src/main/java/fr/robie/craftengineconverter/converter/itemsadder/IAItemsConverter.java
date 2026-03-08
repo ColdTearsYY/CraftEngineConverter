@@ -19,6 +19,10 @@ import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.e
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.Hitbox;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.ShulkerHitbox;
 import fr.robie.craftengineconverter.api.configuration.item.data.*;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootPool;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootTable;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.SurvivesExplosionCondition;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.FurnitureItemEntry;
 import fr.robie.craftengineconverter.api.configuration.item.models.condition.ConditionModelConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
@@ -36,14 +40,12 @@ import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
 import fr.robie.craftengineconverter.common.utils.enums.BlockParent;
-import fr.robie.craftengineconverter.common.utils.enums.Template;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IADirectionalMode;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IAEntityTypes;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IAModelsKeys;
 import fr.robie.craftengineconverter.common.utils.enums.ia.IAPlacedModelTypes;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
-import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
 import net.momirealms.craftengine.core.entity.display.Billboard;
@@ -1185,7 +1187,12 @@ public class IAItemsConverter extends ItemConverter {
         }
 
         // --- Loot ---
-        furnitureConfiguration.setLoot(InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_BASIC_DROP, "%type%", "furniture_item", "%item%", this.itemId));
+        LootTable lootConfiguration = new LootTable();
+        LootPool pool = new LootPool();
+        pool.addCondition(new SurvivesExplosionCondition());
+        pool.addEntry(new FurnitureItemEntry(this.itemId));
+        lootConfiguration.addPool(pool);
+        furnitureConfiguration.setLoot(lootConfiguration);
 
         // --- Placements ---
         for (FurniturePlacement furniturePlacement : placements) {
