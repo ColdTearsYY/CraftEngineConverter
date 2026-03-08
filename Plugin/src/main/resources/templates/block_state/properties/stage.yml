@@ -1,4 +1,0 @@
-stage:
-  type: ${default:type:int}
-  default-value: ${default:default-value:0}
-  range: ${default:range:0~1}

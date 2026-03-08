@@ -1,5 +1,0 @@
-path: "%model_path%"
-generation:
-  parent: minecraft:item/handheld
-  textures:
-    layer0: "%texture_path%"

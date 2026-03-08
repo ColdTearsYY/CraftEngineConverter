@@ -96,10 +96,6 @@ messages:
       disabled: "Auto-conversion is disabled. Use /cec convert to manually convert supported plugins."
 
 warning:
-  template-manager:
-    missing-template: "The template §e%template_name%§c is missing! Please report this to the plugin developer."
-    error-loading-template: "An error occurred while loading the template §e%template_name%§c! Please report this to the plugin developer."
-    invalid-args-number: "Invalid args number for template %template_name%, must be %2. Received %args_length% arguments."
   file:
     delete-failure: "Failed to delete file §e%file% (%path%)§c!"
   folder:

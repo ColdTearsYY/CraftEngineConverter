@@ -94,10 +94,6 @@ messages:
       disabled: "Auto-Conversion ist aus. Nutz /cec convert für den manuellen Weg."
 
 warning:
-  template-manager:
-    missing-template: "Das Template §e%template_name%§c fehlt! Meld das mal bitte dem Developer."
-    error-loading-template: "Fehler beim Laden von Template §e%template_name%§c! Sag dem Dev Bescheid."
-    invalid-args-number: "Argumente für §e%template_name%§c passen nicht (erwartet: %2, du hast: %args_length%)."
   file:
     delete-failure: "Konnte die Datei §e%file% (%path%)§c nicht löschen!"
   folder:

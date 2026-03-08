@@ -1,22 +1,22 @@
 package fr.robie.craftengineconverter;
 
+import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.database.StorageManager;
 import fr.robie.craftengineconverter.api.enums.Plugins;
+import fr.robie.craftengineconverter.api.format.ComponentMeta;
 import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.format.MessageFormatter;
 import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.api.logger.Logger;
+import fr.robie.craftengineconverter.api.manager.FoliaCompatibilityManager;
 import fr.robie.craftengineconverter.api.packet.PacketLoader;
 import fr.robie.craftengineconverter.api.profile.ServerProfile;
 import fr.robie.craftengineconverter.behavior.BehaviorRegister;
 import fr.robie.craftengineconverter.command.CraftEngineConverterCommand;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.format.ClassicMeta;
-import fr.robie.craftengineconverter.api.format.ComponentMeta;
-import fr.robie.craftengineconverter.api.format.MessageFormatter;
 import fr.robie.craftengineconverter.common.manager.FileCacheManager;
-import fr.robie.craftengineconverter.api.manager.FoliaCompatibilityManager;
 import fr.robie.craftengineconverter.common.scanner.BlockStateMappingScanner;
 import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
@@ -37,7 +37,6 @@ import fr.robie.craftengineconverter.listener.WorldConverterManager;
 import fr.robie.craftengineconverter.loader.MessageLoader;
 import fr.robie.craftengineconverter.utils.TagResolver;
 import fr.robie.craftengineconverter.utils.command.CommandManager;
-import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
@@ -59,7 +58,6 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private final ServerProfile serverProfile = new ServerProfileManager(this);
     private final FoliaCompatibilityManager foliaCompatibilityManager = new FoliaCompatibilityManager(this);
     private final CommandManager commandManager = new CommandManager(this);
-    private final InternalTemplateManager templateManager = new InternalTemplateManager(this);
     private final WorldConverterManager worldConverterManager = new WorldConverterManager(this);
     private final ITagResolver tagResolver = new TagResolver();
     private final MessageLoader messageLoader = new MessageLoader(this);
@@ -115,8 +113,6 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
         this.storageManager.loadDatabase();
         this.serverProfile.load();
-
-        this.templateManager.loadTemplates();
 
         this.commandManager.registerCommand("craftengineconverter",new CraftEngineConverterCommand(this),"cengineconverter","cec");
 

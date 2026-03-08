@@ -91,10 +91,6 @@ messages:
       disabled: "La conversion automatique est désactivée. Utilisez /cec convert pour convertir manuellement les plugins supportés."
 
 warning:
-  template-manager:
-    missing-template: "Le modèle §e%template_name%§c est manquant ! Veuillez le signaler au développeur du plugin."
-    error-loading-template: "Une erreur est survenue lors du chargement du modèle §e%template_name%§c ! Veuillez le signaler au développeur du plugin."
-    invalid-args-number: "Nombre d'arguments invalide pour le modèle %template_name%, doit être %2. %args_length% arguments reçus."
   file:
     delete-failure: "Échec de la suppression du fichier §e%file% (%path%)§c !"
   folder:
