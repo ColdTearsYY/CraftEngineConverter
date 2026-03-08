@@ -1556,6 +1556,7 @@ public class NexoItemConverter extends ItemConverter {
             boolean fortuneAffectsDrop = nexoDropSection.getBoolean("fortune",false);
             String minimalType = nexoDropSection.getString("minimal_type",null);
             String bestTool = nexoDropSection.getString("best_tool",null);
+            List<Map<?, ?>> loots = nexoDropSection.getMapList("loots");
             if (isValidString(minimalType)){
                 NexoMinimalType nexoMinimalType = null;
                 try {
@@ -1579,7 +1580,83 @@ public class NexoItemConverter extends ItemConverter {
                     blockSettings.addTag(nexoBestTool.getBestTool());
                 }
             }
-            //TODO: implement drop conversion according to silktouch and fortune
+
+            List<ItemLoot> itemLoots = parseItemLoots(loots);
+
+            if (dropSelfWithSilktouch && !fortuneAffectsDrop) {
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool pool = new LootPool();
+                pool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+                pool.addEntry(new ItemEntry(this.itemId));
+                lootTable.addPool(pool);
+
+                blockConfiguration.setLootConfiguration(lootTable);
+            } else if (!dropSelfWithSilktouch && fortuneAffectsDrop) {
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
+                }
+
+                blockConfiguration.setLootConfiguration(lootTable);
+            } else if (dropSelfWithSilktouch) {
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool silkTouchPool = new LootPool();
+                silkTouchPool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+                silkTouchPool.addEntry(new ItemEntry(this.itemId));
+                lootTable.addPool(silkTouchPool);
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addCondition(new InvertedCondition(new EnchantmentCondition("minecraft:silk_touch>=1")));
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
+                }
+
+                blockConfiguration.setLootConfiguration(lootTable);
+            } else {
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+                for (ItemLoot loot : itemLoots) {
+                    LootPool pool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    pool.addEntry(entry);
+                    pool.addCondition(new SurvivesExplosionCondition());
+                    lootTable.addPool(pool);
+                }
+                blockConfiguration.setLootConfiguration(lootTable);
+            }
         }
         this.getCraftEngineItemsConfiguration().addItemConfiguration(blockConfiguration);
     }
@@ -1678,42 +1755,7 @@ public class NexoItemConverter extends ItemConverter {
             String minimal_type = dropSection.getString("minimal_type", null);
             String best_tool = dropSection.getString("best_tool", null);
             List<Map<?, ?>> loots = dropSection.getMapList("loots");
-            List<ItemLoot> itemLoots = new ArrayList<>();
-            for (Map<?, ?> lootMap : loots) {
-                ItemLoot itemLoot = null;
-                int minAmount = 1;
-                int maxAmount = 1;
-                Object amount = lootMap.get("amount");
-                if (amount instanceof Integer intAmount) {
-                    minAmount = intAmount;
-                    maxAmount = intAmount;
-                } else if (amount instanceof String amountString) {
-                    String[] split = amountString.split("\\.\\.", 2);
-                    try {
-                        minAmount = Integer.parseInt(split[0].trim());
-                        maxAmount = split.length == 2 ? Integer.parseInt(split[1].trim()) : minAmount;
-                    } catch (NumberFormatException e) {
-                        Logger.debug(Message.WARNING__FURNITURE__INVALID_AMOUNT_FORMAT, LogType.WARNING, "item", this.itemId, "amount", amountString);
-                    }
-                }
-                float probability = 1.0f;
-                Object probObj = lootMap.get("probability");
-                if (probObj instanceof Number num) {
-                    probability = num.floatValue();
-                } else if (probObj instanceof String probString) {
-                    try {
-                        probability = Float.parseFloat(probString);
-                    } catch (NumberFormatException e) {
-                        Logger.debug(Message.WARNING__FURNITURE__INVALID_PROBABILITY_FORMAT, LogType.WARNING, "item", this.itemId, "probability", probString);
-                    }
-                }
-                if (lootMap.get("nexo_item") instanceof String nexoItemString) {
-                    itemLoot = new CraftEngineItemLoot(nexoItemString, minAmount, maxAmount, probability);
-                } else if (lootMap.get("minecraft_type") instanceof String minecraftTypeString) {
-                    itemLoot = new MinecraftItemLoot(minecraftTypeString, minAmount, maxAmount, probability);
-                }
-                if (isNotNull(itemLoot)) itemLoots.add(itemLoot);
-            }
+            List<ItemLoot> itemLoots = parseItemLoots(loots);
             if (isValidString(minimal_type) || isValidString(best_tool)) {
                 Logger.debug(Message.WARNING__FURNITURE__CUSTOM_DROP_CONDITIONS_NOT_SUPPORTED, LogType.WARNING, "item", this.itemId);
             }
@@ -2004,5 +2046,45 @@ public class NexoItemConverter extends ItemConverter {
             case "WEST" -> Direction.WEST;
             default -> Direction.UP;
         };
+    }
+
+    private List<ItemLoot> parseItemLoots(List<Map<?, ?>> loots) {
+        List<ItemLoot> itemLoots = new ArrayList<>();
+        for (Map<?, ?> lootMap : loots) {
+            ItemLoot itemLoot = null;
+            int minAmount = 1;
+            int maxAmount = 1;
+            Object amount = lootMap.get("amount");
+            if (amount instanceof Integer intAmount) {
+                minAmount = intAmount;
+                maxAmount = intAmount;
+            } else if (amount instanceof String amountString) {
+                String[] split = amountString.split("\\.\\.", 2);
+                try {
+                    minAmount = Integer.parseInt(split[0].trim());
+                    maxAmount = split.length == 2 ? Integer.parseInt(split[1].trim()) : minAmount;
+                } catch (NumberFormatException e) {
+                    Logger.debug(Message.WARNING__FURNITURE__INVALID_AMOUNT_FORMAT, LogType.WARNING, "item", this.itemId, "amount", amountString);
+                }
+            }
+            float probability = 1.0f;
+            Object probObj = lootMap.get("probability");
+            if (probObj instanceof Number num) {
+                probability = num.floatValue();
+            } else if (probObj instanceof String probString) {
+                try {
+                    probability = Float.parseFloat(probString);
+                } catch (NumberFormatException e) {
+                    Logger.debug(Message.WARNING__FURNITURE__INVALID_PROBABILITY_FORMAT, LogType.WARNING, "item", this.itemId, "probability", probString);
+                }
+            }
+            if (lootMap.get("nexo_item") instanceof String nexoItemString) {
+                itemLoot = new CraftEngineItemLoot(nexoItemString, minAmount, maxAmount, probability);
+            } else if (lootMap.get("minecraft_type") instanceof String minecraftTypeString) {
+                itemLoot = new MinecraftItemLoot(minecraftTypeString, minAmount, maxAmount, probability);
+            }
+            if (isNotNull(itemLoot)) itemLoots.add(itemLoot);
+        }
+        return itemLoots;
     }
 }

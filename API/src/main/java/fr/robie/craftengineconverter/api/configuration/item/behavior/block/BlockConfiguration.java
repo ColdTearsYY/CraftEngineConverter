@@ -34,6 +34,10 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
         this.stateBlock = stateBlock;
     }
 
+    public void setLootConfiguration(@NotNull LootConfiguration lootConfiguration) {
+        this.lootConfiguration = lootConfiguration;
+    }
+
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
