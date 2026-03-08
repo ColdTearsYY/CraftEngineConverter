@@ -84,6 +84,8 @@ messages:
     startup-complete: "Plugin activé en §c%time%§a."
     shutdown: "Désactivation du plugin ..."
     shutdown-complete: "Plugin désactivé en §c%time%§a."
+    configuration:
+      loaded: "§aConfiguration du plugin chargée en §c%time%§a."
   auto-converter:
     startup:
       start: "La conversion automatique pour les plugins supportés démarre..."

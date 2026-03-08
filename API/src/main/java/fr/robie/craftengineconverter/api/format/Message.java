@@ -82,6 +82,7 @@ public enum Message {
     MESSAGE__PLUGIN__STARTUP__COMPLETE("Plugin enabled in §c%time%§a!"),
     MESSAGE__PLUGIN__SHUTDOWN("Disabling plugin ..."),
     MESSAGE__PLUGIN__SHUTDOWN__COMPLETE("Plugin disabled in §c%time%§a!"),
+    MESSAGE__PLUGIN__CONFIGURATION__LOADED("§aPlugin configuration loaded in §c%time%§a!"),
     MESSAGES__AUTO_CONVERTER__STARTUP__START("Auto-conversion for supported plugins is starting..."),
     MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE("Auto-conversion for supported plugins completed! In §c%time%§a."),
     MESSAGES__AUTO_CONVERTER__STARTUP__DISABLED("Auto-conversion is disabled. Use /cec convert to manually convert supported plugins."),

@@ -1,6 +1,8 @@
 package fr.robie.craftengineconverter.api.configuration;
 
+import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.api.enums.*;
+import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.progress.BukkitProgressBar;
@@ -144,6 +146,7 @@ public class Configuration {
     }
 
     public void load(YamlConfiguration config, File file) {
+        long startTime = System.currentTimeMillis();
         for (ConfigPath configPath : ConfigPath.values()) {
             Object value;
             switch (configPath.getDefaultValue()) {
@@ -184,6 +187,8 @@ public class Configuration {
                 Logger.info("Could not save the configuration file: " + e.getMessage(), LogType.ERROR);
             }
         }
+        long endTime = System.currentTimeMillis();
+        Logger.info(Message.MESSAGE__PLUGIN__CONFIGURATION__LOADED, LogType.SUCCESS, "time", TimerBuilder.formatTimeAuto(endTime - startTime));
     }
 
     private void loadProgressBarOption(YamlConfiguration config, ProgressBarUtils options, String path) {

@@ -89,6 +89,8 @@ messages:
     startup-complete: "Plugin enabled in §c%time%§a."
     shutdown: "Disabling plugin ..."
     shutdown-complete: "Plugin disabled in §c%time%§a."
+    configuration:
+      loaded: "§aPlugin configuration loaded in §c%time%§a!"
   auto-converter:
     startup:
       start: "Auto-conversion for supported plugins is starting..."
