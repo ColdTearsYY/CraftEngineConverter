@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.api.configuration.utils;
+package fr.robie.craftengineconverter.api.configuration.item.behavior.furniture;
 
 public enum FurnitureRotation {
     ANY,

@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.api.configuration.utils;
+package fr.robie.craftengineconverter.api.configuration.item.behavior.block.states;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;

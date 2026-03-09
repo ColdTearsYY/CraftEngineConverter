@@ -1,7 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block.states;
 
 import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
-import fr.robie.craftengineconverter.api.configuration.utils.SectionProvider;
 import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.utils.BlockStateResult;

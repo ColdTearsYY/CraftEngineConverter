@@ -1,7 +1,4 @@
-package fr.robie.craftengineconverter.api.utils;
-
-import fr.robie.craftengineconverter.api.progress.BukkitProgressBar;
-import fr.robie.craftengineconverter.api.progress.ProgressBarUtils;
+package fr.robie.craftengineconverter.api.progress;
 
 import java.util.Objects;
 

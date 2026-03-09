@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class LoreConfiguration extends fr.robie.craftengineconverter.api.configuration.utils.AbstractItemConfiguration {
+public class LoreConfiguration extends AbstractItemConfiguration {
     private final List<String> lore;
 
     public LoreConfiguration(List<String> lore) {

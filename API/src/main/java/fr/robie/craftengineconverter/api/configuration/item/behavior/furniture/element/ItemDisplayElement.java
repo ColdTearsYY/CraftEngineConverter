@@ -2,7 +2,7 @@ package fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.
 
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.DisplayProperties;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.ItemElement;
-import fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType;
+import fr.robie.craftengineconverter.api.enums.ItemDisplayType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

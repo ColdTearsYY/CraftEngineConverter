@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.api.configuration.utils;
+package fr.robie.craftengineconverter.api.configuration.item.data;
 
 import net.momirealms.craftengine.core.util.Key;
 import org.jetbrains.annotations.Nullable;

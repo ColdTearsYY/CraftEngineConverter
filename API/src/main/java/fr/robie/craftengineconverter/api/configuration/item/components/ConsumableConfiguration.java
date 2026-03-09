@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.components;
 
-import fr.robie.craftengineconverter.api.configuration.utils.AbstractEffectsConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.AbstractEffectsConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;

@@ -2,7 +2,6 @@ package fr.robie.craftengineconverter.api.configuration.item.behavior.furniture;
 
 import fr.robie.craftengineconverter.api.configuration.ItemConfigurationSerializable;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.LootConfiguration;
-import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;

@@ -8,7 +8,7 @@ import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.api.progress.ProgressBarUtils;
-import fr.robie.craftengineconverter.api.utils.ProgressBarOption;
+import fr.robie.craftengineconverter.api.progress.ProgressBarOption;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;

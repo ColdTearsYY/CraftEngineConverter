@@ -1,6 +1,5 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.furniture;
 
-import fr.robie.craftengineconverter.api.configuration.utils.FurnitureRotation;
 import net.momirealms.craftengine.core.entity.furniture.AlignmentRule;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;

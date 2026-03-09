@@ -31,8 +31,8 @@ import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatc
 import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.settings.GlowDropColorConfiguration;
-import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
-import fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurniturePlacement;
+import fr.robie.craftengineconverter.api.enums.ItemDisplayType;
 import fr.robie.craftengineconverter.api.enums.ComponentFlag;
 import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.api.enums.Plugins;
@@ -156,7 +156,7 @@ public class IAItemsConverter extends ItemConverter {
     public void convertAttributeModifiers() {
         ConfigurationSection attributesSection = this.iaItemSection.getConfigurationSection("attribute_modifiers");
         if (isNotNull(attributesSection)) {
-            List<fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier> attributeModifiers = new ArrayList<>();
+            List<fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier> attributeModifiers = new ArrayList<>();
 
             for (String equipmentSlot : attributesSection.getKeys(false)) {
                 ConfigurationSection slotSection = attributesSection.getConfigurationSection(equipmentSlot);
@@ -191,13 +191,13 @@ public class IAItemsConverter extends ItemConverter {
                             Logger.debug("[IAItemsConverter] Invalid operation " + operationStr + " for attribute " + attributeKey + " for item " + this.itemId + ", defaulting to ADD_VALUE");
                             operation = net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE;
                         }
-                        attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier(attribute.name(), slot, null, value, operation, null));
+                        attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier(attribute.name(), slot, null, value, operation, null));
                     } else {
                         Attribute attribute = getAttributeByKey(attributeKey);
                         if (attribute == null) continue;
 
                         double amount = slotSection.getDouble(attributeKey);
-                        attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier(attribute.name(), slot, null, amount, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null));
+                        attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier(attribute.name(), slot, null, amount, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null));
                     }
                 }
             }
@@ -418,7 +418,7 @@ public class IAItemsConverter extends ItemConverter {
         if (attributeSlot == null) return;
 
         double armor = slotAttributeModifiers.getDouble("armor", 0.0);
-        fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier modifier = new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier("minecraft:armor", attributeSlot, null, armor, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null);
+        fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier modifier = new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier("minecraft:armor", attributeSlot, null, armor, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null);
         this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(List.of(modifier)));
     }
 

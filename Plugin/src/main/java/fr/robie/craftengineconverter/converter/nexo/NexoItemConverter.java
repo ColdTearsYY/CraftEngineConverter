@@ -20,10 +20,7 @@ import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.h
 import fr.robie.craftengineconverter.api.configuration.item.components.ConsumableConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.components.HideTooltipDisplayConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.components.WeaponConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifiersConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.data.DyedColorConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.data.ItemNameConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.data.UnbreakableConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.data.*;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.LootPool;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.LootTable;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.EnchantmentCondition;
@@ -44,13 +41,10 @@ import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatc
 import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.settings.ProjectileSettingConfiguration;
-import fr.robie.craftengineconverter.api.configuration.utils.AbstractEffectsConfiguration;
-import fr.robie.craftengineconverter.api.configuration.utils.FurniturePlacement;
-import fr.robie.craftengineconverter.api.configuration.utils.FurnitureRotation;
-import fr.robie.craftengineconverter.api.enums.ArmorConverter;
-import fr.robie.craftengineconverter.api.enums.ComponentFlag;
-import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
-import fr.robie.craftengineconverter.api.enums.Plugins;
+import fr.robie.craftengineconverter.api.configuration.item.AbstractEffectsConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurniturePlacement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureRotation;
+import fr.robie.craftengineconverter.api.enums.*;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.api.logger.Logger;
@@ -166,7 +160,7 @@ public class NexoItemConverter extends ItemConverter {
         List<Map<?, ?>> mapList = this.nexoItemSection.getMapList("AttributeModifiers");
         if (mapList.isEmpty()) return;
 
-        List<fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier> attributeModifiers = new ArrayList<>();
+        List<AttributeModifier> attributeModifiers = new ArrayList<>();
         for (Map<?, ?> attributeModifier : mapList) {
             Object attribute = attributeModifier.get("attribute");
             if (!(attribute instanceof String stringAttribute)) continue;
@@ -213,7 +207,7 @@ public class NexoItemConverter extends ItemConverter {
             } catch (Exception ignored) {
             }
             if (attributeSlot == null) continue;
-            fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier.Display display = null;
+            AttributeModifier.Display display = null;
                 Object rawDisplay = attributeModifier.get("display");
                 if (rawDisplay instanceof Map<?, ?> displayMap) {
                     Object typeObj = displayMap.get("type");
@@ -225,11 +219,11 @@ public class NexoItemConverter extends ItemConverter {
                         } catch (Exception e) {
                             continue;
                         }
-                        display = new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier.Display(displayType, textStr);
+                        display = new AttributeModifier.Display(displayType, textStr);
                     }
                 }
 
-            attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.utils.AttributeModifier(stringAttribute.toLowerCase(), attributeSlot, null, amount, operation, display));
+            attributeModifiers.add(new AttributeModifier(stringAttribute.toLowerCase(), attributeSlot, null, amount, operation, display));
         }
 
         if (!attributeModifiers.isEmpty()) {
@@ -1708,7 +1702,7 @@ public class NexoItemConverter extends ItemConverter {
 
         // --- Display properties ---
         net.momirealms.craftengine.core.entity.display.Billboard transformType = net.momirealms.craftengine.core.entity.display.Billboard.FIXED;
-        fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType displayType = fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType.FIXED;
+        ItemDisplayType displayType = ItemDisplayType.FIXED;
         FloatsUtils displayTranslation = new FloatsUtils(3, new float[]{0f, 0.5f, 0f});
         FloatsUtils scale = new FloatsUtils(3, new float[]{1f, 1f, 1f});
 
@@ -1716,10 +1710,10 @@ public class NexoItemConverter extends ItemConverter {
         if (isNotNull(nexoPropertiesSection)) {
             String display_transform = nexoPropertiesSection.getString("display_transform", "NONE");
             try {
-                displayType = fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType.valueOf(display_transform);
+                displayType = ItemDisplayType.valueOf(display_transform);
             } catch (IllegalArgumentException e) {
                 Logger.debug(Message.WARNING__FURNITURE__UNKNOWN_DISPLAY_TRANSFORM, LogType.WARNING, "item", this.itemId, "transform", display_transform);
-                displayType = fr.robie.craftengineconverter.api.configuration.utils.ItemDisplayType.NONE;
+                displayType = ItemDisplayType.NONE;
             }
             String tracking_rotation = nexoPropertiesSection.getString("tracking_rotation", net.momirealms.craftengine.core.entity.display.Billboard.FIXED.name());
             try {
