@@ -57,9 +57,9 @@ public enum ConfigurationKey {
     MENU_TITLE_FORMATTING("formatting.menu-title", new TypeToken<>() {}, () -> true),
 
     // Tags
-    GLYPH_TAG_ENABLED("tags.nexo-glyph.enabled", new TypeToken<>() {}, () -> true),
-    IMAGE_TAG_ENABLED("tags.itemsadder-image.enabled", new TypeToken<>() {}, () -> true),
-    PLACEHOLDER_API_TAG_ENABLED("tags.placeholder-api.enabled", new TypeToken<>() {}, () -> true),
+    GLYPH_TAG_ENABLED("tag.nexo-glyph.enabled", new TypeToken<>() {}, () -> true),
+    IMAGE_TAG_ENABLED("tag.itemsadder-image.enabled", new TypeToken<>() {}, () -> true),
+    PLACEHOLDER_API_TAG_ENABLED("tag.placeholder-api.enabled", new TypeToken<>() {}, () -> true),
 
     // Nexo
     NEXO_ENABLE_HOOK("nexo.enable-hook", new TypeToken<>() {}, () -> true),
