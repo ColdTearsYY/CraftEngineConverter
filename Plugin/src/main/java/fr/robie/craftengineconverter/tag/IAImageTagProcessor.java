@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.tag;
 
 import fr.robie.craftengineconverter.api.tag.TagProcessor;
-import fr.robie.craftengineconverter.api.utils.CraftEngineImageUtils;
+import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import org.bukkit.entity.Player;
 
 import java.util.Optional;
