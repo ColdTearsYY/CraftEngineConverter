@@ -14,13 +14,13 @@ import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.manager.FoliaCompatibilityManager;
 import fr.robie.craftengineconverter.api.packet.PacketLoader;
 import fr.robie.craftengineconverter.api.profile.ServerProfile;
+import fr.robie.craftengineconverter.api.tag.ITagResolver;
 import fr.robie.craftengineconverter.behavior.BehaviorRegister;
 import fr.robie.craftengineconverter.command.CraftEngineConverterCommand;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.format.ClassicMeta;
 import fr.robie.craftengineconverter.common.manager.FileCacheManager;
 import fr.robie.craftengineconverter.common.scanner.BlockStateMappingScanner;
-import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import fr.robie.craftengineconverter.common.utils.CraftEngineImageUtils;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.itemsadder.IAConverter;
@@ -42,6 +42,7 @@ import fr.robie.craftengineconverter.utils.command.CommandManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.ServicePriority;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -125,7 +126,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         registerConverter(new NexoConverter(this));
         registerConverter(new IAConverter(this));
 
-        this.tagResolver.initTagProcessors();
+        ((TagResolver)this.tagResolver).initTagProcessors();
 
         if (Plugins.PLACEHOLDER_API.isEnabled()){
             PlaceholderAPIUtils.registerExpansions(this);
@@ -136,6 +137,8 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         if (this.packetLoader != null){
             this.packetLoader.onEnable();
         }
+
+        this.getServer().getServicesManager().register(ITagResolver.class, this.tagResolver, this, ServicePriority.Normal);
 
         if (Configuration.<Boolean>get(ConfigurationKey.AUTO_CONVERT_ON_STARTUP)) {
             Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__START);

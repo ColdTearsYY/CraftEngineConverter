@@ -1,4 +1,4 @@
-package fr.robie.craftengineconverter.common.tag;
+package fr.robie.craftengineconverter.api.tag;
 
 import org.bukkit.entity.Player;
 

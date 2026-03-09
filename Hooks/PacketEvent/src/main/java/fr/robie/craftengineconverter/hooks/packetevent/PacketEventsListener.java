@@ -13,7 +13,7 @@ import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.packet.PacketContent;
 import fr.robie.craftengineconverter.common.packet.PacketProcessor;
-import fr.robie.craftengineconverter.common.tag.ITagResolver;
+import fr.robie.craftengineconverter.api.tag.ITagResolver;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 

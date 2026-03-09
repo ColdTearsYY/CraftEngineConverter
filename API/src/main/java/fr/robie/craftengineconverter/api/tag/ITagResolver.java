@@ -1,6 +1,7 @@
-package fr.robie.craftengineconverter.common.tag;
+package fr.robie.craftengineconverter.api.tag;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -14,17 +15,11 @@ import java.util.Optional;
 public interface ITagResolver {
 
     /**
-     * Initializes all tag processors that will be used for tag resolution.
-     * <p>
-     * This method should be called once during plugin startup to register and configure
-     * all available tag processors (e.g., {@code GlyphTagProcessor}, {@code ItemTagProcessor}).
-     * </p>
-     * <p>
-     * After initialization, the processors will be ready to handle tag resolution
-     * through {@link #resolveTags(String, Player)}.
-     * </p>
+     * Registers a new custom tag processor.
+     *
+     * @param processor The tag processor to register
      */
-    void initTagProcessors();
+    void registerTagProcessor(@NotNull TagProcessor processor);
 
     /**
      * Resolves all custom tags in the given message using registered tag processors.
@@ -43,5 +38,5 @@ public interface ITagResolver {
      * @return An {@link Optional} containing the resolved message if any tags were processed,
      *         or {@link Optional#empty()} if no tags were found or resolved
      */
-    Optional<String> resolveTags(String message, Player player);
+    Optional<String> resolveTags(@NotNull String message,@NotNull Player player);
 }
