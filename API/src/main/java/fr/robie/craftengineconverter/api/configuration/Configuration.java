@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.api.configuration;
 
 import fr.robie.craftengineconverter.api.builder.TimerBuilder;
-import fr.robie.craftengineconverter.api.enums.ConverterOptions;
+import fr.robie.craftengineconverter.api.enums.ConverterOption;
 import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
@@ -130,8 +130,8 @@ public class Configuration {
                 Logger.debug(Message.ERROR__PLUGIN__CONFIGURATION__TYPE_MISMATCH, LogType.ERROR, "path", key.getPath(), "expected", key.getRawType().getSimpleName(), "got", defaultValue.getClass().getSimpleName(), "default", defaultValue);
             }
         }
-        for (ConverterOptions options : ConverterOptions.values()) {
-            if (options == ConverterOptions.ALL) continue;
+        for (ConverterOption options : ConverterOption.values()) {
+            if (options == ConverterOption.ALL) continue;
             String path = "progress-bar-options." + options.name().toLowerCase().replace("_", "-");
             loadProgressBarOption(config, options, path);
         }

@@ -4,7 +4,7 @@ import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.enums.ArmorConverter;
-import fr.robie.craftengineconverter.api.enums.ConverterOptions;
+import fr.robie.craftengineconverter.api.enums.ConverterOption;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
@@ -77,7 +77,7 @@ public class IAConverter extends Converter {
             return;
         }
 
-        BukkitProgressBar progressBar = createProgressBar(player, totalItems, "Converting ItemsAdder items", "items", ConverterOptions.ITEMS);
+        BukkitProgressBar progressBar = createProgressBar(player, totalItems, "Converting ItemsAdder items", "items", ConverterOption.ITEMS);
         progressBar.start();
 
         PluginNameMapper.getInstance().clearMappingsForPlugin(this.pluginType);
@@ -265,7 +265,7 @@ public class IAConverter extends Converter {
         }
 
         BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalFontImage,
-                "Converting ItemsAdder font images", "images", ConverterOptions.IMAGES);
+                "Converting ItemsAdder font images", "images", ConverterOption.IMAGES);
         progressBar.start();
 
         try {
@@ -380,7 +380,7 @@ public class IAConverter extends Converter {
         }
 
         BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalEntries,
-                "Converting ItemsAdder languages", "translations", ConverterOptions.LANGUAGES);
+                "Converting ItemsAdder languages", "translations", ConverterOption.LANGUAGES);
         progressBar.start();
 
         try {
@@ -482,7 +482,7 @@ public class IAConverter extends Converter {
             return;
         }
 
-        BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalSounds, "Converting ItemsAdder sounds", "sounds", ConverterOptions.SOUNDS);
+        BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalSounds, "Converting ItemsAdder sounds", "sounds", ConverterOption.SOUNDS);
         progressBar.start();
 
         try {
@@ -587,7 +587,7 @@ public class IAConverter extends Converter {
             }
         }
 
-        BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalRecipes, "Converting ItemsAdder recipes", "recipes", ConverterOptions.RECIPES);
+        BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalRecipes, "Converting ItemsAdder recipes", "recipes", ConverterOption.RECIPES);
         progressBar.start();
 
         try {
@@ -962,7 +962,7 @@ public class IAConverter extends Converter {
                 }
             }
             BukkitProgressBar progressBar = createProgressBar(optionalPlayer, totalFiles,
-                    "Converting ItemsAdder resource pack", "pack", ConverterOptions.PACKS);
+                    "Converting ItemsAdder resource pack", "pack", ConverterOption.PACKS);
 
             progressBar.start();
 

@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Contract;
 
 import static fr.robie.craftengineconverter.api.progress.BukkitProgressBar.ProgressColor;
 
-public enum ConverterOptions implements ProgressBarUtils {
+public enum ConverterOption implements ProgressBarUtils {
     ALL(),
     ITEMS(ProgressColor.GREEN),
     EMOJIS(ProgressColor.AQUA),
@@ -22,13 +22,13 @@ public enum ConverterOptions implements ProgressBarUtils {
     private char emptyChar = '░';
     private int barWidth = 50;
 
-    ConverterOptions() {
+    ConverterOption() {
         this.progressColor = ProgressColor.GREEN;
         this.emptyColor = ProgressColor.DARK_GRAY;
         this.percentColor = ProgressColor.YELLOW;
     }
 
-    ConverterOptions(ProgressColor progressColor) {
+    ConverterOption(ProgressColor progressColor) {
         this.progressColor = progressColor;
         this.emptyColor = ProgressColor.DARK_GRAY;
         this.percentColor = ProgressColor.YELLOW;

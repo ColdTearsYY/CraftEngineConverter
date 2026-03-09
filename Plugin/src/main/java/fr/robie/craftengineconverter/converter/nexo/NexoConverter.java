@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.api.enums.ConverterOptions;
+import fr.robie.craftengineconverter.api.enums.ConverterOption;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
@@ -73,7 +73,7 @@ public class NexoConverter extends Converter {
             totalItems += countItemsInConfig(configFile.config());
         }
 
-        BukkitProgressBar progress = createProgressBar(player, totalItems, "Converting Nexo items", "items", ConverterOptions.ITEMS);
+        BukkitProgressBar progress = createProgressBar(player, totalItems, "Converting Nexo items", "items", ConverterOption.ITEMS);
 
         progress.start();
 
@@ -186,7 +186,7 @@ public class NexoConverter extends Converter {
             totalEmojis += countItemsInConfig(configFile.config());
         }
 
-        BukkitProgressBar progress = createProgressBar(player, totalEmojis, "Converting Nexo emojis", "emojis", ConverterOptions.EMOJIS);
+        BukkitProgressBar progress = createProgressBar(player, totalEmojis, "Converting Nexo emojis", "emojis", ConverterOption.EMOJIS);
 
         progress.start();
 
@@ -310,7 +310,7 @@ public class NexoConverter extends Converter {
             }
         }
 
-        BukkitProgressBar progress = createProgressBar(player, totalRecipes, "Converting Nexo recipes", "recipes", ConverterOptions.RECIPES);
+        BukkitProgressBar progress = createProgressBar(player, totalRecipes, "Converting Nexo recipes", "recipes", ConverterOption.RECIPES);
 
         progress.start();
 
@@ -667,7 +667,7 @@ public class NexoConverter extends Converter {
 
             int totalSounds = nexoSoundsList.size();
 
-            BukkitProgressBar progress = createProgressBar(player, totalSounds, "Converting Nexo sounds", "sounds", ConverterOptions.SOUNDS);
+            BukkitProgressBar progress = createProgressBar(player, totalSounds, "Converting Nexo sounds", "sounds", ConverterOption.SOUNDS);
 
             progress.start();
 
@@ -865,7 +865,7 @@ public class NexoConverter extends Converter {
                 return;
             }
 
-            BukkitProgressBar progress = createProgressBar(player, totalTranslations, "Converting Nexo languages", "translations", ConverterOptions.LANGUAGES);
+            BukkitProgressBar progress = createProgressBar(player, totalTranslations, "Converting Nexo languages", "translations", ConverterOption.LANGUAGES);
 
             progress.start();
 
@@ -952,7 +952,7 @@ public class NexoConverter extends Converter {
             totalImages += countItemsInConfig(configFile.config());
         }
 
-        BukkitProgressBar progress = createProgressBar(player, totalImages, "Converting Nexo images", "images", ConverterOptions.IMAGES);
+        BukkitProgressBar progress = createProgressBar(player, totalImages, "Converting Nexo images", "images", ConverterOption.IMAGES);
 
         progress.start();
 
@@ -1114,7 +1114,7 @@ public class NexoConverter extends Converter {
                 }
             }
 
-            BukkitProgressBar progress = createProgressBar(optionalPlayer, totalFiles, "Converting Nexo resource pack", "files", ConverterOptions.PACKS);
+            BukkitProgressBar progress = createProgressBar(optionalPlayer, totalFiles, "Converting Nexo resource pack", "files", ConverterOption.PACKS);
 
             progress.start();
 

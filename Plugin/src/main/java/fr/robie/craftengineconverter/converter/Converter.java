@@ -4,7 +4,7 @@ import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.configuration.ConverterSettings;
-import fr.robie.craftengineconverter.api.enums.ConverterOptions;
+import fr.robie.craftengineconverter.api.enums.ConverterOption;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
@@ -47,6 +47,25 @@ public abstract class Converter extends YamlUtils {
         this.converterName = converterName;
         this.pluginType = pluginType;
         this.settings = new BasicConverterSettings();
+    }
+
+    public CompletableFuture<Void> convert(@NotNull ConverterOption converterOption,@NotNull Optional<Player> optionalPlayer, boolean dryRun, int threadCount) {
+        this.settings.createBackup();
+        this.settings.setDryRunEnabled(dryRun);
+        if (threadCount > 1) {
+            this.settings.setThreadCount(threadCount);
+        }
+        CompletableFuture<Void> conversionTask = switch (converterOption) {
+            case ALL -> convertAll(optionalPlayer);
+            case ITEMS -> convertItems(true, optionalPlayer);
+            case EMOJIS -> convertEmojis(true, optionalPlayer);
+            case IMAGES -> convertImages(true, optionalPlayer);
+            case LANGUAGES -> convertLanguages(true, optionalPlayer);
+            case SOUNDS -> convertSounds(true, optionalPlayer);
+            case RECIPES -> convertRecipes(true, optionalPlayer);
+            case PACKS -> convertPack(true, optionalPlayer);
+        };
+        return conversionTask.thenRun(this.settings::restoreBackup);
     }
 
     public CompletableFuture<Void> convertAll(Optional<Player> player) {
@@ -132,7 +151,7 @@ public abstract class Converter extends YamlUtils {
         }
     }
 
-    protected BukkitProgressBar createProgressBar(Optional<Player> optionalPlayer, int totalSteps, String prefix, String suffix, ConverterOptions options) {
+    protected BukkitProgressBar createProgressBar(Optional<Player> optionalPlayer, int totalSteps, String prefix, String suffix, ConverterOption options) {
         BukkitProgressBar.Builder builder = new BukkitProgressBar.Builder(totalSteps);
         if (optionalPlayer.isPresent()) {
             builder.player(optionalPlayer.get());
