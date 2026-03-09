@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.api.enums;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,14 +55,14 @@ public enum ArmorConverter {
 
         Map<ArmorConverter, ConfigurationSection> converterSections = new HashMap<>();
 
-        if (Configuration.armorConverterType == ArmorConverter.BOTH){
+        if (Configuration.<ArmorConverter>get(ConfigurationKey.ARMOR_CONVERTER_TYPE) == ArmorConverter.BOTH){
             ConfigurationSection componentSection = getOrCreateSection(fileEquipementsSection, "$$>=1.21.2");
             ConfigurationSection trimSection = getOrCreateSection(fileEquipementsSection, "$$<1.21.2");
             converterSections.put(ArmorConverter.COMPONENT, getOrCreateSection(componentSection, assetId));
             converterSections.put(ArmorConverter.TRIM, getOrCreateSection(trimSection, assetId));
         } else {
             ConfigurationSection assetIdSection = getOrCreateSection(fileEquipementsSection, assetId);
-            converterSections.put(Configuration.armorConverterType, assetIdSection);
+            converterSections.put(Configuration.get(ConfigurationKey.ARMOR_CONVERTER_TYPE), assetIdSection);
         }
 
         for (Map.Entry<ArmorConverter, ConfigurationSection> entry : converterSections.entrySet()) {

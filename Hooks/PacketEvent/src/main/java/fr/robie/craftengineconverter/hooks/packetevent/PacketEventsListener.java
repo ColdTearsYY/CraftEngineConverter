@@ -7,9 +7,10 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
+import fr.robie.craftengineconverter.api.format.ComponentMeta;
 import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.api.format.ComponentMeta;
 import fr.robie.craftengineconverter.common.packet.PacketContent;
 import fr.robie.craftengineconverter.common.packet.PacketProcessor;
 import fr.robie.craftengineconverter.common.tag.ITagResolver;
@@ -30,20 +31,20 @@ public class PacketEventsListener extends PacketListenerAbstract {
         super(PacketListenerPriority.LOW);
         this.plugin = plugin;
 
-        if (Configuration.pluginMessageFormatting){
+        if (Configuration.<Boolean>get(ConfigurationKey.PLUGIN_MESSAGE_FORMATTING)){
             this.packetTypeProcessors.put(PacketType.Play.Server.SYSTEM_CHAT_MESSAGE, PacketEventsProcessor.SYSTEM_CHAT_MESSAGE);
         }
-        if (Configuration.titleFormatting){
+        if (Configuration.<Boolean>get(ConfigurationKey.TITLE_FORMATTING)){
             this.packetTypeProcessors.put(PacketType.Play.Server.SET_TITLE_TEXT, PacketEventsProcessor.SET_TITLE_TEXT);
             this.packetTypeProcessors.put(PacketType.Play.Server.SET_TITLE_SUBTITLE, PacketEventsProcessor.SET_TITLE_SUBTITLE);
         }
-        if (Configuration.actionBarFormatting){
+        if (Configuration.< Boolean >get(ConfigurationKey.ACTION_BAR_FORMATTING)){
             this.packetTypeProcessors.put(PacketType.Play.Server.ACTION_BAR, PacketEventsProcessor.ACTION_BAR);
         }
-        if (Configuration.bossBarFormatting){
+        if (Configuration.<Boolean>get(ConfigurationKey.BOSS_BAR_FORMATTING)){
             this.packetTypeProcessors.put(PacketType.Play.Server.BOSS_BAR, PacketEventsProcessor.BOSS_BAR);
         }
-        if (Configuration.menuTitleFormatting){
+        if (Configuration.<Boolean>get(ConfigurationKey.MENU_TITLE_FORMATTING)){
             this.packetTypeProcessors.put(PacketType.Play.Server.OPEN_WINDOW, PacketEventsProcessor.OPEN_WINDOW);
         }
 

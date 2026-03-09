@@ -3,6 +3,7 @@ package fr.robie.craftengineconverter.hooks.itemsadder;
 import dev.lone.itemsadder.api.CustomBlock;
 import dev.lone.itemsadder.api.Events.CustomBlockInteractEvent;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.converter.BlockConverter;
@@ -22,7 +23,7 @@ public class ItemsAdderBlockConverter extends BlockConverter implements Listener
 
     @EventHandler
     public void onItemsAdderBlockInteract(CustomBlockInteractEvent event){
-        if (!Configuration.itemsAdderEnableBlockInteractionConversion || !event.getPlayer().hasPermission(Permission.ITEMSADDER_BLOCK_INTERACT_CONVERSION.asPermission())) return;
+        if (!Configuration.<Boolean>get(ConfigurationKey.ITEMS_ADDER_BLOCK_INTERACTION_CONVERSION) || !event.getPlayer().hasPermission(Permission.ITEMSADDER_BLOCK_INTERACT_CONVERSION.asPermission())) return;
 
         String namespacedID = event.getNamespacedID();
         String newName = this.getNewName(namespacedID);
@@ -40,10 +41,10 @@ public class ItemsAdderBlockConverter extends BlockConverter implements Listener
 
         this.placeBlock(newName, location, null);
         event.setCancelled(true);
-        if (Configuration.allowBlockConversionPropagation && Configuration.maxBlockConversionPropagationDepth > 1) {
+        if (Configuration.<Boolean>get(ConfigurationKey.ALLOW_BLOCK_CONVERSION_PROPAGATION) && Configuration.<Integer>get(ConfigurationKey.MAX_BLOCK_CONVERSION_PROPAGATION_DEPTH) > 1) {
             Set<Location> processed = new HashSet<>();
             processed.add(location);
-            ConversionCounter counter = new ConversionCounter(Configuration.maxBlockConversionPropagationDepth - 1);
+            ConversionCounter counter = new ConversionCounter(Configuration.<Integer>get(ConfigurationKey.MAX_BLOCK_CONVERSION_PROPAGATION_DEPTH) - 1);
             executeBlockConversion(block.getLocation(), processed, counter);
         }
 

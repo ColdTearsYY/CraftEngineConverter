@@ -1,14 +1,15 @@
 package fr.robie.craftengineconverter.loader;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.enums.Languages;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.format.MessageType;
 import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.api.logger.Logger;
+import fr.robie.craftengineconverter.api.utils.ObjectUtils;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.manager.Manageable;
-import fr.robie.craftengineconverter.api.utils.ObjectUtils;
 import fr.robie.craftengineconverter.common.utils.SnakeUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -41,7 +42,7 @@ public class MessageLoader extends ObjectUtils implements Manageable {
                 Logger.showException("Failed to process language file: " + path, e);
             }
         }
-        loadLanguage(Configuration.language);
+        loadLanguage(Configuration.get(ConfigurationKey.LANGUAGE));
     }
 
     private void ensureFileExists(File file, String path) {

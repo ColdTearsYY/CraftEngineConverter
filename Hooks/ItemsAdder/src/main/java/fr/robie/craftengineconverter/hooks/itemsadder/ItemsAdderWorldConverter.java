@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.hooks.itemsadder;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
 import fr.robie.craftengineconverter.common.CraftEnginePlacementTracker;
@@ -23,7 +24,7 @@ public class ItemsAdderWorldConverter implements WorldConverter {
 
     @Override
     public boolean convertEntity(@NotNull Entity entity) {
-        if (Configuration.itemsAdderEnableChunkLoadConversion) {
+        if (Configuration.get(ConfigurationKey.ITEMS_ADDER_CHUNK_LOAD_CONVERSION)) {
             PersistentDataContainer persistentDataContainer = entity.getPersistentDataContainer();
             for (NamespacedKey key : persistentDataContainer.getKeys()) {
                 if (key.asString().equalsIgnoreCase("itemsadder:placeable_entity_item")){

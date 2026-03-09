@@ -181,6 +181,8 @@ warning:
 
 error:
   mkdir-failure: "Échec de la création du dossier §e%directory% (%path%)§c !"
+  plugin:
+    type-mismatch: "§cIncompatibilité de type pour §e%path%§c dans la configuration, attendu §e%expected%§c mais obtenu §e%got%§c, utilisation de la valeur par défaut : §e%default%§c"
   file:
     copy-exception: "Une erreur est survenue lors de la copie du fichier §e%file%§c : §e%message%§c"
     load-failure: "Impossible de charger le fichier '%file%' : fichier introuvable ou format YAML invalide"

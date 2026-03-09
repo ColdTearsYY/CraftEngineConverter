@@ -1,71 +1,28 @@
 package fr.robie.craftengineconverter.api.configuration;
 
 import fr.robie.craftengineconverter.api.builder.TimerBuilder;
-import fr.robie.craftengineconverter.api.enums.*;
+import fr.robie.craftengineconverter.api.enums.ConverterOptions;
+import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.progress.BukkitProgressBar;
 import fr.robie.craftengineconverter.api.progress.ProgressBarUtils;
 import fr.robie.craftengineconverter.api.utils.ProgressBarOption;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
+import java.util.Map;
 
 public class Configuration {
-    public static boolean enableDebug = false;
-    public static Languages language = Languages.EN;
-    public static LimitType limitType = LimitType.PLUGIN;
-    public static boolean autoConvertOnStartup = false;
-    public static Material defaultMaterial = Material.PAPER;
-    public static boolean disableDefaultItalic = true;
-    public static ArmorConverter armorConverterType = ArmorConverter.COMPONENT;
-    public static List<String> blacklistedPaths = new ArrayList<>();
+    private static final Map<ConfigurationKey, Object> configValues = new EnumMap<>(ConfigurationKey.class);
 
-    public static boolean allowBlockConversionPropagation = true;
-    public static int maxBlockConversionPropagationDepth = 64;
-
-    public static boolean nexoEnableHook = true;
-    public static boolean nexoEnableBlockInteractionConversion = true;
-    public static boolean nexoEnableFurnitureInteractionConversion = true;
-    public static boolean nexoEnableChunkLoadConversion = false;
-
-    public static boolean itemsAdderEnableHook = true;
-    public static boolean itemsAdderImgPlaceholderAPISupport = true;
-    public static boolean itemsAdderEnableBlockInteractionConversion = true;
-    public static boolean itemsAdderEnableFurnitureInteractionConversion = true;
-    public static boolean itemsAdderEnableChunkLoadConversion = true; //TODO: cha,ge to false as default when the feature is implemented
-
-    public static Set<String> itemsAdderBlackListedContentFoldersNamespaces = new HashSet<>();
-
-    // WorldConverter options
-
-    public static boolean worldConverterEnable = false;
-    public static boolean worldConverterNexoHook = true;
     public static ProgressBarUtils worldConverterProgressBarOptions = ProgressBarOption.of(BukkitProgressBar.ProgressColor.GOLD);
-
-
-    // Formatting options
-    public static boolean packetEventsFormatting = true;
-
-    public static boolean menuTitleFormatting = true;
-    public static boolean bossBarFormatting = true;
-    public static boolean actionBarFormatting = true;
-    public static boolean pluginMessageFormatting = true;
-    public static boolean titleFormatting = true;
-
-
-    // Tags options
-    public static boolean glyphTagEnabled = true; // Nexo glyph tag
-    public static boolean iaImageTagEnabled = true; // ItemsAdder image tag
-    public static boolean placeholderAPITagEnabled = true;
 
     private static volatile Configuration instance;
     private boolean isUpdated = false;
@@ -92,11 +49,11 @@ public class Configuration {
      * @return true if the path matches any blacklisted pattern
      */
     public static boolean isPathBlacklisted(String namespacedPath) {
-        if (namespacedPath == null || blacklistedPaths.isEmpty()) {
+        if (namespacedPath == null || (Configuration.<List<String>>get(ConfigurationKey.BLACKLISTED_PATHS)).isEmpty()) {
             return false;
         }
 
-        for (String pattern : blacklistedPaths) {
+        for (String pattern : Configuration.<List<String>>get(ConfigurationKey.BLACKLISTED_PATHS)) {
             if (matchesPattern(namespacedPath, pattern)) {
                 return true;
             }
@@ -147,21 +104,33 @@ public class Configuration {
 
     public void load(YamlConfiguration config, File file) {
         long startTime = System.currentTimeMillis();
-        for (ConfigPath configPath : ConfigPath.values()) {
-            Object value;
-            switch (configPath.getDefaultValue()) {
-                case Boolean b -> value = getOrAddBoolean(config, configPath.getPath(), b);
-                case Integer i -> value = getOrAddInt(config, configPath.getPath(), i);
-                case String s -> value = getOrAddString(config, configPath.getPath(), s);
-                case Long l -> value = getOrAddLong(config, configPath.getPath(), l);
-                case List<?> list -> value = getOrAddList(config, configPath.getPath(), list);
-                case null, default -> {
-                    continue;
+        for (ConfigurationKey key : ConfigurationKey.values()) {
+            Object defaultValue = key.getDefaultValue();
+            Object o = config.get(key.getPath());
+            if (o == null) {
+                config.set(key.getPath(), defaultValue);
+                this.isUpdated = true;
+                if (key.getRawType().isInstance(defaultValue)) {
+                    configValues.put(key, defaultValue);
+                } else {
+                    Logger.debug(Message.ERROR__PLUGIN__CONFIGURATION__TYPE_MISMATCH, LogType.ERROR, "path", key.getPath(), "expected", key.getRawType().getSimpleName(), "got", defaultValue.getClass().getSimpleName(), "default", defaultValue);
                 }
+                continue;
             }
-            configPath.assign(value);
+            Object value;
+            try {
+                value = key.deserialize(o);
+            } catch (Exception e) {
+                Logger.info("Invalid value for " + key.getPath() + " in configuration, using default value: " + defaultValue, LogType.WARNING);
+                value = defaultValue;
+            }
+            if (key.getRawType().isInstance(value)) {
+                configValues.put(key, value);
+            } else {
+                Logger.debug(Message.ERROR__PLUGIN__CONFIGURATION__TYPE_MISMATCH, LogType.ERROR, "path", key.getPath(), "expected", key.getRawType().getSimpleName(), "got", defaultValue.getClass().getSimpleName(), "default", defaultValue);
+            }
         }
-        for (ConverterOptions options : ConverterOptions.values()){
+        for (ConverterOptions options : ConverterOptions.values()) {
             if (options == ConverterOptions.ALL) continue;
             String path = "progress-bar-options." + options.name().toLowerCase().replace("_", "-");
             loadProgressBarOption(config, options, path);
@@ -170,8 +139,8 @@ public class Configuration {
         if (worldConverterProgressBarSection != null) {
             loadProgressBarOption(config, worldConverterProgressBarOptions, "world-converter.progress-bar-options");
         }
-        for (CraftEngineBlockState blockStateLimit : CraftEngineBlockState.values()){
-            String path = "block-state-limit."+blockStateLimit.name().toLowerCase().replace("_", "-");
+        for (CraftEngineBlockState blockStateLimit : CraftEngineBlockState.values()) {
+            String path = "block-state-limit." + blockStateLimit.name().toLowerCase().replace("_", "-");
             int startLimit = getOrAddInt(config, path + ".start-limit", blockStateLimit.getStart());
             try {
                 blockStateLimit.setStart(startLimit);
@@ -226,14 +195,6 @@ public class Configuration {
         return colors;
     }
 
-    private boolean getOrAddBoolean(YamlConfiguration config, String path, boolean defaultValue) {
-        if (!config.contains(path)) {
-            config.set(path, defaultValue);
-            this.isUpdated = true;
-            return defaultValue;
-        }
-        return config.getBoolean(path);
-    }
     private int getOrAddInt(YamlConfiguration config, String path, int defaultValue) {
         if (!config.contains(path)) {
             config.set(path, defaultValue);
@@ -249,123 +210,11 @@ public class Configuration {
             return defaultValue;
         }
         return config.getString(path, defaultValue);
-    }
-    private long getOrAddLong(YamlConfiguration config, String path, long defaultValue) {
-        if (!config.contains(path)) {
-            config.set(path, defaultValue);
-            this.isUpdated = true;
-            return defaultValue;
-        }
-        return config.getLong(path, defaultValue);
+
     }
 
-    @SuppressWarnings("unchecked")
-    private List<String> getOrAddList(YamlConfiguration config, String path, List<?> defaultValue) {
-        if (!config.contains(path)) {
-            config.set(path, defaultValue);
-            this.isUpdated = true;
-            return (List<String>) defaultValue;
-        }
-        return config.getStringList(path);
-    }
-
-    public enum ConfigPath {
-        ENABLE_DEBUG("enable-debug", false, v -> enableDebug = (Boolean) v),
-        LANGUAGE("language", "EN", v -> {
-            try {
-                String string = (String) v;
-                language = Languages.valueOf(string.toUpperCase());
-            } catch (Exception e) {
-                Logger.debug("Invalid language in configuration, using EN as default.", LogType.WARNING);
-                language = Languages.EN;
-            }
-        }),
-        AUTO_CONVERT_ON_STARTUP("auto-convert-on-startup", false, v -> autoConvertOnStartup = (Boolean) v),
-        DEFAULT_MATERIAL("default-material", "PAPER", v -> {
-            try {
-                String string = (String) v;
-                defaultMaterial = Material.valueOf(string.toUpperCase());
-            } catch (Exception e) {
-                Logger.debug("Invalid default material in configuration, using PAPER as default.", LogType.WARNING);
-                defaultMaterial = Material.PAPER;
-            }
-        }),
-        DISABLE_DEFAULT_ITALIC("disable-default-italic", true, v -> disableDefaultItalic = (Boolean) v),
-        ARMOR_CONVERTER_TYPE("armor-converter-type", "COMPONENT", v -> {
-            try {
-                String string = (String) v;
-                armorConverterType = ArmorConverter.valueOf(string.toUpperCase());
-            } catch (Exception e) {
-                Logger.debug("Invalid armor converter type in configuration, using COMPONENT as default.", LogType.WARNING);
-                armorConverterType = ArmorConverter.COMPONENT;
-            }
-        }),
-        BLACKLISTED_PATHS("blacklisted-paths", new ArrayList<>(), v -> {
-            blacklistedPaths.clear();
-            if (v instanceof List<?>) {
-                @SuppressWarnings("unchecked")
-                List<String> paths = (List<String>) v;
-                blacklistedPaths.addAll(paths);
-            }
-        }),
-        PACKET_EVENTS_FORMATTING("formatting.packet-events", true, v -> packetEventsFormatting = (Boolean) v),
-        BOSS_BAR_FORMATTING("formatting.boss-bar", true, v -> bossBarFormatting = (Boolean) v),
-        ACTION_BAR_FORMATTING("formatting.action-bar", true, v -> actionBarFormatting = (Boolean) v),
-        PLUGIN_MESSAGE_FORMATTING("formatting.plugin-message", true, v -> pluginMessageFormatting = (Boolean) v),
-        TITLE_FORMATTING("formatting.title", true, v -> titleFormatting = (Boolean) v),
-        MENU_TITLE_FORMATTING("formatting.menu-title", true, v -> menuTitleFormatting = (Boolean) v),
-        GLYPH_TAG_ENABLED("tags.nexo-glyph.enabled", true, v -> glyphTagEnabled = (Boolean) v),
-        IMAGE_TAG_ENABLED("tags.itemsadder-image.enabled", true, v -> iaImageTagEnabled = (Boolean) v),
-        PLACEHOLDER_API_TAG_ENABLED("tags.placeholder-api.enabled", true, v -> placeholderAPITagEnabled = (Boolean) v),
-        ALLOW_BLOCK_CONVERSION_PROPAGATION("allow-block-conversion-propagation", true, v -> allowBlockConversionPropagation = (Boolean) v),
-        MAX_BLOCK_CONVERSION_PROPAGATION_DEPTH("max-block-conversion-propagation-depth", 64, v -> maxBlockConversionPropagationDepth = (Integer) v),
-        NEXO_ENABLE_HOOK("nexo.enable-hook", true, v -> nexoEnableHook = (Boolean) v),
-        NEXO_BLOCK_INTERACTION_CONVERSION("nexo.enable-block-interaction-conversion", true, v -> nexoEnableBlockInteractionConversion = (Boolean) v),
-        NEXO_FURNITURE_INTERACTION_CONVERSION("nexo.enable-furniture-interaction-conversion", true, v -> nexoEnableFurnitureInteractionConversion = (Boolean) v),
-        NEXO_CHUNK_LOAD_CONVERSION("nexo.enable-chunk-load-conversion", false, v -> nexoEnableChunkLoadConversion = (Boolean) v),
-        ITEMS_ADDER_ENABLE_HOOK("itemsadder.enable-hook", true, v -> itemsAdderEnableHook = (Boolean) v),
-        ITEMS_ADDER_IMG_PLACEHOLDER_API_SUPPORT("itemsadder.img-placeholderapi-support", true, v -> itemsAdderImgPlaceholderAPISupport = (Boolean) v),
-        ITEMS_ADDER_BLOCK_INTERACTION_CONVERSION("itemsadder.enable-block-interaction-conversion", true, v -> itemsAdderEnableBlockInteractionConversion = (Boolean) v),
-        ITEMS_ADDER_FURNITURE_INTERACTION_CONVERSION("itemsadder.enable-furniture-interaction-conversion", true, v -> itemsAdderEnableFurnitureInteractionConversion = (Boolean) v),
-        ITEMS_ADDER_BLACKLISTED_CONTENT_FOLDERS_NAMESPACES("itemsadder.blacklisted-content-folders-namespaces", new ArrayList<>(), v -> {
-            itemsAdderBlackListedContentFoldersNamespaces.clear();
-            if (v instanceof List<?>) {
-                @SuppressWarnings("unchecked")
-                List<String> namespaces = (List<String>) v;
-                itemsAdderBlackListedContentFoldersNamespaces.addAll(namespaces);
-            }
-        }),
-        BLOCK_STATE_LIMIT_TYPE("block-state-limit.type", "PLUGIN", v -> {
-            try {
-                String string = (String) v;
-                limitType = LimitType.valueOf(string.toUpperCase());
-            } catch (Exception e) {
-                Logger.debug("Invalid limit type in configuration, using PLUGIN as default.", LogType.WARNING);
-                limitType = LimitType.PLUGIN;
-            }
-        }),
-        WORLD_CONVERTER_ENABLE("world-converter.enable", false, v -> worldConverterEnable = (Boolean) v),
-        WORLD_CONVERTER_NEXO_HOOK("world-converter.nexo.enable", true, v -> worldConverterNexoHook = (Boolean) v),
-        ;
-
-        private final String path;
-        private final Object defaultValue;
-        private final Consumer<Object> setter;
-
-        ConfigPath(String path, Object defaultValue, Consumer<Object> setter) {
-            this.path = path;
-            this.defaultValue = defaultValue;
-            this.setter = setter;
-        }
-
-        public String getPath() {
-            return path;
-        }
-        public Object getDefaultValue() {
-            return defaultValue;
-        }
-        public void assign(Object value) {
-            setter.accept(value);
-        }
+    public static <T> T get(@NotNull ConfigurationKey key) {
+        //noinspection unchecked
+        return (T) configValues.getOrDefault(key, key.getDefaultValue());
     }
 }

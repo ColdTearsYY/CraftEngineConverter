@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.utils;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.common.tag.ITagResolver;
 import fr.robie.craftengineconverter.common.tag.TagProcessor;
@@ -18,13 +19,13 @@ public class TagResolver implements ITagResolver {
 
     @Override
     public void initTagProcessors() {
-        if (Configuration.glyphTagEnabled){
+        if (Configuration.<Boolean>get(ConfigurationKey.GLYPH_TAG_ENABLED)){
             this.tagProcessors.add(new GlyphTagProcessor());
         }
-        if (Configuration.iaImageTagEnabled){
+        if (Configuration.<Boolean>get(ConfigurationKey.IMAGE_TAG_ENABLED)){
             this.tagProcessors.add(new IAImageTagProcessor());
         }
-        if (Plugins.PLACEHOLDER_API.isPresent()){
+        if (Plugins.PLACEHOLDER_API.isPresent() && Configuration.<Boolean>get(ConfigurationKey.PLACEHOLDER_API_TAG_ENABLED)){
             this.tagProcessors.add(new PlaceholderAPITag());
         }
     }

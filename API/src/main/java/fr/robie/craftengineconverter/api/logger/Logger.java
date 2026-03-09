@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.api.logger;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.format.TextFormatter;
 import org.bukkit.Bukkit;
@@ -90,13 +91,13 @@ public class Logger extends TextFormatter {
     }
 
     public void logDebug(String message, LogType type, Object... args) {
-        if (Configuration.enableDebug){
+        if (Configuration.<Boolean>get(ConfigurationKey.ENABLE_DEBUG)){
             log(message, type, args);
         }
     }
 
     public void logException(String errorName, Throwable throwable, Object... args) {
-        if (!Configuration.enableDebug) return;
+        if (!Configuration.<Boolean>get(ConfigurationKey.ENABLE_DEBUG)) return;
         this.log("An exception occurred while " + parseText(errorName, args) + ":", LogType.ERROR);
         this.log("Exception error message: " + throwable.getMessage(), LogType.ERROR);
         this.log("Please check the stack trace below for more details. If you don't understand the issue report it to the developer.",LogType.ERROR);

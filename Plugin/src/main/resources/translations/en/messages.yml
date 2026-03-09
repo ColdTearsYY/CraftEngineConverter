@@ -183,6 +183,17 @@ warning:
     non-numeric-barrier-value: "§cNon-numeric value §e%value%§c in barrier entry §e%entry%§c."
 
 error:
+  plugin:
+    type-mismatch: "§cType mismatch for §e%path%§c in configuration, expected §e%expected%§c but got §e%got%§c, using default value: §e%default%§c"
+  mkdir-failure: "Failed to create directory §e%directory% (%path%)§c!"
+  file-operations:
+    timeout: "Timeout waiting for file operations to complete"
+    force-shutdown: "Forcing shutdown of file operation threads"
+  file:
+    copy-exception: "An error occurred while copying file §e%file%§c: §e%message%§c"
+    load-failure: "Unable to load file '%file%': file not found or invalid YAML format"
+  pack-conversion:
+    exception: "An error occurred during pack conversion for plugin §e%plugin%§c"
   converter:
     invalid-glow-drop-color: "[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"
     ia:
@@ -204,13 +215,3 @@ error:
       recipes:
         conversion-exception: "An error occurred during ItemsAdder recipe conversion"
         conversion-failure: "Failed to convert ItemsAdder recipe: §e%recipe%§c in file: §e%file%§c"
-
-  mkdir-failure: "Failed to create directory §e%directory% (%path%)§c!"
-  file-operations:
-    timeout: "Timeout waiting for file operations to complete"
-    force-shutdown: "Forcing shutdown of file operation threads"
-  file:
-    copy-exception: "An error occurred while copying file §e%file%§c: §e%message%§c"
-    load-failure: "Unable to load file '%file%': file not found or invalid YAML format"
-  pack-conversion:
-    exception: "An error occurred during pack conversion for plugin §e%plugin%§c"

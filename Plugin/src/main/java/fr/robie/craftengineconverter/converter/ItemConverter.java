@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.configuration.CraftEngineItemsConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
@@ -31,7 +32,7 @@ public abstract class ItemConverter extends ObjectUtils {
         this.craftEngineItemUtils = new CraftEngineItemUtils(craftEngineItemSection);
         this.fileConfig = fileConfig;
         this.fileConfig.options().pathSeparator('\n');
-        this.craftEngineItemsConfiguration = new CraftEngineItemsConfiguration(itemId, Configuration.defaultMaterial);
+        this.craftEngineItemsConfiguration = new CraftEngineItemsConfiguration(itemId, Configuration.get(ConfigurationKey.DEFAULT_MATERIAL));
     }
 
     public void convertItem(){

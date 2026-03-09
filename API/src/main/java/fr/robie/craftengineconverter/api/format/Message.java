@@ -190,6 +190,7 @@ public enum Message {
     ERROR__JSON__LOAD_FAILURE("Unable to load JSON file '%file%': file not found or invalid JSON format"),
 
     ERROR__PACK_CONVERSION__EXCEPTION("An error occurred during pack conversion for plugin §e%plugin%§c"),
+    ERROR__PLUGIN__CONFIGURATION__TYPE_MISMATCH("§cType mismatch for §e%path%§c in configuration, expected §e%expected%§c but got §e%got%§c, using default value: §e%default%§c")
     ;
     private List<String> messages;
     private String message;

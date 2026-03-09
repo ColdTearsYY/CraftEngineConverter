@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.api.enums;
 
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.utils.BlockStateResult;
 import org.jetbrains.annotations.NotNull;
 
@@ -246,7 +247,7 @@ public enum CraftEngineBlockState {
      * @return The current count/index
      */
     private int getCurrentCount(Plugins plugin) {
-        if (Configuration.limitType == fr.robie.craftengineconverter.api.enums.LimitType.PLUGIN) {
+        if (Configuration.<LimitType>get(ConfigurationKey.BLOCK_STATE_LIMIT_TYPE) == fr.robie.craftengineconverter.api.enums.LimitType.PLUGIN) {
             return getMaxIndexRecursive(this, plugin);
         } else {
             return getTotalMaxIndexRecursive(this);

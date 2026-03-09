@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter;
 
 import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.database.StorageManager;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.format.ComponentMeta;
@@ -80,7 +81,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         this.reloadConfig();
         if (Plugins.PACKET_EVENTS.isPresent()){
             Logger.info("[Hook] PacketEvents", LogType.SUCCESS);
-            if (Configuration.packetEventsFormatting) {
+            if (Configuration.<Boolean>get(ConfigurationKey.PACKET_EVENTS_FORMATTING)) {
                 this.packetLoader = new PacketEventHook(this);
             }
         }
@@ -135,7 +136,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
             this.packetLoader.onEnable();
         }
 
-        if (Configuration.autoConvertOnStartup) {
+        if (Configuration.<Boolean>get(ConfigurationKey.AUTO_CONVERT_ON_STARTUP)) {
             Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__START);
             long startTimeAutoConverter = System.currentTimeMillis();
             Collection<Converter> values = this.converterMap.values();
@@ -153,19 +154,20 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
             Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__DISABLED);
         }
 
-        if (Configuration.worldConverterEnable)
+        if (Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ENABLE))
             this.registerListener(this.worldConverterManager);
 
-        if (Plugins.NEXO.isEnabled() && Configuration.nexoEnableHook){
+        if (Plugins.NEXO.isEnabled() && Configuration.<Boolean>get(ConfigurationKey.NEXO_ENABLE_HOOK)){
             this.registerListener(new NexoBlockConverter(this));
             this.registerListener(new NexoFurnitureConverter(this));
-            if (Configuration.worldConverterEnable && Configuration.worldConverterNexoHook)
+            if (Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ENABLE) && Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_NEXO_HOOK))
                 this.worldConverterManager.registerConverter(new NexoWorldConverter(this));
         }
-        if (Plugins.ITEMS_ADDER.isEnabled() && Configuration.itemsAdderEnableHook){
+        if (Plugins.ITEMS_ADDER.isEnabled() && Configuration.<Boolean>get(ConfigurationKey.ITEMS_ADDER_ENABLE_HOOK)){
             this.registerListener(new ItemsAdderBlockConverter(this));
             this.registerListener(new ItemsAdderFurnitureConverter(this));
-            this.worldConverterManager.registerConverter(new ItemsAdderWorldConverter(this));
+            if (Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ENABLE) && Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ITEMS_ADDER_HOOK))
+                this.worldConverterManager.registerConverter(new ItemsAdderWorldConverter(this));
         }
 
         Logger.info(Message.MESSAGE__PLUGIN__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTime));

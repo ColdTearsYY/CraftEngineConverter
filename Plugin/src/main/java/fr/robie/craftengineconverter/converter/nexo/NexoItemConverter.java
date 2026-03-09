@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter.converter.nexo;
 
 import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
@@ -96,7 +97,7 @@ public class NexoItemConverter extends ItemConverter {
     @Override
     public void convertMaterial() {
         try {
-            this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(this.nexoItemSection.getString("material", Configuration.defaultMaterial.name()).toUpperCase()));
+            this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(this.nexoItemSection.getString("material", "").toUpperCase()));
         } catch (Exception ignored) {
         }
     }
@@ -105,7 +106,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertItemName() {
         String itemName = this.nexoItemSection.getString("itemname");
         if (isValidString(itemName)){
-            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName, Configuration.disableDefaultItalic));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName, Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC)));
         }
     }
 
@@ -113,7 +114,7 @@ public class NexoItemConverter extends ItemConverter {
     public void convertLore() {
         List<String> lore = this.nexoItemSection.getStringList("lore");
         if (!lore.isEmpty()) {
-            this.craftEngineItemsConfiguration.addItemConfiguration(new LoreConfiguration(lore, Configuration.disableDefaultItalic));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new LoreConfiguration(lore, Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC)));
         }
     }
 
@@ -1037,7 +1038,7 @@ public class NexoItemConverter extends ItemConverter {
                     }
 
                     if (!equipmentLayers.isEmpty()){
-                        List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
+                        List<ArmorConverter> convertersToProcess = Configuration.<ArmorConverter>get(ConfigurationKey.ARMOR_CONVERTER_TYPE).getComposition();
                         Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(fileEquipementsSection, assetId);
 
                         for (var layerTypeTuple : equipmentLayers.entrySet()) {
@@ -1115,7 +1116,7 @@ public class NexoItemConverter extends ItemConverter {
                     String assetId = determineAssetId(packSection, List.of("_helmet","_chestplate","_leggings","_boots"));
 
                     if (isValidString(assetId)){
-                        List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
+                        List<ArmorConverter> convertersToProcess = Configuration.<ArmorConverter>get(ConfigurationKey.ARMOR_CONVERTER_TYPE).getComposition();
                         Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(fileEquipementsSection, assetId);
 
                         String armorName = assetId.split(":", 2)[1];

@@ -2,6 +2,7 @@ package fr.robie.craftengineconverter.converter;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.configuration.ConverterSettings;
 import fr.robie.craftengineconverter.api.enums.ConverterOptions;
 import fr.robie.craftengineconverter.api.enums.Plugins;
@@ -335,7 +336,7 @@ public abstract class Converter extends YamlUtils {
         if (itemsIds.isEmpty()) return;
         ConfigurationSection categoriesSection = config.createSection("categories");
         ConfigurationSection categorySection = categoriesSection.createSection(itemsIds.getFirst());
-        categorySection.set("name", (Configuration.disableDefaultItalic? "<!i>":"") + "Category "+fileName);
+        categorySection.set("name", (Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC) ? "<!i>":"") + "Category "+fileName);
         categorySection.set("icon", itemsIds.getFirst());
         categorySection.set("list", itemsIds);
     }

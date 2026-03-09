@@ -179,6 +179,17 @@ warning:
     non-numeric-barrier-value: "§cFehlerhafter Wert §e%value%§c im Barriere-Eintrag."
 
 error:
+  mkdir-failure: "Konnte Verzeichnis §e%directory% (%path%)§c nicht erstellen!"
+  plugin:
+    type-mismatch: "§cTypinkompatibilität für §e%path%§c in der Konfiguration, erwartet §e%expected%§c aber erhalten §e%got%§c, Standardwert wird verwendet: §e%default%§c"
+  file-operations:
+    timeout: "Timeout bei den Datei-Operationen."
+    force-shutdown: "Erzwinge Shutdown der File-Operation-Threads."
+  file:
+    copy-exception: "Fehler beim Kopieren von §e%file%§c: §e%message%§c"
+    load-failure: "Datei '%file%' nicht gefunden oder YAML-Format ist kaputt."
+  pack-conversion:
+    exception: "Fehler bei der Pack-Konvertierung für §e%plugin%§c."
   converter:
     invalid-glow-drop-color: "[%converter%] §c'%color%' ist keine gültige Farbe für den Glow-Drop bei §e%item%§c. Gültig: §e%valid_colors%§c"
     ia:
@@ -202,13 +213,3 @@ error:
       recipes:
         conversion-exception: "Fehler bei der Rezept-Konvertierung."
         conversion-failure: "Rezept §e%recipe%§c ist fehlgeschlagen."
-
-  mkdir-failure: "Konnte Verzeichnis §e%directory% (%path%)§c nicht erstellen!"
-  file-operations:
-    timeout: "Timeout bei den Datei-Operationen."
-    force-shutdown: "Erzwinge Shutdown der File-Operation-Threads."
-  file:
-    copy-exception: "Fehler beim Kopieren von §e%file%§c: §e%message%§c"
-    load-failure: "Datei '%file%' nicht gefunden oder YAML-Format ist kaputt."
-  pack-conversion:
-    exception: "Fehler bei der Pack-Konvertierung für §e%plugin%§c."

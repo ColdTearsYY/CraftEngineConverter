@@ -5,6 +5,7 @@ import com.nexomc.nexo.api.events.custom_block.NexoBlockInteractEvent;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 import com.nexomc.nexo.utils.drops.Drop;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.history.BlockHistory;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
@@ -26,7 +27,7 @@ public class NexoBlockConverter extends BlockConverter implements Listener {
 
     @EventHandler
     public void onNexoBlockInteract(NexoBlockInteractEvent event) {
-        if (!Configuration.nexoEnableBlockInteractionConversion|| !event.getPlayer().hasPermission(Permission.NEXO_BLOCK_INTERACT_CONVERSION.asPermission())) return;
+        if (!Configuration.<Boolean>get(ConfigurationKey.NEXO_BLOCK_INTERACTION_CONVERSION) || !event.getPlayer().hasPermission(Permission.NEXO_BLOCK_INTERACT_CONVERSION.asPermission())) return;
         String itemID = event.getMechanic().getItemID();
         String newName = this.getNewName(itemID);
 
@@ -45,10 +46,10 @@ public class NexoBlockConverter extends BlockConverter implements Listener {
         this.placeBlock(newName, location, blockState);
         event.setCancelled(true);
 
-        if (Configuration.allowBlockConversionPropagation && Configuration.maxBlockConversionPropagationDepth > 1) {
+        if (Configuration.<Boolean>get(ConfigurationKey.ALLOW_BLOCK_CONVERSION_PROPAGATION) && Configuration.<Integer>get(ConfigurationKey.MAX_BLOCK_CONVERSION_PROPAGATION_DEPTH) > 1) {
             Set<Location> processed = new HashSet<>();
             processed.add(location);
-            ConversionCounter counter = new ConversionCounter(Configuration.maxBlockConversionPropagationDepth - 1);
+            ConversionCounter counter = new ConversionCounter(Configuration.<Integer>get(ConfigurationKey.MAX_BLOCK_CONVERSION_PROPAGATION_DEPTH) - 1);
             executeBlockConversion(block.getLocation(), processed, counter);
         }
     }
