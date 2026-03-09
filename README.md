@@ -235,14 +235,46 @@ public class MyPluginConverter extends Converter {
 
 ### Using the Tag System
 
-```java
-// Register a custom tag processor
-TagProcessor myProcessor = new MyCustomTagProcessor();
-tagResolverRegistry.register(myProcessor);
+You can register custom tags to be processed in any text (packets, world conversion, etc.).
 
-// Process tags in a string
-String input = "<glyph:my_icon>Hello World";
-String output = TagResolverUtils.processTags(input, player, tagProcessors);
+**Registering a custom tag processor:**
+```java
+// Get the ITagResolver from Bukkit Services Manager
+RegisteredServiceProvider<ITagResolver> rsp = Bukkit.getServicesManager().getRegistration(ITagResolver.class);
+if (rsp != null) {
+    ITagResolver tagResolver = rsp.getProvider();
+
+    // Register your custom processor
+    tagResolver.registerTagProcessor(new TagProcessor() {
+        @Override
+        public String getTagName() {
+            return "My Custom Tag";
+        }
+
+        @Override
+        public Pattern getPattern() {
+            return Pattern.compile("<my_tag:([^>]+)>");
+        }
+
+        @Override
+        public boolean hasTag(String input) {
+            return input.contains("<my_tag:");
+        }
+
+        @Override
+        public Optional<String> process(String input, Player player) {
+            // Replace <my_tag:hello> with "Hi!"
+            return Optional.of(input.replace("<my_tag:hello>", "Hi!"));
+        }
+    });
+}
+```
+
+**Resolving tags in a string:**
+```java
+ITagResolver tagResolver = ...; // Get from services
+Optional<String> resolved = tagResolver.resolveTags("<glyph:heart> Hello!", player);
+String output = resolved.orElse("<glyph:heart> Hello!");
 ```
 
 ### Using SnakeUtils for YAML Manipulation

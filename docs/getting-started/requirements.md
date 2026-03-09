@@ -5,7 +5,7 @@ To ensure a smooth experience with **CraftEngineConverter**, please make sure yo
 ## 🖥️ Server Requirements
 
 ### Minecraft Server Software
-RecipeBook is compatible with the following server software:
+CraftEngineConverter is compatible with the following server software:
 
 #### ✅ Fully Supported
 - **Paper** - **Recommended** for best performance

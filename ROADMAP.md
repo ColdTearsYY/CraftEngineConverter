@@ -58,7 +58,7 @@
 ## 🎨 Features & Enhancements
 - [x] Glyph tag processor
 - [x] PlaceholderAPI tag processor
-- [ ] Custom tag creation API
+- [x] Custom tag creation API
 - [ ] Tag validation and sanitization
 - [ ] Partial conversion (select items)
 - [x] Dry-run mode
@@ -93,6 +93,7 @@
 
 ## ✅ Recently Completed
 
+- **Custom Tag API**: Implementation of a public API to allow other plugins to register their own tag processors.
 - **Auto-convert on startup**: Configurable selected types and options for automated migration on plugin enable.
 - **Chunk load conversion**: Automated conversion of Nexo and ItemsAdder blocks/furniture when chunks are loaded.
 - **Loot table support**: Comprehensive loot table configuration with conditions, functions, and support for Nexo furniture drops.
