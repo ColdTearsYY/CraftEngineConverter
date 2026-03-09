@@ -2,14 +2,18 @@ package fr.robie.craftengineconverter.api.configuration;
 
 import com.google.gson.reflect.TypeToken;
 import fr.robie.craftengineconverter.api.enums.ArmorConverter;
+import fr.robie.craftengineconverter.api.enums.ConverterOption;
 import fr.robie.craftengineconverter.api.enums.Languages;
 import fr.robie.craftengineconverter.api.enums.LimitType;
 import fr.robie.craftengineconverter.api.utils.ConfigurationDeserializer;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public enum ConfigurationKey {
@@ -18,6 +22,23 @@ public enum ConfigurationKey {
     ENABLE_DEBUG("enable-debug", new TypeToken<>() {}, () -> false),
     LANGUAGE("language", new TypeToken<>() {}, () -> Languages.EN),
     AUTO_CONVERT_ON_STARTUP("auto-convert-on-startup", new TypeToken<>() {}, () -> false),
+    AUTO_CONVERT_ON_STARTUP_TYPES("auto-convert-on-startup-types", new TypeToken<Map<String, List<ConverterOption>>>() {}, HashMap::new, (o, d) -> {
+        if (o instanceof ConfigurationSection section) {
+            Map<String, List<ConverterOption>> map = new HashMap<>();
+            for (String key : section.getKeys(false)) {
+                List<String> stringList = section.getStringList(key);
+                List<ConverterOption> options = new ArrayList<>();
+                for (String s : stringList) {
+                    try {
+                        options.add(ConverterOption.valueOf(s.toUpperCase()));
+                    } catch (IllegalArgumentException ignored) {}
+                }
+                map.put(key, options);
+            }
+            return map;
+        }
+        return d.get();
+    }),
     DEFAULT_MATERIAL("default-material", new TypeToken<>() {}, () -> Material.PAPER),
     DISABLE_DEFAULT_ITALIC("disable-default-italic", new TypeToken<>() {}, () -> true),
     ARMOR_CONVERTER_TYPE("armor-converter-type", new TypeToken<>() {}, () -> ArmorConverter.COMPONENT),

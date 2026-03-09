@@ -4,6 +4,7 @@ import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.database.StorageManager;
+import fr.robie.craftengineconverter.api.enums.ConverterOption;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.format.ComponentMeta;
 import fr.robie.craftengineconverter.api.format.Message;
@@ -139,16 +140,37 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         if (Configuration.<Boolean>get(ConfigurationKey.AUTO_CONVERT_ON_STARTUP)) {
             Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__START);
             long startTimeAutoConverter = System.currentTimeMillis();
-            Collection<Converter> values = this.converterMap.values();
-            AtomicInteger counter = new AtomicInteger(values.size());
-            for (Converter converter : values) {
-                CompletableFuture<Void> voidCompletableFuture = converter.convertAll(Optional.empty());
-                voidCompletableFuture.thenAccept(voidCompletableFuture1 -> {
-                    int remaining = counter.decrementAndGet();
-                    if (remaining == 0) {
-                        Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
-                    }
-                });
+
+            Map<String, List<ConverterOption>> autoConvertOptions = Configuration.get(ConfigurationKey.AUTO_CONVERT_ON_STARTUP_TYPES);
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+            if (autoConvertOptions.isEmpty()) {
+                for (Converter converter : this.converterMap.values()) {
+                    futures.add(converter.convertAll(Optional.empty()));
+                }
+            } else {
+                for (Map.Entry<String, List<ConverterOption>> entry : autoConvertOptions.entrySet()) {
+                    this.getConverter(entry.getKey()).ifPresent(converter -> {
+                        CompletableFuture<Void> converterFuture = CompletableFuture.completedFuture(null);
+                        for (ConverterOption option : entry.getValue()) {
+                            converterFuture = converterFuture.thenCompose(v -> converter.convert(option, Optional.empty(), false, 1));
+                        }
+                        futures.add(converterFuture);
+                    });
+                }
+            }
+
+            if (!futures.isEmpty()) {
+                AtomicInteger counter = new AtomicInteger(futures.size());
+                for (CompletableFuture<Void> future : futures) {
+                    future.thenAccept(v -> {
+                        if (counter.decrementAndGet() == 0) {
+                            Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
+                        }
+                    });
+                }
+            } else {
+                Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
             }
         } else {
             Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__DISABLED);

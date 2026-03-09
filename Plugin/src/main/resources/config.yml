@@ -77,6 +77,17 @@ block-state-limit:
 # Auto-convert items on plugin enable
 auto-convert-on-startup: false
 
+# Select which converters and options should be used on startup
+# If empty, all options for all converters will be used
+# Available options: ITEMS, EMOJIS, IMAGES, LANGUAGES, SOUNDS, RECIPES, PACKS, ALL
+# auto-convert-on-startup-types:
+#   nexo:
+#     - ITEMS
+#     - EMOJIS
+#   itemsadder:
+#     - ITEMS
+#     - IMAGES
+
 # Default material for items
 default-material: "PAPER"
 
