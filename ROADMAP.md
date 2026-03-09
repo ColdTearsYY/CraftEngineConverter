@@ -1,6 +1,6 @@
 # 🗺️ ROADMAP - CraftEngineConverter
 
-> **Last Updated:** February 5, 2026
+> **Last Updated:** March 9, 2026
 > **Project Status:** 🟢 Active Development
 > **This file serves as the main project roadmap and development tracker.**
 
@@ -9,7 +9,7 @@
 ## 🚀 Roadmap
 
 ### Version 1.0.0 ()
-- [ ] Complete Nexo conversion (items, glyphs, emojis, images, languages, sounds, equipment, furniture, custom blocks, mechanics, new components: attack_charge, use effects, damage type, kinetic, swing animation, minimum attack charge, painting variant, piercing)
+- [x] Complete Nexo conversion (items, glyphs, emojis, images, languages, sounds, equipment, furniture, custom blocks, mechanics, new components: attack_charge, use effects, damage type, kinetic, swing animation, minimum attack charge, painting variant, piercing)
 - [x] Replace Nexo block/ furniture with their CraftEngine equivalents
 - [x] Replace ItemsAdder block/ furniture with their CraftEngine equivalents
 - [ ] Documentation complete
@@ -68,7 +68,7 @@
 - [x] Progress bars for long operations
 - [x] Optimize async conversion (thread pools)
 - [x] Progress tracking for large conversions
-- [ ] Cache frequently accessed configs
+- [x] Cache frequently accessed configs (FileCacheManager)
 - [ ] Batch file operations
 
 ---
@@ -93,40 +93,33 @@
 
 ## ✅ Recently Completed
 
-- World conversion engine (chunk & entity processing, async, progress tracking)
-- Block restoration feature (with batch, error handling, and DB migration)
-- Entity restoration in world converter
-- Handheld item model & improved texture conversion
-- Nexo: new components (attack charge, use effects, damage type, swing animation, piercing, kinetic, painting variant)
-- Progress bar improvements & tracking for large conversions
-- Improved config reloads, cache flush, and logging/messages
-- Elytra default slot fix
-- ItemsAdder interaction conversion (blocks/furniture)
-- ItemsAdder image placeholder support
-- ItemsAdder basic furniture conversion
-- ItemsAdder pack conversion
-- ItemsAdder recipe conversion
-- ItemsAdder song conversion
-- ItemsAdder font conversion (no emojis yet)
-- Multiple Translation support (English, French) + easy addition of new languages
-- Nexo Recipes conversion
-- Interaction with furniture/block convert to CE equivalent
-- Fix Nexo JukeboxPlayableComponent && PlaceOn/Break
-- Multi-threaded pack conversion: just add the `--threads=<number>` argument to the command line
-- Dry-run mode for converters just need to add `--dryrun` argument to the command line
-- Configuration for progress bar display for converters
-- Progress bars for long operations
-- Fixed NoSuchFileException in ZIP extraction
-- Added URL decoding validation (..%2F)
-- Added UNC path blocking (\\server\share)
-- Created comprehensive security tests
-- Updated README, CONTRIBUTING, SECURITY_TESTING
-- Implemented Zip Slip protection
-- Created SnakeUtils utility
-- Tag processor system
-- Multi-language support
-- Equipment conversion (Component & Trim)
-- Folia compatibility
+- **Auto-convert on startup**: Configurable selected types and options for automated migration on plugin enable.
+- **Chunk load conversion**: Automated conversion of Nexo and ItemsAdder blocks/furniture when chunks are loaded.
+- **Loot table support**: Comprehensive loot table configuration with conditions, functions, and support for Nexo furniture drops.
+- **ItemsAdder Block States**: Added support for Mushroom blocks, Chorus Plants, Tripwire, and Note Block state conversions.
+- **File Caching System**: Implemented `FileCacheManager` for efficient YAML and JSON file caching and validation.
+- **Enhanced Item Components**: Added support for kinetic, piercing, attack range, swing animation, and damage type components (Nexo).
+- **German Translation**: Added full support for the German language.
+- **Internal Refactoring**: Reorganized package structure, updated block system with builder patterns, and improved furniture class handling.
+- **Improved Logging & Error Handling**: Enhanced message clarity, added configuration load time logging, and detailed error messages for configuration failures.
+- **Block State Mapping Scanner**: Automated scanning of CraftEngine configuration files for block state limits.
+- **World conversion engine** (chunk & entity processing, async, progress tracking)
+- **Block restoration feature** (with batch, error handling, and DB migration)
+- **Entity restoration in world converter**
+- **Handheld item model & improved texture conversion**
+- **Progress bar improvements & tracking for large conversions**
+- **Elytra default slot fix**
+- **ItemsAdder interaction conversion** (blocks/furniture)
+- **ItemsAdder image placeholder support**
+- **ItemsAdder basic furniture conversion**
+- **ItemsAdder pack conversion**
+- **ItemsAdder recipe conversion**
+- **ItemsAdder song conversion**
+- **ItemsAdder font conversion** (no emojis yet)
+- **Multiple Translation support** (English, French, German)
+- **Multi-threaded pack conversion**: Support for `--threads=<number>` argument.
+- **Dry-run mode**: Support for `--dryrun` argument.
+- **Folia compatibility**
 
 ---
 

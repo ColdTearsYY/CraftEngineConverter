@@ -116,3 +116,7 @@ run/
 .factorypath
 .project
 .settings/
+
+.gemini/
+gha-creds-*.json
+/GEMINI.md
