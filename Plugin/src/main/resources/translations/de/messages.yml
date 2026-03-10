@@ -191,6 +191,7 @@ error:
   pack-conversion:
     exception: "Fehler bei der Pack-Konvertierung für §e%plugin%§c."
   converter:
+    missing-dependency: "§cAbhängigkeit §e%item-id%§c wurde in keiner Datei gefunden."
     invalid-glow-drop-color: "[%converter%] §c'%color%' ist keine gültige Farbe für den Glow-Drop bei §e%item%§c. Gültig: §e%valid_colors%§c"
     ia:
       contents-folder-not-found: "ItemsAdder 'contents' Ordner fehlt unter: §e%path%§c"

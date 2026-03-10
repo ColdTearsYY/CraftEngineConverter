@@ -155,6 +155,8 @@ public enum Message {
     WARNING__CONVERTER__IA__RECIPES__UNKNOWN_ITEM_REFERENCE("Unknown ItemsAdder item: §e%item%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
     WARNING__CONVERTER__IA__RECIPES__ITEM_REFERENCE_CONVERSION_FAILURE("Could not convert item reference: §e%item%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
 
+    ERROR__CONVERTER__MISSING_DEPENDENCY("§cDependency §e%item-id%§c not found in any file."),
+
     ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"),
 
     ERROR__CONVERTER__IA__CONTENTS_FOLDER_NOT_FOUND("ItemsAdder contents folder not found: §e%path%§c"),

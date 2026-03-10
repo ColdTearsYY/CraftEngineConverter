@@ -7,8 +7,7 @@ public interface SectionProvider {
     default ConfigurationSection getOrCreateSection(@NotNull ConfigurationSection parentSection, @NotNull String path) {
         if (parentSection.contains(path)) {
             return parentSection.getConfigurationSection(path);
-        } else {
-            return parentSection.createSection(path);
         }
+        return parentSection.createSection(path);
     }
 }

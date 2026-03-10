@@ -84,6 +84,23 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     @Override
+    public List<String> getDependencies() {
+        List<String> dependencies = new ArrayList<>();
+
+        ConfigurationSection directionalSection = this.nexoItemSection.getConfigurationSection("Mechanics.custom_block.directional");
+        if (isNull(directionalSection)) return dependencies;
+
+        for (String key : List.of("y_block", "x_block", "z_block", "north_block", "east_block", "south_block", "west_block", "up_block", "down_block")) {
+            String depRawId = directionalSection.getString(key);
+            if (isValidString(depRawId)) {
+                dependencies.add(depRawId);
+            }
+        }
+
+        return dependencies;
+    }
+
+    @Override
     public void convertMaterial() {
         try {
             this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(this.nexoItemSection.getString("material", "").toUpperCase()));

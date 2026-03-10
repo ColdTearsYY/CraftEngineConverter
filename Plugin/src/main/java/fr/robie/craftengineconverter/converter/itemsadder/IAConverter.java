@@ -117,66 +117,40 @@ public class IAConverter extends Converter {
     }
 
     private void processItemFiles(Queue<ConfigFile> toConvert, File outputFolder, BukkitProgressBar progressBar) {
-        while (!toConvert.isEmpty()) {
-            ConfigFile configFile = toConvert.poll();
-            convertItemsFile(configFile, outputFolder, progressBar);
-        }
-    }
-
-    private void convertItemsFile(ConfigFile configFile, File outputFolder, BukkitProgressBar progressBar) {
-        String fileName = configFile.sourceFile().getName();
-        File itemFile = configFile.sourceFile();
-        YamlConfiguration config = configFile.config();
-
-        YamlConfiguration convertedConfig = new YamlConfiguration();
-        String finalFileName = fileName.replace(".yml", "");
-        String namespace = config.getString("info.namespace", finalFileName);
-        ConfigurationSection items = convertedConfig.createSection("items");
-        ConfigurationSection originalItems = config.getConfigurationSection("items");
-        if (isNull(originalItems)) {
-            Logger.debug(Message.WARNING__CONVERTER__IA__ITEMS__NO_SECTION, "file", fileName);
-            return;
-        }
-
-        List<String> itemsIds = new ArrayList<>();
-        for (String itemId : originalItems.getKeys(false)) {
-            ConfigurationSection section = originalItems.getConfigurationSection(itemId);
-            if (isNull(section)) {
-                Logger.debug(Message.WARNING__CONVERTER__IA__ITEMS__SKIPPED_NO_SECTION, "item", itemId, "file", fileName);
-                progressBar.increment();
-                continue;
-            }
-            String finalItemId = namespace + ":" + itemId;
-            try {
-                IAItemsConverter iaItemsConverter = new IAItemsConverter(
-                        finalItemId,
-                        items.createSection(finalItemId),
-                        this,
-                        convertedConfig,
-                        section,
-                        namespace
-                );
-                iaItemsConverter.convertItem();
-                iaItemsConverter.getCraftEngineItemsConfiguration().serialize(convertedConfig, "items." + finalItemId, getOrCreateSection(items, finalItemId));
-
-                if (iaItemsConverter.isIncludeInsideInventory()) {
-                    itemsIds.add(finalItemId);
+        ItemConversionContext<IAItemsConverter> ctx = new ItemConversionContext<>(
+            new ArrayList<>(toConvert),
+            (configFile, rawItemId, finalItemId, itemSection, convertedConfig, outputSection) -> {
+                String namespace = configFile.config().getString("info.namespace", configFile.sourceFile().getName().replace(".yml", ""));
+                return new IAItemsConverter(finalItemId, outputSection, this, convertedConfig, itemSection, namespace);
+            },
+            (configFile, convertedConfig) -> {
+                YamlConfiguration config = configFile.config();
+                String namespace = config.getString("info.namespace", configFile.sourceFile().getName().replace(".yml", ""));
+                convertArmorSection(config.getConfigurationSection("equipments"), convertedConfig, namespace, true);
+                convertArmorSection(config.getConfigurationSection("armors_rendering"), convertedConfig, namespace, false);
+            },
+            configFile -> {
+                ConfigurationSection originalItems = configFile.config().getConfigurationSection("items");
+                if (isNull(originalItems)) {
+                    Logger.debug(Message.WARNING__CONVERTER__IA__ITEMS__NO_SECTION, "file", configFile.sourceFile().getName());
+                    return Collections.emptySet();
                 }
-                PluginNameMapper pluginNameMapper = PluginNameMapper.getInstance();
-                pluginNameMapper.storeMapping(Plugins.ITEMS_ADDER, itemId, finalItemId);
-                pluginNameMapper.storeMapping(Plugins.ITEMS_ADDER, finalItemId, finalItemId);
-            } catch (Exception e) {
-                Logger.showException(Message.ERROR__CONVERTER__IA__ITEMS__CONVERSION_FAILURE, e, "item", itemId, "file", fileName);
-            }
-            progressBar.increment();
-        }
-
-        convertArmorSection(config.getConfigurationSection("equipments"), convertedConfig, namespace, true);
-        convertArmorSection(config.getConfigurationSection("armors_rendering"), convertedConfig, namespace, false);
-
-        generateCategorie(itemsIds, convertedConfig, finalFileName);
-        if (this.settings.dryRunEnabled()) return;
-        saveConvertedConfig(convertedConfig, configFile, itemFile, outputFolder, "items", "item");
+                return originalItems.getKeys(false);
+            },
+            (configFile, rawItemId) -> {
+                ConfigurationSection originalItems = configFile.config().getConfigurationSection("items");
+                if (isNull(originalItems)) return null;
+                return originalItems.getConfigurationSection(rawItemId);
+            },
+            (configFile, rawItemId) -> configFile.config().getString("info.namespace", configFile.sourceFile().getName().replace(".yml", "")) + ":" + rawItemId
+        );
+        ctx.scanWithDependencies();
+        ctx.convertInOrder(progressBar, (rawItemId, converter) -> {
+            PluginNameMapper pluginNameMapper = PluginNameMapper.getInstance();
+            pluginNameMapper.storeMapping(Plugins.ITEMS_ADDER, rawItemId, ctx.getFinalId(rawItemId));
+            pluginNameMapper.storeMapping(Plugins.ITEMS_ADDER, ctx.getFinalId(rawItemId), ctx.getFinalId(rawItemId));
+        });
+        ctx.saveAll(outputFolder, this);
     }
 
     private void convertArmorSection(ConfigurationSection armorSection, YamlConfiguration convertedConfig, String namespace, boolean requireArmorType) {

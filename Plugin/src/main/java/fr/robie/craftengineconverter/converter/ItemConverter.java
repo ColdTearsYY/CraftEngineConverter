@@ -11,14 +11,16 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class ItemConverter extends ObjectUtils {
+    private final Map<String, ItemConverter> resolvedDependencies = new HashMap<>();
+
     protected final @NotNull String itemId;
     private final Converter converter;
-    private final Map<String,Object> savedModelTemplates = new HashMap<>();
     public final CraftEngineItemUtils craftEngineItemUtils;
     protected boolean excludeFromInventory = false;
     protected YamlConfiguration fileConfig;
@@ -139,31 +141,8 @@ public abstract class ItemConverter extends ObjectUtils {
     public void convertExcludeFromInventory(){}
     public void convertOther(){}
 
-    public void setSavedModelTemplates(Map<String,Object> savedModelTemplates){
-        this.savedModelTemplates.clear();
-        if (savedModelTemplates != null && !savedModelTemplates.isEmpty()) {
-            this.savedModelTemplates.putAll(savedModelTemplates);
-        }
-    }
-
-    public Map<String,Object> getSavedModelTemplates(){
-        return new HashMap<>(this.savedModelTemplates);
-    }
-
     protected boolean notEmptyOrNull(List<String> list, int index) {
         return list != null && list.size() > index && list.get(index) != null && !list.get(index).isEmpty();
-    }
-
-    protected void setIfNotNull(ConfigurationSection section, String key, Object value) {
-        if (value != null) {
-            section.set(key, value);
-        }
-    }
-
-    protected void setIfNotEmpty(ConfigurationSection section, String key, String value) {
-        if (value != null && !value.isEmpty()) {
-            section.set(key, value);
-        }
     }
 
     public void setAssetId(String assetId){
@@ -210,4 +189,16 @@ public abstract class ItemConverter extends ObjectUtils {
         return model;
     }
 
+    public List<String> getDependencies() {
+        return Collections.emptyList();
+    }
+
+    public void addResolvedDependency(String rawItemId, ItemConverter converter) {
+        this.resolvedDependencies.put(rawItemId, converter);
+    }
+
+    @Nullable
+    public ItemConverter getResolvedDependency(String rawItemId) {
+        return this.resolvedDependencies.get(rawItemId);
+    }
 }

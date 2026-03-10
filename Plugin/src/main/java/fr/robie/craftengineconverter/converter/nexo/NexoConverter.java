@@ -96,58 +96,15 @@ public class NexoConverter extends Converter {
     }
 
     private void processConfigs(Queue<ConfigFile> toConvert, File outputBase, BukkitProgressBar progress) {
-        for (ConfigFile configFile : toConvert) {
-            processConfigFile(configFile, outputBase, progress);
-        }
-    }
-
-    private void processConfigFile(ConfigFile configFile, File outputBase, BukkitProgressBar progress) {
-        String fileName = configFile.sourceFile().getName();
-        File itemFile = configFile.sourceFile();
-        YamlConfiguration config = configFile.config();
-
-        YamlConfiguration convertedConfig = new YamlConfiguration();
-        ConfigurationSection items = convertedConfig.createSection("items");
-        Set<String> keys = config.getKeys(false);
-        List<String> itemsIds = new ArrayList<>();
-        String finalFileName = fileName.substring(0, fileName.length() - 4);
-
-        for (String itemId : keys) {
-            ConfigurationSection section = config.getConfigurationSection(itemId);
-
-            if (section == null) {
-                progress.increment();
-                continue;
-            }
-
-            String finalItemId = finalFileName + ":" + itemId;
-
-            try {
-                NexoItemConverter nexoItemConverter = new NexoItemConverter(
-                        this,
-                        section,
-                        finalItemId,
-                        items.createSection(finalItemId),
-                        convertedConfig
-                );
-
-                nexoItemConverter.convertItem();
-                nexoItemConverter.getCraftEngineItemsConfiguration().serialize(convertedConfig, "items." + finalItemId, getOrCreateSection(items, finalItemId));
-
-                if (nexoItemConverter.isIncludeInsideInventory()) {
-                    itemsIds.add(finalItemId);
-                }
-                PluginNameMapper.getInstance().storeMapping(Plugins.NEXO, itemId, finalItemId);
-            } catch (Exception e) {
-                Logger.showException("Error converting item: " + finalItemId, e);
-            }
-
-            progress.increment();
-        }
-
-        generateCategorie(itemsIds, convertedConfig, finalFileName);
-        if (this.settings.dryRunEnabled()) return;
-        saveConvertedConfig(convertedConfig, configFile, itemFile, outputBase, "items","item");
+        ItemConversionContext<NexoItemConverter> ctx = new ItemConversionContext<>(new ArrayList<>(toConvert),
+            (configFile, rawItemId, finalItemId, itemSection, convertedConfig, outputSection) ->
+                new NexoItemConverter(this, itemSection, finalItemId, outputSection, convertedConfig)
+        );
+        ctx.scanWithDependencies();
+        ctx.convertInOrder(progress, (rawItemId, converter) ->
+            PluginNameMapper.getInstance().storeMapping(Plugins.NEXO, rawItemId, ctx.getFinalId(rawItemId))
+        );
+        ctx.saveAll(outputBase, this);
     }
 
     @Override

@@ -192,6 +192,7 @@ error:
   pack-conversion:
     exception: "Une erreur est survenue lors de la conversion du pack pour le plugin §e%plugin%§c"
   converter:
+    missing-dependency: "§cDépendance §e%item-id%§c introuvable dans aucun fichier."
     invalid-glow-drop-color: "[%converter%] §c'%color%' n'est pas une couleur de drop lumineuse valide pour l'item §e%item%§c. Couleurs autorisées : §e%valid_colors%§c"
     ia:
       contents-folder-not-found: "Dossier de contenu ItemsAdder non trouvé : §e%path%§c"
