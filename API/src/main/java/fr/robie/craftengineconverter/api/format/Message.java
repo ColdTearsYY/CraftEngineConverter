@@ -132,6 +132,7 @@ public enum Message {
     WARNING__FURNITURE__NON_NUMERIC_BARRIER_RANGE_BOUNDS("§cNon-numeric range bounds §e%range%§c in barrier entry §e%entry%§c."),
     WARNING__FURNITURE__NON_NUMERIC_BARRIER_VALUE("§cNon-numeric value §e%value%§c in barrier entry §e%entry%§c."),
 
+    WARNING__CONVERTER__CIRCULAR_DEPENDENCY("§eCircular dependency detected, falling back to original order for unresolved items."),
 
     WARNING__CONVERTER__IA__FURNITURE__UNKNOWN_DISPLAY_TRANSFORM("§cUnknown furniture display transform type §e%transform%§c for item §e%item%§c."),
 
@@ -156,6 +157,7 @@ public enum Message {
     WARNING__CONVERTER__IA__RECIPES__ITEM_REFERENCE_CONVERSION_FAILURE("Could not convert item reference: §e%item%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
 
     ERROR__CONVERTER__MISSING_DEPENDENCY("§cDependency §e%item-id%§c not found in any file."),
+    ERROR__CONVERTER__ITEM_LOAD_FAILURE("Failed to load item §e%item%§c from file §e%file%§c."),
 
     ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"),
 

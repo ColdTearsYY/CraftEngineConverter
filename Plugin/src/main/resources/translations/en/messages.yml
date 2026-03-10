@@ -104,6 +104,7 @@ warning:
     delete-failure: "Failed to delete folder §e%folder% (%path%)§c!"
 
   converter:
+    circular-dependency: "§eCircular dependency detected, falling back to original order for unresolved items."
     nexo:
       tool:
         no-blocks-found: "No valid blocks found for tool rules in item §e%item%§c. Skipping tool rules conversion."
@@ -215,4 +216,4 @@ error:
         conversion-exception: "An error occurred during ItemsAdder sound conversion"
       recipes:
         conversion-exception: "An error occurred during ItemsAdder recipe conversion"
-        conversion-failure: "Failed to convert ItemsAdder recipe: §e%recipe%§c in file: §e%file%§c"
+

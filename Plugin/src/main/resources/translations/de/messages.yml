@@ -102,6 +102,7 @@ warning:
     delete-failure: "Konnte den Ordner §e%folder% (%path%)§c nicht löschen!"
 
   converter:
+    circular-dependency: "§eZirkuläre Abhängigkeit erkannt, benutze Originalreihenfolge für nicht aufgelöste Items."
     nexo:
       tool:
         no-blocks-found: "Keine Blöcke für die Tool-Rules in §e%item%§c gefunden. Überspringe den Part."
@@ -213,4 +214,3 @@ error:
         conversion-exception: "Fehler bei der Sound-Konvertierung."
       recipes:
         conversion-exception: "Fehler bei der Rezept-Konvertierung."
-        conversion-failure: "Rezept §e%recipe%§c ist fehlgeschlagen."

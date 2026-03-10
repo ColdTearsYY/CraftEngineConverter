@@ -99,6 +99,7 @@ warning:
     delete-failure: "Échec de la suppression du dossier §e%folder% (%path%)§c !"
 
   converter:
+    circular-dependency: "§eDépendance circulaire détectée, retour à l'ordre original pour les éléments non résolus."
     nexo:
       tool:
         no-blocks-found: "Aucun bloc valide trouvé pour les règles d'outil dans l'item §e%item%§c. Conversion des règles d'outil ignorée."
@@ -215,3 +216,4 @@ error:
       recipes:
         conversion-exception: "Une erreur est survenue lors de la conversion des recettes ItemsAdder"
         conversion-failure: "Échec de la conversion de la recette ItemsAdder : §e%recipe%§c dans le fichier : §e%file%§c"
+

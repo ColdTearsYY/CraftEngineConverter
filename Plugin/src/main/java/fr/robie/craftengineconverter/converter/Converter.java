@@ -540,7 +540,7 @@ public abstract class Converter extends YamlUtils {
                     this.fileByRawId.put(rawItemId, configFile);
                     this.finalIdByRawId.put(rawItemId, finalItemId);
                 } catch (Exception e) {
-                    Logger.showException("Error building converter for item: " + finalItemId, e);
+                    Logger.showException(Message.ERROR__CONVERTER__ITEM_LOAD_FAILURE, e, "item", finalItemId, "file", configFile.sourceFile().getName());
                 }
             }
         }
@@ -552,7 +552,7 @@ public abstract class Converter extends YamlUtils {
                 scanFile(file);
                 if (this.fileByRawId.containsKey(rawItemId)) return true;
             }
-            Logger.debug(Message.ERROR__CONVERTER__MISSING_DEPENDENCY, LogType.WARNING, "rawItemId", rawItemId);
+            Logger.debug(Message.ERROR__CONVERTER__MISSING_DEPENDENCY, LogType.WARNING, "item-id", rawItemId);
             return false;
         }
 
@@ -587,7 +587,7 @@ public abstract class Converter extends YamlUtils {
                 }
             }
             if (sortedRawIds.size() != this.convertersByRawId.size()) {
-                Logger.info("Circular dependency detected, falling back to original order for unresolved items.", LogType.WARNING);
+                Logger.info(Message.WARNING__CONVERTER__CIRCULAR_DEPENDENCY, LogType.WARNING);
                 this.convertersByRawId.keySet().stream()
                         .filter(rawId -> !sortedRawIds.contains(rawId))
                         .forEach(sortedRawIds::add);
