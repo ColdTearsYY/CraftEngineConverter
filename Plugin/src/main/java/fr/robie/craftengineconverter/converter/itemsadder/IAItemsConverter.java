@@ -13,6 +13,7 @@ import fr.robie.craftengineconverter.api.configuration.item.behavior.block.state
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.AxisBlockStateProperty;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.HorizontalDirectionBlockStateProperty;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurniturePlacement;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.ItemElement;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.Placement;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ArmorStandElement;
@@ -31,10 +32,9 @@ import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatc
 import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.settings.GlowDropColorConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurniturePlacement;
-import fr.robie.craftengineconverter.api.enums.ItemDisplayType;
 import fr.robie.craftengineconverter.api.enums.ComponentFlag;
 import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
+import fr.robie.craftengineconverter.api.enums.ItemDisplayType;
 import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.Logger;
@@ -69,8 +69,8 @@ public class IAItemsConverter extends ItemConverter {
     private final ConfigurationSection iaItemSection;
     private final String namespace;
 
-    public IAItemsConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig, ConfigurationSection iaItemSection, String namespace) {
-        super(itemId, craftEngineItemSection, converter, fileConfig);
+    public IAItemsConverter(@NotNull String itemId, Converter converter, YamlConfiguration fileConfig, ConfigurationSection iaItemSection, String namespace) {
+        super(itemId, converter, fileConfig);
         this.iaItemSection = iaItemSection;
         this.namespace = namespace;
     }

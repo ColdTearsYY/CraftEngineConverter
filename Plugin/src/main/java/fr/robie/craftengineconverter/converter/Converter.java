@@ -438,7 +438,7 @@ public abstract class Converter extends YamlUtils {
 
     @FunctionalInterface
     public interface ConverterFactory<T extends ItemConverter> {
-        @Nullable T create(ConfigFile configFile, String rawItemId, String finalItemId, ConfigurationSection itemSection, YamlConfiguration convertedConfig, ConfigurationSection outputSection);
+        @Nullable T create(ConfigFile configFile, String rawItemId, String finalItemId, ConfigurationSection itemSection, YamlConfiguration convertedConfig);
     }
 
     @FunctionalInterface
@@ -532,8 +532,7 @@ public abstract class Converter extends YamlUtils {
                 try {
                     T converter = this.factory.create(
                             configFile, rawItemId, finalItemId, itemSection,
-                            convertedConfig,
-                            this.itemsSectionByFile.get(configFile).createSection(finalItemId)
+                            convertedConfig
                     );
                     if (converter == null) continue;
                     this.convertersByRawId.put(rawItemId, converter);
@@ -601,12 +600,25 @@ public abstract class Converter extends YamlUtils {
             for (String rawItemId : sortedRawIds) {
                 T converter = this.convertersByRawId.get(rawItemId);
                 if (converter == null) continue;
+                try {
+                    converter.convertItem();
+                    if (itemPostProcessor != null) itemPostProcessor.process(rawItemId, converter);
+                    this.injectResolvedDependency(rawItemId, converter);
+                } catch (Exception e) {
+                    Logger.showException("Error converting item: " + this.finalIdByRawId.get(rawItemId), e);
+                } finally {
+                    progress.increment();
+                }
+            }
+
+            for (String rawItemId : sortedRawIds) {
+                T converter = this.convertersByRawId.get(rawItemId);
+                if (converter == null || converter.isInternalOnly()) continue;
 
                 String finalItemId = this.finalIdByRawId.get(rawItemId);
                 ConfigFile configFile = this.fileByRawId.get(rawItemId);
 
                 try {
-                    converter.convertItem();
                     converter.getCraftEngineItemsConfiguration().serialize(
                             this.convertedConfigByFile.get(configFile),
                             "items." + finalItemId,
@@ -615,12 +627,8 @@ public abstract class Converter extends YamlUtils {
                     if (converter.isIncludeInsideInventory()) {
                         this.finalItemIdsByFile.get(configFile).add(finalItemId);
                     }
-                    if (itemPostProcessor != null) itemPostProcessor.process(rawItemId, converter);
-                    this.injectResolvedDependency(rawItemId, converter);
                 } catch (Exception e) {
-                    Logger.showException("Error converting item: " + finalItemId, e);
-                } finally {
-                    progress.increment();
+                    Logger.showException("Error serializing item: " + finalItemId, e);
                 }
             }
         }

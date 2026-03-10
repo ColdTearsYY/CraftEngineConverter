@@ -8,7 +8,11 @@ import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.FallingBlockBehavior;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockAppearance;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockVariant;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.MultiStateBlock;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.AxisBlockStateProperty;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.*;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ItemDisplayElement;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.HappyGhastHitbox;
@@ -47,6 +51,7 @@ import fr.robie.craftengineconverter.api.utils.FloatsUtils;
 import fr.robie.craftengineconverter.common.BlockStatesMapper;
 import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoBestTool;
+import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoDirectionBlock;
 import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoMinimalType;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
@@ -78,8 +83,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class NexoItemConverter extends ItemConverter {
     private final ConfigurationSection nexoItemSection;
 
-    public NexoItemConverter(Converter converter, ConfigurationSection nexoItemSection, String itemId, ConfigurationSection craftEngineItemSection, YamlConfiguration convertedConfig) {
-        super(itemId, craftEngineItemSection,converter,convertedConfig);
+    public NexoItemConverter(Converter converter, ConfigurationSection nexoItemSection, String itemId, YamlConfiguration convertedConfig) {
+        super(itemId, converter,convertedConfig);
         this.nexoItemSection = nexoItemSection;
     }
 
@@ -1348,6 +1353,8 @@ public class NexoItemConverter extends ItemConverter {
             case "block/cube_all" -> buildGeneratedModel(packSection, "minecraft:block/cube_all",  "all");
             case "block/cube_top" -> buildCubeTopModel(packSection);
             case "item/handheld"  -> buildGeneratedModel(packSection, "minecraft:item/handheld",   "layer0");
+            case "block/cube_column" -> buildModel(packSection, "minecraft:block/cube_column", "end", "side");
+            case "block/cube_column_horizontal" -> buildModel(packSection, "minecraft:block/cube_column_horizontal", "end", "side");
 
             default -> Logger.info(Message.WARNING__CONVERTER__NEXO__MODEL__PARENT_NOT_SUPPORTED, LogType.WARNING, "parent", parentModel, "item", this.itemId);
         }
@@ -1370,6 +1377,35 @@ public class NexoItemConverter extends ItemConverter {
             this.craftEngineItemsConfiguration.setModelConfiguration(model);
         } else {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent);
+        }
+    }
+
+    private void buildModel(ConfigurationSection packSection, String parent, String ... textureKeys) {
+        ConfigurationSection texturesSection = packSection.getConfigurationSection("textures");
+        if (texturesSection == null) texturesSection = packSection.getConfigurationSection("texture");
+        if (texturesSection == null) {
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent);
+            return;
+        }
+        GenerationConfiguration generation = new GenerationConfiguration(parent);
+        String modelPath = null;
+        for (String textureKey : textureKeys) {
+            String texturePath = texturesSection.getString(textureKey);
+            if (isValidString(texturePath)) {
+                String finalTexturePath = namespaced(texturePath);
+                generation.addTexture(textureKey, finalTexturePath);
+                if (modelPath == null) {
+                    modelPath = finalTexturePath;
+                }
+            } else {
+                Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent, "texture_key", textureKey);
+                return;
+            }
+        }
+        if (modelPath != null) {
+            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath+"_"+ UUID.randomUUID());
+            model.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(model);
         }
     }
 
@@ -1570,7 +1606,82 @@ public class NexoItemConverter extends ItemConverter {
                 }
             }
         }
-        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, this.itemId, modelConfiguration));
+        ConfigurationSection directionalSection = nexoCustomBlockSection.getConfigurationSection("directional");
+        if (isNotNull(directionalSection)){
+            try {
+                NexoDirectionBlock directionBlock = NexoDirectionBlock.valueOf(directionalSection.getString("type","").toUpperCase());
+                switch (directionBlock) {
+                    case LOG -> {
+                        String xBlock = directionalSection.getString("x_block", "");
+                        String yBlock = directionalSection.getString("y_block", "");
+                        String zBlock = directionalSection.getString("z_block", "");
+                        if (isValidString(yBlock) && isValidString(xBlock) && isValidString(zBlock)){
+                            ItemConverter xResolvedDependency = this.getResolvedDependency(xBlock);
+                            ItemConverter yResolvedDependency = this.getResolvedDependency(yBlock);
+                            ItemConverter zResolvedDependency = this.getResolvedDependency(zBlock);
+                            if (isNotNull(yResolvedDependency) && isNotNull(xResolvedDependency) && isNotNull(zResolvedDependency)){
+                                xResolvedDependency.markAsInternalOnly();
+                                yResolvedDependency.markAsInternalOnly();
+                                zResolvedDependency.markAsInternalOnly();
+
+                                MultiStateBlock multiStateBlock = new MultiStateBlock();
+
+                                ModelConfiguration xModelConfiguration = xResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
+                                ModelConfiguration yModelConfiguration = yResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
+                                ModelConfiguration zModelConfiguration = zResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
+                                if (isNotNull(xModelConfiguration) && isNotNull(yModelConfiguration) && isNotNull(zModelConfiguration)){
+                                    multiStateBlock.addAppearance("axisX", BlockAppearance.autoState(Plugins.NEXO, state, this.itemId, xModelConfiguration).postProcessor(section -> {
+                                        ConfigurationSection model = getOrCreateSection(section, "model");
+                                        model.set("x", 90);
+                                        model.set("y", 90);
+                                    }).build());
+
+                                    multiStateBlock.addAppearance("axisY", BlockAppearance.autoState(Plugins.NEXO, state, this.itemId, yModelConfiguration).build());
+
+                                    multiStateBlock.addAppearance("axisZ", BlockAppearance.autoState(Plugins.NEXO, state, this.itemId, zModelConfiguration).postProcessor(section -> {
+                                        ConfigurationSection model = getOrCreateSection(section, "model");
+                                        model.set("x", 90);
+                                    }).build());
+
+                                    AxisBlockStateProperty axis = new AxisBlockStateProperty("axis", Direction.Axis.Y);
+                                    multiStateBlock.addProperty(axis);
+                                    multiStateBlock.addVariant(new BlockVariant("axisX").addVariantCondition(axis, Direction.Axis.X));
+                                    multiStateBlock.addVariant(new BlockVariant("axisY").addVariantCondition(axis, Direction.Axis.Y));
+                                    multiStateBlock.addVariant(new BlockVariant("axisZ").addVariantCondition(axis, Direction.Axis.Z));
+                                    blockConfiguration.setStateBlock(multiStateBlock);
+                                } else {
+                                    Logger.info("Ignoring directional configuration for custom block "+this.itemId+" due to missing model configuration in axis blocks", LogType.INFO);
+                                }
+                            } else {
+                                if (!isNotNull(xResolvedDependency)){
+                                    Logger.info("Ignoring directional configuration for custom block "+this.itemId+" due to unknown x_block dependency "+xBlock, LogType.INFO);
+                                }
+                                if (!isNotNull(yResolvedDependency)){
+                                    Logger.info("Ignoring directional configuration for custom block "+this.itemId+" due to unknown y_block dependency "+yBlock, LogType.INFO);
+                                }
+                                if (!isNotNull(zResolvedDependency)) {
+                                    Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to unknown z_block dependency " + zBlock, LogType.INFO);
+                                }
+                            }
+                        } else {
+                            if (!isValidString(xBlock)){
+                                Logger.info("Ignoring directional configuration for custom block "+this.itemId+" due to missing x_block", LogType.INFO);
+                            }
+                            if (!isValidString(yBlock)){
+                                Logger.info("Ignoring directional configuration for custom block "+this.itemId+" due to missing y_block", LogType.INFO);
+                            }
+                            if (!isValidString(zBlock)) {
+                                Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to missing z_block", LogType.INFO);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Logger.info("Ignoring directional configuration for custom block "+this.itemId+" due to unknown type "+directionalSection.getString("type"), LogType.INFO);
+            }
+        } else {
+            blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, this.itemId, modelConfiguration));
+        }
         ConfigurationSection sounds = nexoCustomBlockSection.getConfigurationSection("block_sounds");
         BlockSettings blockSettings = blockConfiguration.getBlockSettings();
         if (sounds != null) {

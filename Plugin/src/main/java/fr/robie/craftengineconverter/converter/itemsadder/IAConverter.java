@@ -119,9 +119,9 @@ public class IAConverter extends Converter {
     private void processItemFiles(Queue<ConfigFile> toConvert, File outputFolder, BukkitProgressBar progressBar) {
         ItemConversionContext<IAItemsConverter> ctx = new ItemConversionContext<>(
             new ArrayList<>(toConvert),
-            (configFile, rawItemId, finalItemId, itemSection, convertedConfig, outputSection) -> {
+            (configFile, rawItemId, finalItemId, itemSection, convertedConfig) -> {
                 String namespace = configFile.config().getString("info.namespace", configFile.sourceFile().getName().replace(".yml", ""));
-                return new IAItemsConverter(finalItemId, outputSection, this, convertedConfig, itemSection, namespace);
+                return new IAItemsConverter(finalItemId, this, convertedConfig, itemSection, namespace);
             },
             (configFile, convertedConfig) -> {
                 YamlConfiguration config = configFile.config();

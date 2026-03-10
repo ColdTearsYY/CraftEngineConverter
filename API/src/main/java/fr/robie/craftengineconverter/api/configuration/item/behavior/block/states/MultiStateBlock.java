@@ -54,8 +54,7 @@ public class MultiStateBlock implements StateBlock {
 
         ConfigurationSection propertiesSection = getOrCreateSection(statesConfigurationSection, "properties");
         for (BlockStateProperty<?> property : this.properties) {
-            ConfigurationSection propertySection = getOrCreateSection(propertiesSection, property.getName());
-            property.serialize(propertySection);
+            property.serialize(propertiesSection);
         }
 
         ConfigurationSection appearancesSection = getOrCreateSection(statesConfigurationSection, "appearances");

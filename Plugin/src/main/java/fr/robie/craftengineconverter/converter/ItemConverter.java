@@ -21,17 +21,17 @@ public abstract class ItemConverter extends ObjectUtils {
 
     protected final @NotNull String itemId;
     private final Converter converter;
-    public final CraftEngineItemUtils craftEngineItemUtils;
     protected boolean excludeFromInventory = false;
     protected YamlConfiguration fileConfig;
     protected String assetId;
 
+    private boolean internalOnly = false;
+
     protected final CraftEngineItemsConfiguration craftEngineItemsConfiguration;
 
-    public ItemConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig) {
+    public ItemConverter(@NotNull String itemId, Converter converter, YamlConfiguration fileConfig) {
         this.itemId = itemId;
         this.converter = converter;
-        this.craftEngineItemUtils = new CraftEngineItemUtils(craftEngineItemSection);
         this.fileConfig = fileConfig;
         this.fileConfig.options().pathSeparator('\n');
         this.craftEngineItemsConfiguration = new CraftEngineItemsConfiguration(itemId, Configuration.get(ConfigurationKey.DEFAULT_MATERIAL));
@@ -178,6 +178,14 @@ public abstract class ItemConverter extends ObjectUtils {
 
     public Converter getConverter() {
         return this.converter;
+    }
+
+    public void markAsInternalOnly() {
+        this.internalOnly = true;
+    }
+
+    public boolean isInternalOnly() {
+        return this.internalOnly;
     }
 
     protected SimpleModelConfiguration buildSimpleModel(String parent, String texture) {

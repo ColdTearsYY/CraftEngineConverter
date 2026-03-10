@@ -97,8 +97,8 @@ public class NexoConverter extends Converter {
 
     private void processConfigs(Queue<ConfigFile> toConvert, File outputBase, BukkitProgressBar progress) {
         ItemConversionContext<NexoItemConverter> ctx = new ItemConversionContext<>(new ArrayList<>(toConvert),
-            (configFile, rawItemId, finalItemId, itemSection, convertedConfig, outputSection) ->
-                new NexoItemConverter(this, itemSection, finalItemId, outputSection, convertedConfig)
+            (configFile, rawItemId, finalItemId, itemSection, convertedConfig) ->
+                new NexoItemConverter(this, itemSection, finalItemId, convertedConfig)
         );
         ctx.scanWithDependencies();
         ctx.convertInOrder(progress, (rawItemId, converter) ->
