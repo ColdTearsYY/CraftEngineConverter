@@ -3,15 +3,13 @@ package fr.robie.craftengineconverter.converter.nexo;
 import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
+import fr.robie.craftengineconverter.api.configuration.item.AbstractEffectsConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.FallingBlockBehavior;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureSettings;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.Placement;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.Rules;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.*;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ItemDisplayElement;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.HappyGhastHitbox;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.Hitbox;
@@ -41,9 +39,6 @@ import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatc
 import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.settings.ProjectileSettingConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.AbstractEffectsConfiguration;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurniturePlacement;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureRotation;
 import fr.robie.craftengineconverter.api.enums.*;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
@@ -1078,7 +1073,6 @@ public class NexoItemConverter extends ItemConverter {
                                         }
                                     }
 
-//                                    getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
                                     this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId,(EquipmentSlot) null));
                                 }
                             }
@@ -1150,6 +1144,8 @@ public class NexoItemConverter extends ItemConverter {
                     }
                 }
             }
+            tryBuild2dShieldModel(packSection);
+            tryBuild2dFishingRodModel(packSection);
             return;
         }
 
@@ -1170,6 +1166,62 @@ public class NexoItemConverter extends ItemConverter {
             return;
         }
         this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(namespacedPath));
+    }
+
+    private void tryBuild2dFishingRodModel(ConfigurationSection packSection) {
+        if (!packSection.contains("cast_texture") || !packSection.contains("texture")) return;
+
+        String castTexture = packSection.getString("cast_texture");
+        String texture = packSection.getString("texture");
+        if (isValidString(castTexture) && isValidString(texture)) {
+            String namespacedCast = namespaced(castTexture);
+            String namespacedTexture = namespaced(texture);
+            if (isValidString(namespacedCast) && isValidString(namespacedTexture)) {
+                ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+
+                SimpleModelConfiguration onTrue = new SimpleModelConfiguration(namespacedCast);
+                GenerationConfiguration castGeneration = new GenerationConfiguration("minecraft:item/fishing_rod");
+                castGeneration.addTexture("layer0", namespacedCast);
+                onTrue.setGeneration(castGeneration);
+                castCondition.setOnTrue(onTrue);
+
+                SimpleModelConfiguration onFalse = new SimpleModelConfiguration(namespacedTexture);
+                GenerationConfiguration normalGeneration = new GenerationConfiguration("minecraft:item/fishing_rod");
+                normalGeneration.addTexture("layer0", namespacedTexture);
+                onFalse.setGeneration(normalGeneration);
+                castCondition.setOnFalse(onFalse);
+
+                this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
+            }
+        }
+    }
+
+    private void tryBuild2dShieldModel(ConfigurationSection packSection) {
+        if (!packSection.contains("blocking_texture") || !packSection.contains("texture")) return;
+
+        String blockingTexture = packSection.getString("blocking_texture");
+        String texture = packSection.getString("texture");
+        if (isValidString(blockingTexture) && isValidString(texture)) {
+            String namespacedBlocking = namespaced(blockingTexture);
+            String namespacedTexture = namespaced(texture);
+            if (isValidString(namespacedBlocking) && isValidString(namespacedTexture)) {
+                ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+
+                SimpleModelConfiguration onTrue = new SimpleModelConfiguration(namespacedBlocking);
+                GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/shield");
+                generation.addTexture("base", namespacedBlocking);
+                onTrue.setGeneration(generation);
+                usingItemCondition.setOnTrue(onTrue);
+
+                SimpleModelConfiguration onFalse = new SimpleModelConfiguration(namespacedTexture);
+                generation = new GenerationConfiguration("minecraft:item/shield");
+                generation.addTexture("base", namespacedTexture);
+                onFalse.setGeneration(generation);
+                usingItemCondition.setOnFalse(onFalse);
+
+                this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
+            }
+        }
     }
 
     private void buildElytraModel(ConfigurationSection packSection) {
@@ -1228,7 +1280,7 @@ public class NexoItemConverter extends ItemConverter {
                 String namespacedModel = namespaced(modelPath);
                 if (isValidString(namespacedModel)) {
                     ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
-                    usingItemCondition.setOnTrue( new SimpleModelConfiguration(namespacedBlocking));
+                    usingItemCondition.setOnTrue(new SimpleModelConfiguration(namespacedBlocking));
                     usingItemCondition.setOnFalse(new SimpleModelConfiguration(namespacedModel));
 
                     this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
