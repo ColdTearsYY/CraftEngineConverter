@@ -1584,7 +1584,7 @@ public class NexoItemConverter extends ItemConverter {
                     modelPath = finalTexturePath;
                 }
             } else {
-                Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent, "texture_key", textureKey);
+                Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE_KEY, LogType.WARNING, "item", this.itemId, "parent", parent, "key", textureKey);
                 return;
             }
         }

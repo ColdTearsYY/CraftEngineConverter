@@ -124,6 +124,7 @@ warning:
         parent-not-supported: "§e%parent%§c bei §e%item%§c wird noch nicht unterstützt. Meld das mal dem Dev."
         generated:
           missing-texture: "Keine Textur für §e%item%§c gefunden, obwohl der Parent §e%parent%§c ist."
+          missing-texture-key: "Fehlender Textur-Key §e%key%§c für Item §e%item%§c mit parent_model §e%parent%§c. Textur-Konvertierung wird übersprungen."
         cube-top:
           process-failure: "Texturen für §e%item%§c konnten nicht verarbeitet werden."
           missing-texture: "Side- oder Top-Textur fehlt bei §e%item%§c (cube_top)."

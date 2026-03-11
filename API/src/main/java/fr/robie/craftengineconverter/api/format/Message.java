@@ -102,6 +102,7 @@ public enum Message {
     WARNING__CONVERTER__NEXO__MODEL__NAMESPACE_FAILURE("Failed to namespace model path for item §e%item%§c. Skipping texture conversion."),
     WARNING__CONVERTER__NEXO__MODEL__PARENT_NOT_SUPPORTED("§e%parent%§c parent_model for item §e%item%§c is not supported yet. Skipping texture conversion. Please report to the developer to add support for this parent_model."),
     WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE("No texture path found for item §e%item%§c despite parent_model being §e%parent%§c. Skipping texture conversion."),
+    WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE_KEY("Missing texture key §e%key%§c for item §e%item%§c with parent_model §e%parent%§c. Skipping texture conversion."),
     WARNING__CONVERTER__NEXO__MODEL__CUBE_TOP__PROCESS_FAILURE("Failed to process textures for item §e%item%§c. Skipping texture conversion."),
     WARNING__CONVERTER__NEXO__MODEL__CUBE_TOP__MISSING_TEXTURE("Missing side or top texture for item §e%item%§c despite parent_model being 'block/cube_top'. Skipping texture conversion."),
     WARNING__CONVERTER__NEXO__MODEL__BOW__PROCESS_FAILURE("Failed to process bow model paths for item §e%item%§c. Skipping bow model conversion."),

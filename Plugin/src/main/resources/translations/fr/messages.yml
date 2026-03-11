@@ -121,6 +121,7 @@ warning:
         parent-not-supported: "Le parent_model §e%parent%§c pour l'item §e%item%§c n'est pas encore supporté. Conversion de texture ignorée. Veuillez le signaler au développeur pour ajouter le support de ce parent_model."
         generated:
           missing-texture: "Aucun chemin de texture trouvé pour l'item §e%item%§c malgré un parent_model étant §e%parent%§c. Conversion de texture ignorée."
+          missing-texture-key: "Clé de texture manquante §e%key%§c pour l'item §e%item%§c avec le parent_model §e%parent%§c. Conversion de texture ignorée."
         cube-top:
           process-failure: "Échec du traitement des textures pour l'item §e%item%§c. Conversion de texture ignorée."
           missing-texture: "Texture de côté ou du dessus manquante pour l'item §e%item%§c malgré un parent_model étant 'block/cube_top'. Conversion de texture ignorée."
