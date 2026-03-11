@@ -75,7 +75,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1349,48 +1348,235 @@ public class NexoItemConverter extends ItemConverter {
 
     private void convertModelWithParent(ConfigurationSection packSection, String parentModel) {
         switch (parentModel) {
-            case "item/generated" -> buildGeneratedModel(packSection, "minecraft:item/generated", "layer0");
-            case "block/cube_all" -> buildGeneratedModel(packSection, "minecraft:block/cube_all",  "all");
-            case "block/cube_top" -> buildCubeTopModel(packSection);
-            case "item/handheld"  -> buildGeneratedModel(packSection, "minecraft:item/handheld",   "layer0");
+            // Blocks
+            case "block/block" -> buildModel(packSection, "minecraft:block/block", "all", "amethyst", "base", "beacon", "body", "bottom", "calibrated_side", "dirt", "down", "east", "end_rod", "flower", "flowerpot", "front", "glass", "inner_top", "inside", "leg", "log", "north", "obsidian", "overlay", "particle", "pivot", "plant", "propagule", "round", "saw", "side", "sides", "south", "stem", "tendrils", "texture", "tip", "top", "up", "west");
+            case "block/button" -> buildModel(packSection, "minecraft:block/button", "texture");
+            case "block/button_inventory" -> buildModel(packSection, "minecraft:block/button_inventory", "texture");
+            case "block/button_pressed" -> buildModel(packSection, "minecraft:block/button_pressed", "texture");
+            case "block/calibrated_sculk_sensor" -> buildModel(packSection, "minecraft:block/calibrated_sculk_sensor", "tendrils");
+            case "block/carpet" -> buildModel(packSection, "minecraft:block/carpet", "wool");
+            case "block/coral_fan" -> buildModel(packSection, "minecraft:block/coral_fan", "fan");
+            case "block/coral_wall_fan" -> buildModel(packSection, "minecraft:block/coral_wall_fan", "fan");
+            case "block/crafter" -> buildModel(packSection, "minecraft:block/crafter", "east", "south", "top", "west");
+            case "block/crafter_triggered" -> buildModel(packSection, "minecraft:block/crafter_triggered", "east", "north", "top", "west");
+            case "block/crop" -> buildModel(packSection, "minecraft:block/crop", "crop");
+            case "block/cross" -> buildModel(packSection, "minecraft:block/cross", "cross");
+            case "block/cross_emissive" -> buildModel(packSection, "minecraft:block/cross_emissive", "cross", "cross_emissive");
+            case "block/cube" -> buildModel(packSection, "minecraft:block/cube", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_all" -> buildModel(packSection, "minecraft:block/cube_all", "all");
+            case "block/cube_all_inner_faces" -> buildModel(packSection, "minecraft:block/cube_all_inner_faces", "all");
+            case "block/cube_bottom_top" -> buildModel(packSection, "minecraft:block/cube_bottom_top", "bottom", "particle", "side", "top");
+            case "block/cube_bottom_top_inner_faces" -> buildModel(packSection, "minecraft:block/cube_bottom_top_inner_faces", "bottom", "side", "top");
             case "block/cube_column" -> buildModel(packSection, "minecraft:block/cube_column", "end", "side");
             case "block/cube_column_horizontal" -> buildModel(packSection, "minecraft:block/cube_column_horizontal", "end", "side");
+            case "block/cube_column_mirrored" -> buildModel(packSection, "minecraft:block/cube_column_mirrored", "end", "side");
+            case "block/cube_column_uv_locked_x" -> buildModel(packSection, "minecraft:block/cube_column_uv_locked_x", "end", "side");
+            case "block/cube_column_uv_locked_y" -> buildModel(packSection, "minecraft:block/cube_column_uv_locked_y", "end", "side");
+            case "block/cube_column_uv_locked_z" -> buildModel(packSection, "minecraft:block/cube_column_uv_locked_z", "end", "side");
+            case "block/cube_directional" -> buildModel(packSection, "minecraft:block/cube_directional", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_mirrored" -> buildModel(packSection, "minecraft:block/cube_mirrored", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_mirrored_all" -> buildModel(packSection, "minecraft:block/cube_mirrored_all", "all");
+            case "block/cube_north_west_mirrored" -> buildModel(packSection, "minecraft:block/cube_north_west_mirrored", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_north_west_mirrored_all" -> buildModel(packSection, "minecraft:block/cube_north_west_mirrored_all", "all");
+            case "block/cube_top" -> buildModel(packSection, "minecraft:block/cube_top", "side", "top");
+            case "block/custom_fence_inventory" -> buildModel(packSection, "minecraft:block/custom_fence_inventory", "texture");
+            case "block/custom_fence_post" -> buildModel(packSection, "minecraft:block/custom_fence_post", "particle", "texture");
+            case "block/custom_fence_side_east" -> buildModel(packSection, "minecraft:block/custom_fence_side_east", "texture");
+            case "block/custom_fence_side_north" -> buildModel(packSection, "minecraft:block/custom_fence_side_north", "texture");
+            case "block/custom_fence_side_south" -> buildModel(packSection, "minecraft:block/custom_fence_side_south", "texture");
+            case "block/custom_fence_side_west" -> buildModel(packSection, "minecraft:block/custom_fence_side_west", "texture");
+            case "block/door_bottom_left" -> buildModel(packSection, "minecraft:block/door_bottom_left", "bottom", "top");
+            case "block/door_bottom_left_open" -> buildModel(packSection, "minecraft:block/door_bottom_left_open", "bottom", "top");
+            case "block/door_bottom_right" -> buildModel(packSection, "minecraft:block/door_bottom_right", "bottom", "top");
+            case "block/door_bottom_right_open" -> buildModel(packSection, "minecraft:block/door_bottom_right_open", "bottom", "top");
+            case "block/door_top_left" -> buildModel(packSection, "minecraft:block/door_top_left", "bottom", "top");
+            case "block/door_top_left_open" -> buildModel(packSection, "minecraft:block/door_top_left_open", "bottom", "top");
+            case "block/door_top_right" -> buildModel(packSection, "minecraft:block/door_top_right", "bottom", "top");
+            case "block/door_top_right_open" -> buildModel(packSection, "minecraft:block/door_top_right_open", "bottom", "top");
+            case "block/dried_ghast" -> buildModel(packSection, "minecraft:block/dried_ghast", "bottom", "east", "north", "particle", "south", "tentacles", "top", "west");
+            case "block/fence_inventory" -> buildModel(packSection, "minecraft:block/fence_inventory", "texture");
+            case "block/fence_post" -> buildModel(packSection, "minecraft:block/fence_post", "texture");
+            case "block/fence_side" -> buildModel(packSection, "minecraft:block/fence_side", "texture");
+            case "block/flower_pot_cross" -> buildModel(packSection, "minecraft:block/flower_pot_cross", "plant");
+            case "block/flower_pot_cross_emissive" -> buildModel(packSection, "minecraft:block/flower_pot_cross_emissive", "cross_emissive", "plant");
+            case "block/flowerbed_1" -> buildModel(packSection, "minecraft:block/flowerbed_1", "flowerbed", "stem");
+            case "block/flowerbed_2" -> buildModel(packSection, "minecraft:block/flowerbed_2", "flowerbed", "stem");
+            case "block/flowerbed_3" -> buildModel(packSection, "minecraft:block/flowerbed_3", "flowerbed", "stem");
+            case "block/flowerbed_4" -> buildModel(packSection, "minecraft:block/flowerbed_4", "flowerbed", "stem");
+            case "block/inner_stairs" -> buildModel(packSection, "minecraft:block/inner_stairs", "bottom", "side", "top");
+            case "block/leaves" -> buildModel(packSection, "minecraft:block/leaves", "all");
+            case "block/mossy_carpet_side" -> buildModel(packSection, "minecraft:block/mossy_carpet_side", "side");
+            case "block/observer" -> buildModel(packSection, "minecraft:block/observer", "bottom");
+            case "block/orientable" -> buildModel(packSection, "minecraft:block/orientable", "front", "side", "top");
+            case "block/orientable_vertical" -> buildModel(packSection, "minecraft:block/orientable_vertical", "front", "side");
+            case "block/orientable_with_bottom" -> buildModel(packSection, "minecraft:block/orientable_with_bottom", "bottom", "front", "particle", "side", "top");
+            case "block/outer_stairs" -> buildModel(packSection, "minecraft:block/outer_stairs", "bottom", "side", "top");
+            case "block/piston_extended" -> buildModel(packSection, "minecraft:block/piston_extended", "bottom", "inside", "side");
+            case "block/pointed_dripstone" -> buildModel(packSection, "minecraft:block/pointed_dripstone", "cross");
+            case "block/pressure_plate_down" -> buildModel(packSection, "minecraft:block/pressure_plate_down", "texture");
+            case "block/pressure_plate_up" -> buildModel(packSection, "minecraft:block/pressure_plate_up", "texture");
+            case "block/rail_curved" -> buildModel(packSection, "minecraft:block/rail_curved", "rail");
+            case "block/rail_flat" -> buildModel(packSection, "minecraft:block/rail_flat", "rail");
+            case "block/redstone_dust_side" -> buildModel(packSection, "minecraft:block/redstone_dust_side", "line");
+            case "block/redstone_dust_side_alt" -> buildModel(packSection, "minecraft:block/redstone_dust_side_alt", "line");
+            case "block/sculk_sensor" -> buildModel(packSection, "minecraft:block/sculk_sensor", "tendrils");
+            case "block/slab" -> buildModel(packSection, "minecraft:block/slab", "bottom", "side", "top");
+            case "block/slab_top" -> buildModel(packSection, "minecraft:block/slab_top", "bottom", "side", "top");
+            case "block/sniffer_egg" -> buildModel(packSection, "minecraft:block/sniffer_egg", "bottom", "east", "north", "south", "top", "west");
+            case "block/stairs" -> buildModel(packSection, "minecraft:block/stairs", "bottom", "side", "top");
+            case "block/stem_fruit" -> buildModel(packSection, "minecraft:block/stem_fruit", "stem", "upperstem");
+            case "block/stem_growth0" -> buildModel(packSection, "minecraft:block/stem_growth0", "stem");
+            case "block/stem_growth1" -> buildModel(packSection, "minecraft:block/stem_growth1", "stem");
+            case "block/stem_growth2" -> buildModel(packSection, "minecraft:block/stem_growth2", "stem");
+            case "block/stem_growth3" -> buildModel(packSection, "minecraft:block/stem_growth3", "stem");
+            case "block/stem_growth4" -> buildModel(packSection, "minecraft:block/stem_growth4", "stem");
+            case "block/stem_growth5" -> buildModel(packSection, "minecraft:block/stem_growth5", "stem");
+            case "block/stem_growth6" -> buildModel(packSection, "minecraft:block/stem_growth6", "stem");
+            case "block/stem_growth7" -> buildModel(packSection, "minecraft:block/stem_growth7", "stem");
+            case "block/template_anvil" -> buildModel(packSection, "minecraft:block/template_anvil", "top");
+            case "block/template_azalea" -> buildModel(packSection, "minecraft:block/template_azalea", "side", "top");
+            case "block/template_bars_cap" -> buildModel(packSection, "minecraft:block/template_bars_cap", "bars", "edge");
+            case "block/template_bars_cap_alt" -> buildModel(packSection, "minecraft:block/template_bars_cap_alt", "bars", "edge");
+            case "block/template_bars_post" -> buildModel(packSection, "minecraft:block/template_bars_post", "bars", "edge");
+            case "block/template_bars_post_ends" -> buildModel(packSection, "minecraft:block/template_bars_post_ends", "bars", "edge");
+            case "block/template_bars_side" -> buildModel(packSection, "minecraft:block/template_bars_side", "bars", "edge");
+            case "block/template_bars_side_alt" -> buildModel(packSection, "minecraft:block/template_bars_side_alt", "bars", "edge");
+            case "block/template_cake_with_candle" -> buildModel(packSection, "minecraft:block/template_cake_with_candle", "bottom", "candle", "particle", "side", "top");
+            case "block/template_campfire" -> buildModel(packSection, "minecraft:block/template_campfire", "fire", "lit_log");
+            case "block/template_candle" -> buildModel(packSection, "minecraft:block/template_candle", "all", "particle");
+            case "block/template_cauldron_full" -> buildModel(packSection, "minecraft:block/template_cauldron_full", "bottom", "content", "inside", "particle", "side", "top");
+            case "block/template_cauldron_level1" -> buildModel(packSection, "minecraft:block/template_cauldron_level1", "bottom", "content", "inside", "particle", "side", "top");
+            case "block/template_cauldron_level2" -> buildModel(packSection, "minecraft:block/template_cauldron_level2", "bottom", "content", "inside", "particle", "side", "top");
+            case "block/template_chain" -> buildModel(packSection, "minecraft:block/template_chain", "texture");
+            case "block/template_chiseled_bookshelf_slot_bottom_left" -> buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_bottom_left", "texture");
+            case "block/template_chiseled_bookshelf_slot_bottom_mid" -> buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_bottom_mid", "texture");
+            case "block/template_chiseled_bookshelf_slot_bottom_right" -> buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_bottom_right", "texture");
+            case "block/template_chiseled_bookshelf_slot_top_left" -> buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_top_left", "texture");
+            case "block/template_chiseled_bookshelf_slot_top_mid" -> buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_top_mid", "texture");
+            case "block/template_chiseled_bookshelf_slot_top_right" -> buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_top_right", "texture");
+            case "block/template_chorus_flower" -> buildModel(packSection, "minecraft:block/template_chorus_flower", "texture");
+            case "block/template_command_block" -> buildModel(packSection, "minecraft:block/template_command_block", "back", "front", "side");
+            case "block/template_custom_fence_gate" -> buildModel(packSection, "minecraft:block/template_custom_fence_gate", "particle", "texture");
+            case "block/template_custom_fence_gate_open" -> buildModel(packSection, "minecraft:block/template_custom_fence_gate_open", "particle", "texture");
+            case "block/template_custom_fence_gate_wall" -> buildModel(packSection, "minecraft:block/template_custom_fence_gate_wall", "particle", "texture");
+            case "block/template_custom_fence_gate_wall_open" -> buildModel(packSection, "minecraft:block/template_custom_fence_gate_wall_open", "particle", "texture");
+            case "block/template_daylight_detector" -> buildModel(packSection, "minecraft:block/template_daylight_detector", "side", "top");
+            case "block/template_farmland" -> buildModel(packSection, "minecraft:block/template_farmland", "dirt", "top");
+            case "block/template_fence_gate" -> buildModel(packSection, "minecraft:block/template_fence_gate", "texture");
+            case "block/template_fence_gate_open" -> buildModel(packSection, "minecraft:block/template_fence_gate_open", "texture");
+            case "block/template_fence_gate_wall" -> buildModel(packSection, "minecraft:block/template_fence_gate_wall", "texture");
+            case "block/template_fence_gate_wall_open" -> buildModel(packSection, "minecraft:block/template_fence_gate_wall_open", "texture");
+            case "block/template_fire_floor" -> buildModel(packSection, "minecraft:block/template_fire_floor", "fire");
+            case "block/template_fire_side" -> buildModel(packSection, "minecraft:block/template_fire_side", "fire");
+            case "block/template_fire_side_alt" -> buildModel(packSection, "minecraft:block/template_fire_side_alt", "fire");
+            case "block/template_fire_up" -> buildModel(packSection, "minecraft:block/template_fire_up", "fire");
+            case "block/template_fire_up_alt" -> buildModel(packSection, "minecraft:block/template_fire_up_alt", "fire");
+            case "block/template_four_candles" -> buildModel(packSection, "minecraft:block/template_four_candles", "all", "particle");
+            case "block/template_four_turtle_eggs" -> buildModel(packSection, "minecraft:block/template_four_turtle_eggs", "all");
+            case "block/template_glass_pane_noside" -> buildModel(packSection, "minecraft:block/template_glass_pane_noside", "pane");
+            case "block/template_glass_pane_noside_alt" -> buildModel(packSection, "minecraft:block/template_glass_pane_noside_alt", "pane");
+            case "block/template_glass_pane_post" -> buildModel(packSection, "minecraft:block/template_glass_pane_post", "edge", "pane");
+            case "block/template_glass_pane_side" -> buildModel(packSection, "minecraft:block/template_glass_pane_side", "edge", "pane");
+            case "block/template_glass_pane_side_alt" -> buildModel(packSection, "minecraft:block/template_glass_pane_side_alt", "edge", "pane");
+            case "block/template_glazed_terracotta" -> buildModel(packSection, "minecraft:block/template_glazed_terracotta", "pattern");
+            case "block/template_hanging_lantern" -> buildModel(packSection, "minecraft:block/template_hanging_lantern", "lantern");
+            case "block/template_item_frame" -> buildModel(packSection, "minecraft:block/template_item_frame", "back", "particle", "wood");
+            case "block/template_item_frame_map" -> buildModel(packSection, "minecraft:block/template_item_frame_map", "back", "particle", "wood");
+            case "block/template_lantern" -> buildModel(packSection, "minecraft:block/template_lantern", "lantern");
+            case "block/template_leaf_litter_1" -> buildModel(packSection, "minecraft:block/template_leaf_litter_1", "texture");
+            case "block/template_leaf_litter_2" -> buildModel(packSection, "minecraft:block/template_leaf_litter_2", "texture");
+            case "block/template_leaf_litter_3" -> buildModel(packSection, "minecraft:block/template_leaf_litter_3", "texture");
+            case "block/template_leaf_litter_4" -> buildModel(packSection, "minecraft:block/template_leaf_litter_4", "texture");
+            case "block/template_lightning_rod" -> buildModel(packSection, "minecraft:block/template_lightning_rod", "texture");
+            case "block/template_orientable_trapdoor_bottom" -> buildModel(packSection, "minecraft:block/template_orientable_trapdoor_bottom", "texture");
+            case "block/template_orientable_trapdoor_open" -> buildModel(packSection, "minecraft:block/template_orientable_trapdoor_open", "texture");
+            case "block/template_orientable_trapdoor_top" -> buildModel(packSection, "minecraft:block/template_orientable_trapdoor_top", "texture");
+            case "block/template_piston" -> buildModel(packSection, "minecraft:block/template_piston", "bottom", "platform", "side");
+            case "block/template_piston_head" -> buildModel(packSection, "minecraft:block/template_piston_head", "platform", "side", "unsticky");
+            case "block/template_piston_head_short" -> buildModel(packSection, "minecraft:block/template_piston_head_short", "platform", "side", "unsticky");
+            case "block/template_potted_azalea_bush" -> buildModel(packSection, "minecraft:block/template_potted_azalea_bush", "plant", "side", "top");
+            case "block/template_rail_raised_ne" -> buildModel(packSection, "minecraft:block/template_rail_raised_ne", "rail");
+            case "block/template_rail_raised_sw" -> buildModel(packSection, "minecraft:block/template_rail_raised_sw", "rail");
+            case "block/template_redstone_torch" -> buildModel(packSection, "minecraft:block/template_redstone_torch", "torch");
+            case "block/template_redstone_torch_wall" -> buildModel(packSection, "minecraft:block/template_redstone_torch_wall", "torch");
+            case "block/template_sculk_shrieker" -> buildModel(packSection, "minecraft:block/template_sculk_shrieker", "bottom", "inner_top", "particle", "side", "top");
+            case "block/template_seagrass" -> buildModel(packSection, "minecraft:block/template_seagrass", "texture");
+            case "block/template_shelf_body" -> buildModel(packSection, "minecraft:block/template_shelf_body", "all", "particle");
+            case "block/template_shelf_center" -> buildModel(packSection, "minecraft:block/template_shelf_center", "all", "particle");
+            case "block/template_shelf_inventory" -> buildModel(packSection, "minecraft:block/template_shelf_inventory", "all", "particle");
+            case "block/template_shelf_left" -> buildModel(packSection, "minecraft:block/template_shelf_left", "all", "particle");
+            case "block/template_shelf_right" -> buildModel(packSection, "minecraft:block/template_shelf_right", "all", "particle");
+            case "block/template_shelf_unconnected" -> buildModel(packSection, "minecraft:block/template_shelf_unconnected", "all", "particle");
+            case "block/template_shelf_unpowered" -> buildModel(packSection, "minecraft:block/template_shelf_unpowered", "all", "particle");
+            case "block/template_single_face" -> buildModel(packSection, "minecraft:block/template_single_face", "texture");
+            case "block/template_three_candles" -> buildModel(packSection, "minecraft:block/template_three_candles", "all", "particle");
+            case "block/template_three_turtle_eggs" -> buildModel(packSection, "minecraft:block/template_three_turtle_eggs", "all");
+            case "block/template_torch" -> buildModel(packSection, "minecraft:block/template_torch", "torch");
+            case "block/template_torch_unlit" -> buildModel(packSection, "minecraft:block/template_torch_unlit", "torch");
+            case "block/template_torch_wall" -> buildModel(packSection, "minecraft:block/template_torch_wall", "torch");
+            case "block/template_torch_wall_unlit" -> buildModel(packSection, "minecraft:block/template_torch_wall_unlit", "torch");
+            case "block/template_trapdoor_bottom" -> buildModel(packSection, "minecraft:block/template_trapdoor_bottom", "texture");
+            case "block/template_trapdoor_open" -> buildModel(packSection, "minecraft:block/template_trapdoor_open", "texture");
+            case "block/template_trapdoor_top" -> buildModel(packSection, "minecraft:block/template_trapdoor_top", "texture");
+            case "block/template_turtle_egg" -> buildModel(packSection, "minecraft:block/template_turtle_egg", "all");
+            case "block/template_two_candles" -> buildModel(packSection, "minecraft:block/template_two_candles", "all", "particle");
+            case "block/template_two_turtle_eggs" -> buildModel(packSection, "minecraft:block/template_two_turtle_eggs", "all");
+            case "block/template_vault" -> buildModel(packSection, "minecraft:block/template_vault", "bottom", "front", "side", "top");
+            case "block/template_wall_post" -> buildModel(packSection, "minecraft:block/template_wall_post", "wall");
+            case "block/template_wall_side" -> buildModel(packSection, "minecraft:block/template_wall_side", "wall");
+            case "block/template_wall_side_tall" -> buildModel(packSection, "minecraft:block/template_wall_side_tall", "wall");
+            case "block/thin_block" -> buildModel(packSection, "minecraft:block/thin_block", "particle", "texture");
+            case "block/tinted_cross" -> buildModel(packSection, "minecraft:block/tinted_cross", "cross");
+            case "block/tinted_flower_pot_cross" -> buildModel(packSection, "minecraft:block/tinted_flower_pot_cross", "plant");
+            case "block/wall_inventory" -> buildModel(packSection, "minecraft:block/wall_inventory", "wall");
+
+            // Items
+            case "item/amethyst_bud" -> buildModel(packSection, "minecraft:item/amethyst_bud", "layer0");
+            case "item/bow" -> buildModel(packSection, "minecraft:item/bow", "layer0");
+            case "item/crossbow" -> buildModel(packSection, "minecraft:item/crossbow", "layer0");
+            case "item/generated" -> buildModel(packSection, "minecraft:item/generated", "layer0", "layer1", "layer2");
+            case "item/handheld" -> buildModel(packSection, "minecraft:item/handheld", "layer0");
+            case "item/handheld_mace" -> buildModel(packSection, "minecraft:item/handheld_mace", "layer0");
+            case "item/handheld_rod" -> buildModel(packSection, "minecraft:item/handheld_rod", "layer0");
+            case "item/spear_in_hand" -> buildModel(packSection, "minecraft:item/spear_in_hand", "layer0");
+            case "item/template_bed" -> buildModel(packSection, "minecraft:item/template_bed", "particle");
+            case "item/template_bundle_open_back" -> buildModel(packSection, "minecraft:item/template_bundle_open_back", "layer0");
+            case "item/template_bundle_open_front" -> buildModel(packSection, "minecraft:item/template_bundle_open_front", "layer0");
+            case "item/template_chest" -> buildModel(packSection, "minecraft:item/template_chest", "particle");
+            case "item/template_music_disc" -> buildModel(packSection, "minecraft:item/template_music_disc", "layer0");
+            case "item/template_shulker_box" -> buildModel(packSection, "minecraft:item/template_shulker_box", "particle");
 
             default -> Logger.info(Message.WARNING__CONVERTER__NEXO__MODEL__PARENT_NOT_SUPPORTED, LogType.WARNING, "parent", parentModel, "item", this.itemId);
         }
     }
 
-    private void buildGeneratedModel(ConfigurationSection packSection, String parent, String textureKey) {
-        String texturePath = getTexturePath(packSection);
-        if (isValidString(texturePath)) {
-            String finalTexturePath = namespaced(texturePath);
-
-            GenerationConfiguration generation = new GenerationConfiguration(parent);
-            generation.addTexture(textureKey, finalTexturePath);
-
-            boolean isBlock = parent.startsWith("minecraft:block/");
-            String modelPath = isBlock ? filterModelPath(finalTexturePath) : finalTexturePath;
-
-            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath);
-            model.setGeneration(generation);
-
-            this.craftEngineItemsConfiguration.setModelConfiguration(model);
-        } else {
-            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent);
-        }
-    }
-
-    private void buildModel(ConfigurationSection packSection, String parent, String ... textureKeys) {
+    private void buildModel(ConfigurationSection packSection, String parent, String... textureKeys) {
         ConfigurationSection texturesSection = packSection.getConfigurationSection("textures");
         if (texturesSection == null) texturesSection = packSection.getConfigurationSection("texture");
-        if (texturesSection == null) {
+
+        String singleTexture = null;
+        if (texturesSection == null && textureKeys.length == 1) {
+            singleTexture = packSection.getString("texture");
+            if (singleTexture == null) singleTexture = packSection.getString("textures");
+        }
+
+        if (texturesSection == null && singleTexture == null) {
             Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent);
             return;
         }
+
         GenerationConfiguration generation = new GenerationConfiguration(parent);
         String modelPath = null;
+
         for (String textureKey : textureKeys) {
-            String texturePath = texturesSection.getString(textureKey);
+            String texturePath;
+
+            if (texturesSection != null) {
+                texturePath = texturesSection.getString(textureKey);
+            } else {
+                texturePath = singleTexture;
+            }
+
             if (isValidString(texturePath)) {
                 String finalTexturePath = namespaced(texturePath);
                 generation.addTexture(textureKey, finalTexturePath);
@@ -1402,43 +1588,12 @@ public class NexoItemConverter extends ItemConverter {
                 return;
             }
         }
+
         if (modelPath != null) {
-            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath+"_"+ UUID.randomUUID());
+            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath + "_" + UUID.randomUUID());
             model.setGeneration(generation);
             this.craftEngineItemsConfiguration.setModelConfiguration(model);
         }
-    }
-
-    private void buildCubeTopModel(ConfigurationSection packSection) {
-        String sideTexture = packSection.getString("textures.side");
-        String topTexture = packSection.getString("textures.top");
-
-        if (isValidString(sideTexture) && isValidString(topTexture)) {
-            String finalSideTexture = namespaced(sideTexture);
-            String finalTopTexture = namespaced(topTexture);
-
-            String modelPath = filterModelPath(finalSideTexture);
-
-            GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube_top");
-            generation.addTexture("side", finalSideTexture);
-            generation.addTexture("top", finalTopTexture);
-
-            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath);
-            model.setGeneration(generation);
-
-            this.craftEngineItemsConfiguration.setModelConfiguration(model);
-        } else {
-            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__CUBE_TOP__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId);
-        }
-    }
-
-    private static @NotNull String filterModelPath(String modelPath) {
-        for (String key : new String[]{"side","top"}){
-            if (modelPath.endsWith("_"+key)){
-                modelPath = modelPath.substring(0, modelPath.length() - ("_"+key).length());
-            }
-        }
-        return modelPath;
     }
 
     /**
@@ -1469,7 +1624,7 @@ public class NexoItemConverter extends ItemConverter {
     }
 
     private void buildBowModel(ConfigurationSection packSection) {
-        String baseModel   = namespaced(packSection.getString("model"));
+        String baseModel = namespaced(packSection.getString("model"));
         List<String> pullingModels = packSection.getStringList("pulling_models");
         String pulling0 = namespaced(notEmptyOrNull(pullingModels, 0) ? pullingModels.get(0) : packSection.getString("pulling_0_model"));
         String pulling1 = namespaced(notEmptyOrNull(pullingModels, 1) ? pullingModels.get(1) : packSection.getString("pulling_1_model"));
