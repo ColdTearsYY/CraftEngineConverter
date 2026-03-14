@@ -1,5 +1,8 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block.states;
 
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.entities.BlockEntity;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.entities.BlockEntityConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.entities.ItemDisplayRenderer;
 import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
 import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
 import fr.robie.craftengineconverter.api.enums.Plugins;
@@ -16,6 +19,7 @@ public class BlockAppearance implements SectionProvider {
     private final @Nullable String visualState;
     private final @Nullable String itemId;
     private final ModelConfiguration model;
+    private final @Nullable BlockEntity blockEntity;
     private final @Nullable Consumer<ConfigurationSection> preSerializationConsumer;
     private final @Nullable Consumer<ConfigurationSection> postSerializationConsumer;
 
@@ -27,19 +31,28 @@ public class BlockAppearance implements SectionProvider {
         this.model = builder.model;
         this.preSerializationConsumer = builder.preSerializationConsumer;
         this.postSerializationConsumer = builder.postSerializationConsumer;
+        this.blockEntity = builder.blockEntity;
     }
 
     public void serialize(@NotNull ConfigurationSection section) {
         if (this.preSerializationConsumer != null)
             this.preSerializationConsumer.accept(section);
 
+        boolean blockEntityAdded = false;
+
         if (this.autoState != null) {
             BlockStateResult available = this.autoState.getAvailableAndIncrementNotLast(this.requiredPlugin);
             if (available != null) {
                 if (available.isLast()) {
                     section.set("state", available.getBlockState().getLastBlockState());
-                    ConfigurationSection entityRendererSection = getOrCreateSection(section, "entity-renderer");
-                    entityRendererSection.set("item", this.itemId);
+                    if (this.blockEntity != null) {
+                        this.blockEntity.serialize(section);
+                    } else {
+                        BlockEntityConfiguration blockEntityConfiguration = new BlockEntityConfiguration();
+                        blockEntityConfiguration.addEntityRenderer(new ItemDisplayRenderer().setItem(this.itemId));
+                        blockEntityConfiguration.serialize(section);
+                    }
+                    blockEntityAdded = true;
                 } else {
                     section.set("auto-state", available.getName());
                 }
@@ -49,6 +62,10 @@ public class BlockAppearance implements SectionProvider {
         }
         ConfigurationSection modelSection = getOrCreateSection(section, "model");
         this.model.serialize(modelSection);
+
+        if (!blockEntityAdded && this.blockEntity != null) {
+            this.blockEntity.serialize(section);
+        }
 
         if (this.postSerializationConsumer != null)
             this.postSerializationConsumer.accept(section);
@@ -70,6 +87,7 @@ public class BlockAppearance implements SectionProvider {
         private final ModelConfiguration model;
         private @Nullable Consumer<ConfigurationSection> preSerializationConsumer;
         private @Nullable Consumer<ConfigurationSection> postSerializationConsumer;
+        private @Nullable BlockEntity blockEntity;
 
         private Builder(@NotNull ModelConfiguration model) {
             this.model = model;
@@ -92,6 +110,11 @@ public class BlockAppearance implements SectionProvider {
 
         private Builder itemId(@NotNull String itemId) {
             this.itemId = itemId;
+            return this;
+        }
+
+        private Builder blockEntity(@NotNull BlockEntity blockEntity) {
+            this.blockEntity = blockEntity;
             return this;
         }
 
