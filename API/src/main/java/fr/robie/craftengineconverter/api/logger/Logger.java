@@ -5,6 +5,7 @@ import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.format.TextFormatter;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -26,6 +27,10 @@ public class Logger extends TextFormatter {
         getLogger().log(message, type);
     }
 
+    public static void info(@Nullable String subPrefix, String message, LogType type) {
+        getLogger().log(subPrefix, message, type);
+    }
+
     public static void info(String message) {
         getLogger().log(message, LogType.INFO);
     }
@@ -38,12 +43,24 @@ public class Logger extends TextFormatter {
         getLogger().log(message, type, args);
     }
 
+    public static void info(@Nullable String subPrefix, String message, LogType type, Object... args) {
+        getLogger().log(subPrefix, message, type, args);
+    }
+
     public static void info(Message message, LogType type, Object... args) {
         getLogger().log(message, type, args);
     }
 
+    public static void info(@Nullable String subPrefix, Message message, LogType type, Object... args) {
+        getLogger().log(subPrefix, message, type, args);
+    }
+
     public static void info(Message message, Object... args) {
         getLogger().log(message, LogType.INFO, args);
+    }
+
+    public static void info(@Nullable String subPrefix, Message message, Object... args) {
+        getLogger().log(subPrefix, message, LogType.INFO, args);
     }
 
     public static void debug(String message) {
@@ -54,20 +71,40 @@ public class Logger extends TextFormatter {
         getLogger().logDebug(message, type);
     }
 
+    public static void debug(@Nullable String subPrefix, String message, LogType type) {
+        getLogger().logDebug(subPrefix, message, type);
+    }
+
     public static void debug(String message, LogType type, Object... args) {
         getLogger().logDebug(message, type, args);
+    }
+
+    public static void debug(@Nullable String subPrefix, String message, LogType type, Object... args) {
+        getLogger().logDebug(subPrefix, message, type, args);
     }
 
     public static void debug(String message, Object... args) {
         getLogger().logDebug(message, LogType.WARNING, args);
     }
 
+    public static void debug(@Nullable String subPrefix, String message, Object... args) {
+        getLogger().logDebug(subPrefix, message, LogType.WARNING, args);
+    }
+
     public static void debug(Message message, Object... args) {
         getLogger().logDebug(message.getMessage(), LogType.WARNING, args);
     }
 
+    public static void debug(@Nullable String subPrefix, Message message, Object... args) {
+        getLogger().logDebug(subPrefix, message.getMessage(), LogType.WARNING, args);
+    }
+
     public static void debug(Message message, LogType type, Object... args) {
         getLogger().logDebug(message.getMessage(), type, args);
+    }
+
+    public static void debug(@Nullable String subPrefix, Message message, LogType type, Object... args) {
+        getLogger().logDebug(subPrefix, message.getMessage(), type, args);
     }
 
     public static void showException(String errorName, Throwable throwable) {
@@ -82,17 +119,41 @@ public class Logger extends TextFormatter {
         return prefix;
     }
 
-    public void log(String message, LogType logType, Object... args){
-        Bukkit.getConsoleSender().sendMessage("§8[§e" + prefix + "§8] " + logType.getColor() + parseText(message, args));
+    // Core log method with optional subPrefix
+    public void log(@Nullable String subPrefix, String message, LogType logType, Object... args) {
+        String prefixPart = subPrefix != null
+                ? "§8[§e" + prefix + "§8] §8[" + subPrefix + "§8] "
+                : "§8[§e" + prefix + "§8] ";
+        Bukkit.getConsoleSender().sendMessage(prefixPart + logType.getColor() + parseText(message, args));
     }
 
-    public void log(Message message, LogType logType, Object... args){
-        this.log(message.getMessage(), logType, args);
+    public void log(String message, LogType logType, Object... args) {
+        log(null, message, logType, args);
+    }
+
+    public void log(@Nullable String subPrefix, Message message, LogType logType, Object... args) {
+        log(subPrefix, message.getMessage(), logType, args);
+    }
+
+    public void log(Message message, LogType logType, Object... args) {
+        log(null, message.getMessage(), logType, args);
     }
 
     public void logDebug(String message, LogType type, Object... args) {
-        if (Configuration.<Boolean>get(ConfigurationKey.ENABLE_DEBUG)){
+        if (Configuration.<Boolean>get(ConfigurationKey.ENABLE_DEBUG)) {
             log(message, type, args);
+        }
+    }
+
+    public void logDebug(@Nullable String subPrefix, String message, LogType type, Object... args) {
+        if (Configuration.<Boolean>get(ConfigurationKey.ENABLE_DEBUG)) {
+            log(subPrefix, message, type, args);
+        }
+    }
+
+    public void logDebug(@Nullable String subPrefix, String message, LogType type) {
+        if (Configuration.<Boolean>get(ConfigurationKey.ENABLE_DEBUG)) {
+            log(subPrefix, message, type);
         }
     }
 
@@ -100,14 +161,14 @@ public class Logger extends TextFormatter {
         if (!Configuration.<Boolean>get(ConfigurationKey.ENABLE_DEBUG)) return;
         this.log("An exception occurred while " + parseText(errorName, args) + ":", LogType.ERROR);
         this.log("Exception error message: " + throwable.getMessage(), LogType.ERROR);
-        this.log("Please check the stack trace below for more details. If you don't understand the issue report it to the developer.",LogType.ERROR);
-        this.log("------------------- Stack Trace ------------------",LogType.ERROR);
+        this.log("Please check the stack trace below for more details. If you don't understand the issue report it to the developer.", LogType.ERROR);
+        this.log("------------------- Stack Trace ------------------", LogType.ERROR);
         StringWriter sw = new StringWriter();
         try (PrintWriter pw = new PrintWriter(sw)) {
             throwable.printStackTrace(pw);
         }
         this.log(sw.toString(), LogType.ERROR);
-        this.log("--------------------------------------------------",LogType.ERROR);
+        this.log("--------------------------------------------------", LogType.ERROR);
     }
 
     public String getColoredMessage(String message) {

@@ -48,7 +48,7 @@ public class NexoConverter extends Converter {
         File outputBase = new File(this.plugin.getDataFolder(), "converted/"+converterName+"/CraftEngine/resources/craftengineconverter/configuration/items");
 
         if (!inputBase.exists() || !inputBase.isDirectory()) {
-            Logger.info("Nexo items directory not found at: " + inputBase.getAbsolutePath());
+            this.log(Message.WARNING__CONVERTER__ITEMS_DIRECTORY_NOT_FOUND, LogType.ERROR, "path", inputBase.getAbsolutePath());
             return;
         }
 
@@ -57,7 +57,7 @@ public class NexoConverter extends Converter {
         }
 
         if (!outputBase.mkdirs()) {
-            Logger.debug("Failed to create Nexo items output directory", LogType.ERROR);
+            this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", outputBase.getName(), "path", outputBase.getAbsolutePath());
             return;
         }
 
@@ -117,7 +117,7 @@ public class NexoConverter extends Converter {
         File outputEmojisFolder = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/emojis");
 
         if (!inputEmojisFolder.exists() || !inputEmojisFolder.isDirectory()) {
-            Logger.debug("Nexo emojis directory not found at: " + inputEmojisFolder.getAbsolutePath());
+            this.logDebug(Message.WARNING__CONVERTER__EMOJIS_DIRECTORY_NOT_FOUND, LogType.INFO, "path", inputEmojisFolder.getAbsolutePath());
             return;
         }
 
@@ -126,7 +126,7 @@ public class NexoConverter extends Converter {
         }
 
         if (!outputEmojisFolder.mkdirs()) {
-            Logger.debug("Failed to create Nexo emojis output directory", LogType.ERROR);
+            this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", outputEmojisFolder.getName(), "path", outputEmojisFolder.getAbsolutePath());
             return;
         }
 
@@ -134,7 +134,7 @@ public class NexoConverter extends Converter {
         populateQueue(inputEmojisFolder, inputEmojisFolder, toConvert);
 
         if (toConvert.isEmpty()) {
-            Logger.info("No emojis found to convert.");
+            this.log(Message.WARNING__CONVERTER__NO_EMOJIS_FOUND, LogType.INFO);
             return;
         }
 
@@ -212,7 +212,7 @@ public class NexoConverter extends Converter {
                 CraftEngineImageUtils.register(key, new ImageConversion(finalKey, rows, columns));
                 convertedCount++;
             } catch (Exception e) {
-                Logger.debug("Failed to convert emoji: " + finalKey, LogType.ERROR);
+                this.logDebug(Message.ERROR__CONVERTER__FAILED_CONVERT_EMOJI, LogType.ERROR, "emoji", finalKey, "file", emojiFile.getAbsolutePath());
             }
 
             progress.increment();
@@ -247,14 +247,14 @@ public class NexoConverter extends Converter {
         File recipesFolder = new File("plugins/" + converterName + "/recipes");
         File outputFolder = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/recipes");
         if (!recipesFolder.exists() || !recipesFolder.isDirectory()) {
-            Logger.debug("Nexo recipes directory not found at: " + recipesFolder.getAbsolutePath());
+            this.logDebug(Message.WARNING__CONVERTER__RECIPES_DIRECTORY_NOT_FOUND, LogType.INFO, "path", recipesFolder.getAbsolutePath());
             return;
         }
         if (outputFolder.exists()) {
             deleteDirectory(outputFolder);
         }
         if (!outputFolder.mkdirs()) {
-            Logger.debug("Failed to create Nexo recipes output directory", LogType.ERROR);
+            this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", outputFolder.getName(), "path", outputFolder.getAbsolutePath());
             return;
         }
         Map<RecipeType, List<ConfigFile>> toConvert = new HashMap<>();
@@ -332,7 +332,7 @@ public class NexoConverter extends Converter {
                             ceRecipeSection.set("ingredients", ingredientsList);
                             convertedCount++;
                         } else {
-                            Logger.debug("No valid ingredients for recipe: " + finalRecipeId, LogType.WARNING);
+                            this.logDebug(Message.ERROR__CONVERTER__RECIPES__NO_VALID_INGREDIENTS, LogType.WARNING, "recipe", finalRecipeId, "file", recipeFile.getAbsolutePath());
                         }
                     }
                 }
@@ -400,7 +400,7 @@ public class NexoConverter extends Converter {
                 }
 
                 default -> {
-                    Logger.debug("Unsupported recipe type: " + recipeType + " for recipe: " + finalRecipeId, LogType.WARNING);
+                    this.logDebug(Message.ERROR__CONVERTER__NEXO__UNSUPPORTED_RECIPE_TYPE, LogType.WARNING, "type", recipeType, "recipe", finalRecipeId, "file", recipeFile.getAbsolutePath());
                 }
             }
             progress.increment();
@@ -440,7 +440,7 @@ public class NexoConverter extends Converter {
             if (isValidString(newName)) {
                 return newName;
             } else {
-                Logger.debug("No mapping found for Nexo item " + "ingredient" + ": " + nexoItem + " in recipe: " + recipeId, LogType.WARNING);
+                this.logDebug(Message.WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_INGREDIENT, LogType.WARNING, "item", nexoItem, "recipe", recipeId);
             }
         }
 
@@ -463,7 +463,7 @@ public class NexoConverter extends Converter {
                 if (isValidString(newName)) {
                     ceResultSection.set("id", newName);
                 } else {
-                    Logger.debug("No mapping found for Nexo item result: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                    this.logDebug(Message.WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_RESULT, LogType.WARNING, "item", nexoItem, "recipe", finalRecipeId);
                 }
             }
 
@@ -492,7 +492,7 @@ public class NexoConverter extends Converter {
                 if (isValidString(newName)) {
                     ceRecipeSection.set("ingredient", newName);
                 } else {
-                    Logger.debug("No mapping found for Nexo item input: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                    this.logDebug(Message.WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_INPUT, LogType.WARNING, "item", nexoItem, "recipe", finalRecipeId);
                 }
             }
         }
@@ -518,7 +518,7 @@ public class NexoConverter extends Converter {
                 if (isValidString(newName)) {
                     ceRecipeSection.set("container", newName);
                 } else {
-                    Logger.debug("No mapping found for Nexo item container: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                    this.logDebug(Message.WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_CONTAINER, LogType.WARNING, "item", nexoItem, "recipe", finalRecipeId);
                 }
             }
         }
@@ -567,10 +567,10 @@ public class NexoConverter extends Converter {
                         ConfigFile configFile = new ConfigFile(file, baseDir, entry.get().getData());
                         toConvert.computeIfAbsent(recipeType, k -> new ArrayList<>()).add(configFile);
                     } else {
-                        Logger.debug("Could not determine recipe type for: " + file.getAbsolutePath(), LogType.WARNING);
+                        this.logDebug(Message.WARNING__CONVERTER__NEXO__RECIPE__COULD_NOT_DETERMINE_RECIPE_TYPE, LogType.WARNING, "file", file.getAbsolutePath());
                     }
                 } else {
-                    Logger.debug("Failed to load recipe file: Invalid YAML - " + file.getAbsolutePath(), LogType.WARNING);
+                    this.logDebug(Message.WARNING__CONVERTER__NEXO__RECIPE__ERROR__FAILED_LOAD_RECIPE_FILE, LogType.WARNING, "file", file.getAbsolutePath());
                 }
             }
         }
@@ -589,7 +589,7 @@ public class NexoConverter extends Converter {
         try {
             return RecipeType.valueOf(recipeTypeName);
         } catch (IllegalArgumentException e) {
-            Logger.debug("Unknown recipe type folder: " + recipeTypeName, LogType.WARNING);
+            this.logDebug(Message.WARNING__CONVERTER__NEXO__RECIPE__ERROR__UNKNOWN_RECIPE_TYPE_FOLDER, LogType.WARNING, "type", recipeTypeName, "file", file.getAbsolutePath());
             return null;
         }
     }
@@ -599,20 +599,20 @@ public class NexoConverter extends Converter {
         File outputSoundFile = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/sounds/sounds.yml");
 
         if (!inputSoundFile.exists() || !inputSoundFile.isFile()) {
-            Logger.debug("Nexo sounds file not found at: " + inputSoundFile.getAbsolutePath());
+            this.logDebug(Message.WARNING__CONVERTER__NEXO__SOUND__FILE_NOT_FOUND, LogType.INFO, "path", inputSoundFile.getAbsolutePath());
             return;
         }
 
         if (!outputSoundFile.getParentFile().exists()) {
             if (!outputSoundFile.getParentFile().mkdirs()) {
-                Logger.info("Failed to create sounds output directory", LogType.ERROR);
+                this.log(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", outputSoundFile.getName(), "path", outputSoundFile.getAbsolutePath());
                 return;
             }
         }
 
         try (SnakeUtils nexoSounds = new SnakeUtils(inputSoundFile)) {
             if (nexoSounds.isEmpty()) {
-                Logger.debug("Sounds file is empty: " + inputSoundFile.getAbsolutePath());
+                this.logDebug(Message.WARNING__CONVERTER__NEXO__SOUND__SOUNDS_FILE_EMPTY, LogType.INFO, "path", inputSoundFile.getAbsolutePath());
                 return;
             }
 
@@ -641,7 +641,7 @@ public class NexoConverter extends Converter {
                         } catch (Exception e) {
                             Object idObj = soundEntry.get("id");
                             String soundId = idObj != null ? idObj.toString() : "unknown";
-                            Logger.debug("Failed to convert sound: " + soundId, LogType.ERROR);
+                            this.logDebug(Message.ERROR__CONVERTER__FAILED_CONVERT_SOUND, LogType.ERROR, "sound", soundId, "file", inputSoundFile);
                             progress.increment();
                         }
                     }
@@ -734,7 +734,7 @@ public class NexoConverter extends Converter {
                         double length = Double.parseDouble(durationStr.substring(0, durationStr.length() - 1));
                         jukeboxSongSection.addData("length", length);
                     } catch (NumberFormatException e) {
-                        Logger.debug("Invalid duration format: " + durationStr);
+                        this.logDebug(Message.ERROR__CONVERTER__NEXO__SOUND__INVALID_DURATION_FORMAT, LogType.INFO, "duration", durationStr, "sound", soundId);
                     }
                 }
             }
@@ -793,19 +793,19 @@ public class NexoConverter extends Converter {
         File outputFile = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/languages/languages.yml");
 
         if (!languagesFile.exists() || !languagesFile.isFile()) {
-            Logger.debug("Nexo languages file not found at: " + languagesFile.getAbsolutePath());
+            this.logDebug(Message.WARNING__CONVERTER__LANGUAGES_FILE_NOT_FOUND, LogType.INFO, "path", languagesFile.getAbsolutePath());
             return;
         }
 
         try (SnakeUtils nexoLanguages = new SnakeUtils(languagesFile)) {
             if (nexoLanguages.isEmpty()) {
-                Logger.debug("Languages file is empty: " + languagesFile.getAbsolutePath());
+                this.logDebug(Message.WARNING__CONVERTER__NEXO__LANGUAGE__LANGUAGES_FILE_EMPTY, LogType.INFO, "path", languagesFile.getAbsolutePath());
                 return;
             }
 
             Set<String> languageKeys = nexoLanguages.getKeys();
             if (languageKeys.isEmpty()) {
-                Logger.debug("No languages found in file");
+                this.logDebug(Message.WARNING__CONVERTER__NEXO__LANGUAGE__NO_LANGUAGES_FOUND, LogType.INFO);
                 return;
             }
 
@@ -818,7 +818,7 @@ public class NexoConverter extends Converter {
             }
 
             if (totalTranslations == 0) {
-                Logger.info("No translations found in languages file.");
+                this.log(Message.WARNING__CONVERTER__NEXO__LANGUAGE__NO_LANGUAGES_FOUND, LogType.ERROR);
                 return;
             }
 
@@ -835,7 +835,7 @@ public class NexoConverter extends Converter {
                         try {
                             convertLanguage(langKey, nexoLanguages, craftEngineLanguages, progress);
                         } catch (Exception e) {
-                            Logger.debug("Failed to convert language: " + langKey, LogType.ERROR);
+                            this.logDebug(Message.ERROR__CONVERTER__NEXO__LANGUAGE__FAILED_CONVERT_LANGUAGE, LogType.ERROR, "lang", langKey, "file", languagesFile.getAbsolutePath());
                             Map<String, Object> langData = nexoLanguages.getMap(langKey);
                             if (langData != null) {
                                 progress.increment(langData.size());
@@ -870,7 +870,7 @@ public class NexoConverter extends Converter {
                 String translationKey = "translations\\n" + craftEngineLangKey + "\\n" + entry.getKey();
                 craftEngineLanguages.addData(translationKey, entry.getValue(), "\\n");
             } catch (Exception e) {
-                Logger.debug("Failed to convert translation: " + entry.getKey() + " in language: " + langKey, LogType.ERROR);
+                this.logDebug(Message.ERROR__CONVERTER__NEXO__LANGUAGE__FAILED_CONVERT_TRANSLATION, LogType.ERROR, "key", entry.getKey(), "lang", langKey);
             }
 
             progress.increment();
@@ -880,19 +880,19 @@ public class NexoConverter extends Converter {
 
     private void convertImagesSync(Optional<Player> player) {
         File inputBase = new File("plugins/" + converterName + "/glyphs");
-        File outputBase = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/images");
+        File outputFolder = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/images");
 
         if (!inputBase.exists() || !inputBase.isDirectory()) {
-            Logger.debug("Nexo glyph directory not found at: " + inputBase.getAbsolutePath());
+            this.logDebug(Message.WARNING__CONVERTER__GLYPH_DIRECTORY_NOT_FOUND, LogType.INFO, "path", inputBase.getAbsolutePath());
             return;
         }
 
-        if (outputBase.exists()) {
-            deleteDirectory(outputBase);
+        if (outputFolder.exists()) {
+            deleteDirectory(outputFolder);
         }
 
-        if (!outputBase.mkdirs()) {
-            Logger.debug("Failed to create Nexo images output directory", LogType.ERROR);
+        if (!outputFolder.mkdirs()) {
+            this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", outputFolder.getName(), "path", outputFolder.getAbsolutePath());
             return;
         }
 
@@ -900,7 +900,7 @@ public class NexoConverter extends Converter {
         populateQueue(inputBase, inputBase, toConvert);
 
         if (toConvert.isEmpty()) {
-            Logger.info("No images found to convert.");
+            this.log(Message.WARNING__CONVERTER__NEXO__GLYPH__NO_GLYPHS_FOUND, LogType.INFO);
             return;
         }
 
@@ -914,7 +914,7 @@ public class NexoConverter extends Converter {
         progress.start();
 
         try {
-            processImagesConfigs(toConvert, outputBase, progress);
+            processImagesConfigs(toConvert, outputFolder, progress);
             toConvert.clear();
         } catch (Exception e) {
             Logger.showException("Error during Nexo images conversion", e);
@@ -978,7 +978,7 @@ public class NexoConverter extends Converter {
                 CraftEngineImageUtils.register(key, new ImageConversion(finalKey, rows, cols));
                 convertedCount++;
             } catch (Exception e) {
-                Logger.debug("Failed to convert image: " + key, LogType.ERROR);
+                this.logDebug(Message.ERROR__CONVERTER__NEXO__GLYPh__FAILED_CONVERT, LogType.ERROR, "glyph", key, "file", fileName);
             }
 
             progress.increment();
@@ -1026,7 +1026,7 @@ public class NexoConverter extends Converter {
                 zis.closeEntry();
             }
         } catch (IOException e) {
-            Logger.debug("Failed to count files in ZIP: " + zipFile.getName() + " - " + e.getMessage(), LogType.ERROR);
+            this.logDebug(Message.ERROR__FAILED_COUNT_FILES_ZIP, LogType.ERROR, "zip", zipFile.getName(), "message", e.getMessage());
         }
 
         return count;
@@ -1039,7 +1039,7 @@ public class NexoConverter extends Converter {
             File outputPackFile = new File(this.plugin.getDataFolder(), "converted/"+converterName+"/CraftEngine/resources/craftengineconverter/resourcepack");
 
             if (!inputPackFile.exists() || !inputPackFile.isDirectory()) {
-                Logger.info("Nexo pack directory not found at: " + inputPackFile.getAbsolutePath());
+                this.log(Message.WARNING__CONVERTER__PACK_DIRECTORY_NOT_FOUND, LogType.WARNING, inputPackFile.getAbsolutePath());
                 return;
             }
 
@@ -1047,7 +1047,7 @@ public class NexoConverter extends Converter {
                 deleteDirectory(outputPackFile);
             }
             if (!outputPackFile.mkdirs()) {
-                Logger.debug("Failed to create Nexo pack output directory", LogType.ERROR);
+                this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", outputPackFile.getName(), "path", outputPackFile.getAbsolutePath());
                 return;
             }
 
@@ -1107,8 +1107,8 @@ public class NexoConverter extends Converter {
                     latch.countDown();
                     executor.shutdown();
                     if (!executor.awaitTermination(1, TimeUnit.HOURS)) {
-                        Logger.debug(Message.ERROR__FILE_OPERATIONS__TIMEOUT, LogType.ERROR);
-                        Logger.debug(Message.ERROR__FILE_OPERATIONS__FORCE_SHUTDOWN, LogType.ERROR);
+                        this.logDebug(Message.ERROR__FILE_OPERATIONS__TIMEOUT, LogType.ERROR);
+                        this.logDebug(Message.ERROR__FILE_OPERATIONS__FORCE_SHUTDOWN, LogType.ERROR);
                     }
                 }
 
@@ -1143,7 +1143,7 @@ public class NexoConverter extends Converter {
         File tempDir = new File(this.plugin.getDataFolder(), "temp/zip_extract_" + System.currentTimeMillis());
 
         if (!this.settings.dryRunEnabled() && !tempDir.exists() && !tempDir.mkdirs()) {
-            Logger.debug("Failed to create temporary directory for ZIP extraction: " + tempDir.getAbsolutePath(), LogType.ERROR);
+            this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", tempDir.getName(), "path", tempDir.getAbsolutePath());
             return;
         }
 
@@ -1154,7 +1154,7 @@ public class NexoConverter extends Converter {
             if (extractedAssetsFolder.exists() && extractedAssetsFolder.isDirectory()) {
                 copyAssetsFolder(extractedAssetsFolder, outputAssetsFolder, packName, progress, executor, latch, errorRef, useMultiThread);
             } else if (!this.settings.dryRunEnabled()) {
-                Logger.debug("No assets folder found in ZIP: " + zipFile.getName());
+                this.logDebug(Message.WARNING__NO_ASSETS_FOLDER, LogType.INFO, "zip", zipFile.getName());
             }
 
             if (!this.settings.dryRunEnabled()) {
@@ -1228,7 +1228,7 @@ public class NexoConverter extends Converter {
                             }
                             progress.increment();
                         } catch (Exception e) {
-                            Logger.debug("Error extracting file from ZIP: " + entryName + " - " + e.getMessage(), LogType.ERROR);
+                            this.logDebug(Message.ERROR__EXTRACT_FILE_FROM_ZIP, LogType.ERROR, "file", entryName, "zip", zipPath.getFileName(), "message", e.getMessage());
                             errorRef.compareAndSet(null, e);
                         }
                     });

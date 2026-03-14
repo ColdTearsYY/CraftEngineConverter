@@ -42,7 +42,7 @@ public abstract class Converter extends YamlUtils {
     protected final ConverterSettings settings;
     protected final Map<String, List<PackMapping>> packMappings = new HashMap<>();
 
-    public Converter(CraftEngineConverter plugin, String converterName, Plugins pluginType) {
+    public Converter(@NotNull CraftEngineConverter plugin,@NotNull String converterName,@NotNull Plugins pluginType) {
         super(plugin);
         this.plugin = plugin;
         this.converterName = converterName;
@@ -95,6 +95,15 @@ public abstract class Converter extends YamlUtils {
 
     public abstract CompletableFuture<Void> convertPack(boolean async, Optional<Player> player);
 
+    protected void log(@NotNull Message message, LogType logType, Object... args) {
+        Logger.info("§e" + this.converterName + " converter", message, logType, args);
+    }
+
+    protected void logDebug(@NotNull Message message, LogType logType, Object... args) {
+        Logger.debug("§e" + this.converterName + " converter", message, logType, args);
+    }
+
+    @NotNull
     public String getName() {
         return this.converterName;
     }

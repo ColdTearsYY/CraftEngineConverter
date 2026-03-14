@@ -112,6 +112,28 @@ public enum Message {
     WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__BLOCK_DATA_FAILURE("Failed to create BlockData for custom_variation §e%variation%§c for custom block item §e%item%§c. Skipping custom_variation conversion."),
     WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__UNKNOWN_MINIMAL_TYPE("Unknown minimal_type §e%type%§c for custom block item §e%item%§c. Skipping minimal_type conversion."),
     WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__UNKNOWN_BEST_TOOL("Unknown best_tool §e%tool%§c for custom block item §e%item%§c. Skipping best_tool conversion."),
+    WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_INGREDIENT("§cNo mapping found for ingredient §e%item%§c in recipe §e%recipe%§c."),
+    WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_RESULT("§cNo mapping found for result item §e%item%§c in recipe §e%recipe%§c."),
+    WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_INPUT("§cNo mapping found for input item §e%item%§c in recipe §e%recipe%§c."),
+    WARNING__CONVERTER__NEXO__RECIPE__NO_MAPPING_CONTAINER("§cNo mapping found for container item §e%item%§c in recipe §e%recipe%§c."),
+    WARNING__CONVERTER__NEXO__RECIPE__COULD_NOT_DETERMINE_RECIPE_TYPE("§cCould not determine recipe type for file §e%file%§c. Skipping file conversion."),
+    WARNING__CONVERTER__NEXO__RECIPE__ERROR__FAILED_LOAD_RECIPE_FILE("§cFailed to load recipe file §e%file%§c. Skipping file conversion."),
+    WARNING__CONVERTER__NEXO__RECIPE__ERROR__UNKNOWN_RECIPE_TYPE_FOLDER("§cUnknown recipe type folder for §e%type%§c in file §e%file%§c. Skipping file conversion."),
+    WARNING__CONVERTER__NEXO__SOUND__FILE_NOT_FOUND("Sound file not found at path: §e%path%§c."),
+    WARNING__CONVERTER__NEXO__SOUND__SOUNDS_FILE_EMPTY("Sounds file is empty at path: §e%path%§c."),
+    WARNING__CONVERTER__NEXO__LANGUAGE__LANGUAGES_FILE_EMPTY("Languages file is empty at path: §e%path%§c."),
+    WARNING__CONVERTER__NEXO__LANGUAGE__NO_LANGUAGES_FOUND("No languages found in languages file."),
+    WARNING__CONVERTER__NEXO__GLYPH__NO_GLYPHS_FOUND("No glyphs found to convert."),
+
+
+    WARNING__CONVERTER__PACK_DIRECTORY_NOT_FOUND("Nexo pack directory not found at: %path%"),
+    WARNING__CONVERTER__ITEMS_DIRECTORY_NOT_FOUND("Items directory not found at: %path%"),
+    WARNING__CONVERTER__EMOJIS_DIRECTORY_NOT_FOUND("Emojis directory not found at: %path%"),
+    WARNING__CONVERTER__LANGUAGES_FILE_NOT_FOUND("Languages file not found at: %path%"),
+    WARNING__CONVERTER__RECIPES_DIRECTORY_NOT_FOUND("Recipes directory not found at: %path%"),
+    WARNING__CONVERTER__GLYPH_DIRECTORY_NOT_FOUND("Glyph directory not found at: %path%"),
+
+    WARNING__CONVERTER__NO_EMOJIS_FOUND("No emojis found to convert"),
 
     WARNING__FURNITURE__INVALID_SEAT_FORMAT("§cInvalid seat format for furniture item §e%item%§c, expected 3 comma-separated float values but got §e%value%§c. Defaulting to (0,0,0)."),
     WARNING__FURNITURE__UNKNOWN_DISPLAY_TRANSFORM("§cUnknown display_transform §e%transform%§c for furniture item §e%item%§c, defaulting to NONE."),
@@ -157,8 +179,22 @@ public enum Message {
     WARNING__CONVERTER__IA__RECIPES__UNKNOWN_ITEM_REFERENCE("Unknown ItemsAdder item: §e%item%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
     WARNING__CONVERTER__IA__RECIPES__ITEM_REFERENCE_CONVERSION_FAILURE("Could not convert item reference: §e%item%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
 
+    WARNING__NO_ASSETS_FOLDER("Assets folder not found inside the ZIP §e%zip%§c."),
+
+    ERROR__FAILED_COUNT_FILES_ZIP("Failed to count files in zip: §e%zip%§c. Error: §e%message%§c"),
+    ERROR__EXTRACT_FILE_FROM_ZIP("Failed to extract file §e%file%§c from zip: §e%zip%§c. Error: §e%message%§c"),
+
     ERROR__CONVERTER__MISSING_DEPENDENCY("§cDependency §e%item-id%§c not found in any file."),
     ERROR__CONVERTER__ITEM_LOAD_FAILURE("Failed to load item §e%item%§c from file §e%file%§c."),
+    ERROR__CONVERTER__FAILED_CONVERT_EMOJI("Failed to convert emoji §e%emoji%§c in file §e%file%§c."),
+    ERROR__CONVERTER__FAILED_CONVERT_SOUND("Failed to convert sound §e%sound%§c in file §e%file%§c."),
+    ERROR__CONVERTER__RECIPES__NO_VALID_INGREDIENTS("§cNo valid ingredients found for recipe §e%recipe%§c in file §e%file%§c. Skipping recipe conversion."),
+
+    ERROR__CONVERTER__NEXO__UNSUPPORTED_RECIPE_TYPE("Unsupported recipe type: §e%type%§c for recipe: §e%recipe%§c in file: §e%file%§c"),
+    ERROR__CONVERTER__NEXO__SOUND__INVALID_DURATION_FORMAT("§cInvalid duration format §e%duration%§c for sound §e%sound%§c."),
+    ERROR__CONVERTER__NEXO__LANGUAGE__FAILED_CONVERT_LANGUAGE("Failed to convert language §e%lang%§c in file §e%file%§c."),
+    ERROR__CONVERTER__NEXO__LANGUAGE__FAILED_CONVERT_TRANSLATION("Failed to convert translation key §e%key%§c for language §e%lang%§c."),
+    ERROR__CONVERTER__NEXO__GLYPh__FAILED_CONVERT("Failed to convert glyph §e%glyph%§c in file §e%file%§c."),
 
     ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"),
 
