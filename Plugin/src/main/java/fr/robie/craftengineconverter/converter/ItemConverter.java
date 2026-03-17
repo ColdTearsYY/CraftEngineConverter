@@ -205,6 +205,10 @@ public abstract class ItemConverter extends ObjectUtils {
         this.resolvedDependencies.put(rawItemId, converter);
     }
 
+    public @NotNull String getItemId() {
+        return this.itemId;
+    }
+
     @Nullable
     public ItemConverter getResolvedDependency(String rawItemId) {
         return this.resolvedDependencies.get(rawItemId);

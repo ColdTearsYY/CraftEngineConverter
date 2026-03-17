@@ -8,6 +8,7 @@ import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.FallingBlockBehavior;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.StrippableBlockBehavior;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.defaults.PillarBlockState;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.*;
@@ -88,13 +89,23 @@ public class NexoItemConverter extends ItemConverter {
     public List<String> getDependencies() {
         List<String> dependencies = new ArrayList<>();
 
-        ConfigurationSection directionalSection = this.nexoItemSection.getConfigurationSection("Mechanics.custom_block.directional");
-        if (isNull(directionalSection)) return dependencies;
-
-        for (String key : List.of("y_block", "x_block", "z_block", "north_block", "east_block", "south_block", "west_block", "up_block", "down_block")) {
-            String depRawId = directionalSection.getString(key);
-            if (isValidString(depRawId)) {
-                dependencies.add(depRawId);
+        ConfigurationSection customBlockSection = this.nexoItemSection.getConfigurationSection("Mechanics.custom_block");
+        if (isNotNull(customBlockSection)) {
+            ConfigurationSection directionalSection = customBlockSection.getConfigurationSection("directional");
+            if (isNotNull(directionalSection)) {
+                for (String key : List.of("y_block", "x_block", "z_block", "north_block", "east_block", "south_block", "west_block", "up_block", "down_block")) {
+                    String depRawId = directionalSection.getString(key);
+                    if (isValidString(depRawId)) {
+                        dependencies.add(depRawId);
+                    }
+                }
+            }
+            ConfigurationSection logStripSection = customBlockSection.getConfigurationSection("log_strip");
+            if (isNotNull(logStripSection)) {
+                String strippedLog = logStripSection.getString("stripped_log");
+                if (isValidString(strippedLog)) {
+                    dependencies.add(strippedLog);
+                }
             }
         }
 
@@ -1700,6 +1711,20 @@ public class NexoItemConverter extends ItemConverter {
         ModelConfiguration modelConfiguration = this.craftEngineItemsConfiguration.getModelConfiguration();
         if (modelConfiguration == null) return;
         BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
+        ConfigurationSection logStripSection = nexoCustomBlockSection.getConfigurationSection("log_strip");
+        if (isNotNull(logStripSection)){
+            String strippedBlock = logStripSection.getString("stripped_log");
+            if (isValidString(strippedBlock)){
+                ItemConverter resolvedDependency = this.getResolvedDependency(strippedBlock);
+                if (isNotNull(resolvedDependency)){
+                    blockConfiguration.addBehavior(new StrippableBlockBehavior().setStripped(resolvedDependency.getItemId()));
+                }
+            }
+            String drop = logStripSection.getString("drop");
+            if (isValidString(drop)){
+                Logger.info("Custom block "+this.itemId+" has a log_strip configuration with a drop defined. This is not supported and will be ignored.", LogType.INFO);
+            }
+        }
         String nexoCustomBlockType = nexoCustomBlockSection.getString("type","NOTEBLOCK");
         int customVariation = nexoCustomBlockSection.getInt("custom_variation", -1);
         CraftEngineBlockState state;
