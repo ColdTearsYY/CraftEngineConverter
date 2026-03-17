@@ -8,11 +8,8 @@ import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.FallingBlockBehavior;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockAppearance;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockVariant;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.MultiStateBlock;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.AxisBlockStateProperty;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.defaults.PillarBlockState;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.*;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ItemDisplayElement;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.HappyGhastHitbox;
@@ -1779,31 +1776,19 @@ public class NexoItemConverter extends ItemConverter {
                                 yResolvedDependency.markAsInternalOnly();
                                 zResolvedDependency.markAsInternalOnly();
 
-                                MultiStateBlock multiStateBlock = new MultiStateBlock();
-
                                 ModelConfiguration xModelConfiguration = xResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
                                 ModelConfiguration yModelConfiguration = yResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
                                 ModelConfiguration zModelConfiguration = zResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
                                 if (isNotNull(xModelConfiguration) && isNotNull(yModelConfiguration) && isNotNull(zModelConfiguration)){
-                                    multiStateBlock.addAppearance("axisX", BlockAppearance.autoState(Plugins.NEXO, state, this.itemId, xModelConfiguration).postProcessor(section -> {
-                                        ConfigurationSection model = getOrCreateSection(section, "model");
-                                        model.set("x", 90);
-                                        model.set("y", 90);
-                                    }).build());
-
-                                    multiStateBlock.addAppearance("axisY", BlockAppearance.autoState(Plugins.NEXO, state, this.itemId, yModelConfiguration).build());
-
-                                    multiStateBlock.addAppearance("axisZ", BlockAppearance.autoState(Plugins.NEXO, state, this.itemId, zModelConfiguration).postProcessor(section -> {
-                                        ConfigurationSection model = getOrCreateSection(section, "model");
-                                        model.set("x", 90);
-                                    }).build());
-
-                                    AxisBlockStateProperty axis = new AxisBlockStateProperty("axis", Direction.Axis.Y);
-                                    multiStateBlock.addProperty(axis);
-                                    multiStateBlock.addVariant(new BlockVariant("axisX").addVariantCondition(axis, Direction.Axis.X));
-                                    multiStateBlock.addVariant(new BlockVariant("axisY").addVariantCondition(axis, Direction.Axis.Y));
-                                    multiStateBlock.addVariant(new BlockVariant("axisZ").addVariantCondition(axis, Direction.Axis.Z));
-                                    blockConfiguration.setStateBlock(multiStateBlock);
+                                    blockConfiguration.setStateBlock(
+                                        new PillarBlockState(
+                                            Plugins.NEXO,
+                                            this.itemId,
+                                            state, yModelConfiguration,
+                                            state, xModelConfiguration,
+                                            state, zModelConfiguration
+                                        )
+                                    );
                                 } else {
                                     Logger.info("Ignoring directional configuration for custom block "+this.itemId+" due to missing model configuration in axis blocks", LogType.INFO);
                                 }

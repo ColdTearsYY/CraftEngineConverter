@@ -10,7 +10,7 @@ import fr.robie.craftengineconverter.api.configuration.item.behavior.block.state
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockVariant;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.MultiStateBlock;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
-import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.AxisBlockStateProperty;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.defaults.PillarBlockState;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.HorizontalDirectionBlockStateProperty;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurniturePlacement;
@@ -50,7 +50,6 @@ import fr.robie.craftengineconverter.converter.ItemConverter;
 import net.momirealms.craftengine.core.attribute.AttributeModifier;
 import net.momirealms.craftengine.core.entity.EquipmentSlot;
 import net.momirealms.craftengine.core.entity.display.Billboard;
-import net.momirealms.craftengine.core.util.Direction;
 import net.momirealms.craftengine.core.util.HorizontalDirection;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -550,25 +549,17 @@ public class IAItemsConverter extends ItemConverter {
         this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
 
         BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
-        MultiStateBlock multiStateBlock = new MultiStateBlock();
 
-        multiStateBlock.addAppearance("axisX", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).postProcessor(section -> {
-            ConfigurationSection model = getOrCreateSection(section, "model");
-            model.set("x", 90);
-            model.set("y", 90);
-        }).build());
+        blockConfiguration.setStateBlock(
+            new PillarBlockState(
+                Plugins.ITEMS_ADDER,
+                this.itemId,
+                CraftEngineBlockState.SOLID, simpleModelConfiguration,
+                CraftEngineBlockState.SOLID, simpleModelConfiguration,
+                CraftEngineBlockState.SOLID, simpleModelConfiguration
+            )
+        );
 
-        multiStateBlock.addAppearance("axisY", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
-        multiStateBlock.addAppearance("axisZ", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).postProcessor(section -> {
-            ConfigurationSection model = getOrCreateSection(section, "model");
-            model.set("x", 90);
-        }).build());
-        AxisBlockStateProperty axis = new AxisBlockStateProperty("axis", Direction.Axis.Y);
-        multiStateBlock.addProperty(axis);
-        multiStateBlock.addVariant(new BlockVariant("axisX").addVariantCondition(axis, Direction.Axis.X));
-        multiStateBlock.addVariant(new BlockVariant("axisY").addVariantCondition(axis, Direction.Axis.Y));
-        multiStateBlock.addVariant(new BlockVariant("axisZ").addVariantCondition(axis, Direction.Axis.Z));
-        blockConfiguration.setStateBlock(multiStateBlock);
         this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
 
     }

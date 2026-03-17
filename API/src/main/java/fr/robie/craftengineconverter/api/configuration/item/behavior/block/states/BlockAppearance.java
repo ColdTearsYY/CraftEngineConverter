@@ -113,7 +113,7 @@ public class BlockAppearance implements SectionProvider {
             return this;
         }
 
-        private Builder blockEntity(@NotNull BlockEntity blockEntity) {
+        public Builder blockEntity(@NotNull BlockEntity blockEntity) {
             this.blockEntity = blockEntity;
             return this;
         }

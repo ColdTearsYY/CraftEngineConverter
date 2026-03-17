@@ -14,6 +14,14 @@ public class GenerationConfiguration {
         this.parent = parent;
     }
 
+    public GenerationConfiguration(@Nullable String parent, @NotNull String ... textures) {
+        assert textures.length % 2 == 0 : "Textures should be provided in pairs of key and value.";
+        this.parent = parent;
+        for (int i = 0; i < textures.length; i += 2) {
+            this.addTexture(textures[i], textures[i + 1]);
+        }
+    }
+
     public void addTexture(@NotNull String key, @NotNull String value) {
         this.textures.put(key, value);
     }
