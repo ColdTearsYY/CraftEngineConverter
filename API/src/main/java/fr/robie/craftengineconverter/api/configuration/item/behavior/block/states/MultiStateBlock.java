@@ -69,8 +69,10 @@ public class MultiStateBlock implements StateBlock {
                 ConfigurationSection variant = getOrCreateSection(variantsSection, blockVariant.getVariantKey());
                 if (blockVariant.getAppearanceName() != null)
                     variant.set("appearance", blockVariant.getAppearanceName());
-                ConfigurationSection variantSettings = getOrCreateSection(variant, "settings");
-                blockVariant.getBlockSettings().serialize(variantSettings);
+                if (blockVariant.getBlockSettings().isUpdated()) {
+                    ConfigurationSection variantSettings = getOrCreateSection(variant, "settings");
+                    blockVariant.getBlockSettings().serialize(variantSettings);
+                }
             }
         }
     }

@@ -45,8 +45,10 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
         behaviorSection.set("type", "block_item");
 
         ConfigurationSection blockBehaviorSection = getOrCreateSection(behaviorSection, "block");
-        ConfigurationSection blockSettingsSection = getOrCreateSection(blockBehaviorSection, "settings");
-        this.blockSettings.serialize(blockSettingsSection);
+        if (this.blockSettings.isUpdated()) {
+            ConfigurationSection blockSettingsSection = getOrCreateSection(blockBehaviorSection, "settings");
+            this.blockSettings.serialize(blockSettingsSection);
+        }
 
         if (!this.behaviors.isEmpty()) {
             List<Map<String, Object>> behaviorsList = new ArrayList<>();

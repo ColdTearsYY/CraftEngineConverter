@@ -1,5 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block;
 
+import fr.robie.craftengineconverter.api.common.TrackableSettings;
 import net.momirealms.craftengine.core.block.PushReaction;
 import net.momirealms.craftengine.core.util.Instrument;
 import net.momirealms.craftengine.core.util.Tristate;
@@ -7,8 +8,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 
-public class BlockSettings {
+public class BlockSettings extends TrackableSettings {
     private final String item;
 
     private float hardness = 2;
@@ -54,6 +56,7 @@ public class BlockSettings {
 
     public BlockSettings(String item) {
         this.item = item;
+        super.markInitialized();
     }
 
     // -------------------------
@@ -316,5 +319,20 @@ public class BlockSettings {
             settingsConfigurationSection.set("block-light", this.blockLight);
         if (!this.propagateSkyLight)
             settingsConfigurationSection.set("propagate-skylight", false);
+    }
+
+    @Override
+    protected int computeHashCode() {
+        return Objects.hash(
+            hardness, resistance, isRandomlyTicking, pushReaction, mapColor,
+            burnable, fireSpreadChance, burnChance, replaceable,
+            isRedstoneConductor, isSuffocating, isViewBlocking,
+            fallSound, hitSound, breakSound, stepSound, placeSound,
+            requireCorrectTools, respectToolComponent, correctTools,
+            incorrectToolDigSpeed, tags, clientBoundTags,
+            instrument, fluidState, supportShape,
+            friction, jumpFactor, speedFactor,
+            luminance, canOcclude, blockLight, propagateSkyLight
+        );
     }
 }

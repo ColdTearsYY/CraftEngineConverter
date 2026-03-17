@@ -24,6 +24,9 @@ public class LootTable implements LootConfiguration {
 
     @Override
     public void serialize(@NotNull ConfigurationSection section) {
+        if (this.functions.isEmpty() && this.pools.isEmpty())
+            return;
+
         ConfigurationSection lootSection = section.createSection("loot");
 
         if (!this.functions.isEmpty()) {
