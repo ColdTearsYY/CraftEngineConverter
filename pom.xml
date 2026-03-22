@@ -45,6 +45,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Internal Modules -->
             <dependency>
                 <groupId>fr.robie.craftengineconverter</groupId>
                 <artifactId>API</artifactId>
@@ -76,6 +77,7 @@
                 <version>3.2.1</version>
             </dependency>
 
+            <!-- Bstats -->
             <dependency>
                 <groupId>org.bstats</groupId>
                 <artifactId>bstats-base</artifactId>
@@ -90,6 +92,7 @@
                 <scope>provided</scope>
             </dependency>
 
+            <!-- CraftEngine -->
             <dependency>
                 <groupId>net.momirealms</groupId>
                 <artifactId>craft-engine-core</artifactId>
@@ -133,6 +136,7 @@
                 <scope>provided</scope>
             </dependency>
 
+            <!-- Adventure -->
             <dependency>
                 <groupId>net.kyori</groupId>
                 <artifactId>adventure-api</artifactId>
@@ -140,6 +144,7 @@
                 <scope>provided</scope>
             </dependency>
 
+            <!-- Sarah (Database Library) -->
             <dependency>
                 <groupId>fr.maxlego08.sarah</groupId>
                 <artifactId>sarah</artifactId>
@@ -234,10 +239,13 @@
     </build>
 
     <repositories>
+        <!-- Paper -->
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+
+        <!-- FoliaLib -->
         <repository>
             <id>tcoded-releases</id>
             <url>https://repo.tcoded.com/releases</url>
@@ -279,12 +287,13 @@
             <url>https://repo.momirealms.net/snapshots</url>
         </repository>
 
+        <!-- Sarah -->
         <repository>
             <id>groupez</id>
             <url>https://repo.groupez.dev/releases</url>
         </repository>
 
-
+        <!-- Sonatype Central (for snapshots) -->
         <repository>
             <id>central-snapshots</id>
             <url>https://central.sonatype.com/repository/maven-snapshots/</url>
