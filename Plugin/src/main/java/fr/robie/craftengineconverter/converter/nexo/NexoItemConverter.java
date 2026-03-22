@@ -1542,7 +1542,7 @@ public class NexoItemConverter extends ItemConverter {
             case "item/amethyst_bud" -> buildModel(packSection, "minecraft:item/amethyst_bud", "layer0");
             case "item/bow" -> buildModel(packSection, "minecraft:item/bow", "layer0");
             case "item/crossbow" -> buildModel(packSection, "minecraft:item/crossbow", "layer0");
-            case "item/generated" -> buildModel(packSection, "minecraft:item/generated", "layer0", "layer1", "layer2");
+            case "item/generated" -> buildModel(packSection, "minecraft:item/generated", "layer0");
             case "item/handheld" -> buildModel(packSection, "minecraft:item/handheld", "layer0");
             case "item/handheld_mace" -> buildModel(packSection, "minecraft:item/handheld_mace", "layer0");
             case "item/handheld_rod" -> buildModel(packSection, "minecraft:item/handheld_rod", "layer0");
