@@ -156,7 +156,7 @@ public abstract class Converter extends YamlUtils {
                 FileCacheEntry<YamlConfiguration> fileCacheEntry = entry.get();
                 toConvert.add(new ConfigFile(itemFile, baseDir, fileCacheEntry.getData()));
             } else {
-                Logger.info(Message.ERROR__FILE__LOAD_FAILURE, LogType.ERROR, "file", fileName);
+                this.log(Message.ERROR__FILE__LOAD_FAILURE, LogType.ERROR, "file", fileName);
             }
         }
     }
@@ -191,18 +191,18 @@ public abstract class Converter extends YamlUtils {
     }
 
     protected void copyAssetsFolder(File assetsFolder, File outputAssetsFolder, String packName,
-                                  BukkitProgressBar progress, ExecutorService executor,
-                                  CountDownLatch latch, AtomicReference<Exception> errorRef,
-                                  boolean useMultiThread) {
+                                    BukkitProgressBar progress, ExecutorService executor,
+                                    CountDownLatch latch, AtomicReference<Exception> errorRef,
+                                    boolean useMultiThread) {
         if (!assetsFolder.exists() || !assetsFolder.isDirectory()) {
-            Logger.debug("Assets folder not found for pack '" + packName + "' at: " + assetsFolder.getAbsolutePath());
+            this.logDebug(Message.WARNING__CONVERTER__PACK_DIRECTORY_NOT_FOUND, LogType.WARNING, "path", assetsFolder.getAbsolutePath());
             return;
         }
 
         try {
             copyDirectory(assetsFolder, outputAssetsFolder, assetsFolder, progress, executor, latch, errorRef, useMultiThread);
         } catch (IOException e) {
-            Logger.info("Failed to copy assets from " + packName + " pack: " + e.getMessage(), LogType.ERROR);
+            this.log(Message.ERROR__CONVERTER__FAILED_SAVE_FILE, LogType.ERROR, "type", "assets", "file", packName);
             errorRef.compareAndSet(null, e);
         }
     }
@@ -345,7 +345,7 @@ public abstract class Converter extends YamlUtils {
         } else {
             if (!this.settings.dryRunEnabled() && !targetFile.getParentFile().exists()
                     && !targetFile.getParentFile().mkdirs()) {
-                Logger.debug("Failed to create parent directory for file: " + targetFile.getAbsolutePath(), LogType.ERROR);
+                this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", targetFile.getParentFile().getName(), "path", targetFile.getParentFile().getAbsolutePath());
             }
             copyFile(file, targetFile);
             progress.increment();
@@ -384,7 +384,7 @@ public abstract class Converter extends YamlUtils {
 
             convertedConfig.save(outputFile);
         } catch (IOException e) {
-            Logger.showException("Failed to save converted "+type+" file: " + baseFile.getName(), e);
+            Logger.showException(Message.ERROR__CONVERTER__FAILED_SAVE_FILE, e, "type", type, "file", baseFile.getName());
         }
     }
 
@@ -487,9 +487,9 @@ public abstract class Converter extends YamlUtils {
 
         public ItemConversionContext(List<ConfigFile> fileList, ConverterFactory<T> factory) {
             this(fileList, factory, null,
-                configFile -> configFile.config().getKeys(false),
-                (configFile, rawItemId) -> configFile.config().getConfigurationSection(rawItemId),
-                (configFile, rawItemId) -> configFile.sourceFile().getName().replace(".yml", "") + ":" + rawItemId
+                    configFile -> configFile.config().getKeys(false),
+                    (configFile, rawItemId) -> configFile.config().getConfigurationSection(rawItemId),
+                    (configFile, rawItemId) -> configFile.sourceFile().getName().replace(".yml", "") + ":" + rawItemId
             );
         }
 
@@ -614,7 +614,7 @@ public abstract class Converter extends YamlUtils {
                     if (itemPostProcessor != null) itemPostProcessor.process(rawItemId, converter);
                     this.injectResolvedDependency(rawItemId, converter);
                 } catch (Exception e) {
-                    Logger.showException("Error converting item: " + this.finalIdByRawId.get(rawItemId), e);
+                    Logger.showException(Message.ERROR__CONVERTER__ITEM_CONVERT_EXCEPTION, e, "item", this.finalIdByRawId.get(rawItemId));
                 } finally {
                     progress.increment();
                 }
@@ -637,7 +637,7 @@ public abstract class Converter extends YamlUtils {
                         this.finalItemIdsByFile.get(configFile).add(finalItemId);
                     }
                 } catch (Exception e) {
-                    Logger.showException("Error serializing item: " + finalItemId, e);
+                    Logger.showException(Message.ERROR__CONVERTER__ITEM_SERIALIZE_EXCEPTION, e, "item", finalItemId);
                 }
             }
         }

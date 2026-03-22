@@ -6,7 +6,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public class KineticWeaponConfiguration implements ItemConfigurationSerializable {
-
     private final long delayTicks;
     private final double damageMultiplier;
     private final double forwardMovement;

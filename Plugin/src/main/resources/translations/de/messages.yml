@@ -1,5 +1,4 @@
 version: "${version}"
-
 time:
   format:
     year: "%02d %year% %02d %month% %02d %day% %02d %hour% %02d %minute% %02d %second% %02d %millisecond%"
@@ -11,37 +10,36 @@ time:
     second: "%02d %second% %02d %millisecond%"
     millisecond: "%02d %millisecond%"
   unit:
-    year: "Jahr"
-    years: "Jahre"
-    month: "Monat"
-    months: "Monate"
-    week: "Woche"
-    weeks: "Wochen"
-    day: "Tag"
-    days: "Tage"
-    hour: "Stunde"
-    hours: "Stunden"
-    minute: "Minute"
-    minutes: "Minuten"
-    second: "Sekunde"
-    seconds: "Sekunden"
-    millisecond: "Millisekunde"
-    milliseconds: "Millisekunden"
-
+    year: Jahr
+    years: Jahre
+    month: Monat
+    months: Monate
+    week: Woche
+    weeks: Wochen
+    day: Tag
+    days: Tage
+    hour: Stunde
+    hours: Stunden
+    minute: Minute
+    minutes: Minuten
+    second: Sekunde
+    seconds: Sekunden
+    millisecond: Millisekunde
+    milliseconds: Millisekunden
 command:
   prefix: "&#FFD166C&#FFC863r&#FEBF61a&#FEB65Ef&#FEAD5Bt&#FEA459E&#FD9B56n&#FD9253g&#FD8951i&#FC814En&#FC784Ce&#FC6F49C&#FB6646o&#FB5D44n&#FB5441v&#FB4B3Ee&#FA423Cr&#FA3939t ┃&r "
+  syntax:
+    help: "§f%syntax% §7» §7%description%"
+    error: "§cProbier's mal so§7: §a%syntax%"
   no-permission: "§cSorry, aber dafür hast du keine Rechte."
   player-only: "§cDer Befehl ist nur für Player gedacht."
   no-args: "§cCheck ich nicht – die Argumente passen nicht zum Befehl."
-  syntax:
-    error: "§cProbier's mal so§7: §a%syntax%"
-    help: "§f%syntax% §7» §7%description%"
   reload:
-    description: "Reloadet die Configs und Messages vom Plugin."
+    description: Reloadet die Configs und Messages vom Plugin.
     success: "§aConfig und Messages wurden in §c%time%§a neu geladen!"
     failure: "§cFehler beim Reload der Config. Schau mal in die Konsole, da steht mehr."
   converter:
-    description: "Konvertiert Items von anderen Plugins ins CraftEngine-Format."
+    description: Konvertiert Items von anderen Plugins ins CraftEngine-Format.
     not-supported: "§cDas Plugin §e%plugin%§c wird leider nicht unterstützt."
     start:
       single: "§aKonvertierung für §e%plugin%§a wird gestartet..."
@@ -56,19 +54,19 @@ command:
       info: "§aNutze §e%threads%§a Threads für den Prozess."
       error-too-many: "§cZu viele Threads! Mehr als §e%max%§c Kerne hast du nicht. Ich nehm das Maximum."
   clear-files-cache:
-    description: "Leert den Datei-Cache. Mit --all wird alles gelöscht, sonst nur Stale-Files."
+    description: Leert den Datei-Cache. Mit --all wird alles gelöscht, sonst nur Stale-Files.
     complete: "§aCache geleert! §e%cleared_files%§a Dateien in §c%time%§a gelöscht."
   world-converter:
-    description: "Konvertiert Blöcke in der Welt ins CraftEngine-Format."
+    description: Konvertiert Blöcke in der Welt ins CraftEngine-Format.
     start: "§aWelt-Konvertierung für §e%chunks%§a Chunks gestartet..."
     complete: "§aWelt-Konvertierung fertig! §e%chunks%§a Chunks mit §e%blocks%§a Blöcken in §c%time%§a durchgejagt."
     already-running: "§cDie Welt-Konvertierung läuft schon. Mit --force kannst du sie neu starten."
     force-stopping: "§eForce detected. Breche laufende Welt-Konvertierung ab..."
     clear-cached-chunks:
-      description: "Leert den Cache der bearbeiteten Chunks."
+      description: Leert den Cache der bearbeiteten Chunks.
       complete: "§aCache mit §e%chunks%§a Chunks in §c%time%§a geleert."
     restore:
-      description: "Setzt konvertierte Blöcke/Entities auf den Originalzustand zurück."
+      description: Setzt konvertierte Blöcke/Entities auf den Originalzustand zurück.
       start: "§aWiederherstellung von §e%count%§a Objekten läuft..."
       single:
         success: "§aBlock/Entity bei §e%x%§a, §e%y%§a, §e%z%§a wieder auf Original gesetzt."
@@ -80,29 +78,26 @@ command:
         complete: "§aFertig! §e%restored%§a von §e%total%§a Objekten in §c%time%§a wiederhergestellt."
         none: "§eGibt nix zum Wiederherstellen."
       database-disabled: "§cOhne Datenbank-History klappt das Restore nicht."
-
-messages:
+message:
   plugin:
-    startup: "Plugin wird geladen..."
+    startup: Plugin wird geladen...
     startup-complete: "Plugin ist ready! (Dauer: §c%time%§a)"
-    shutdown: "Plugin wird deaktiviert..."
+    shutdown: Plugin wird deaktiviert...
     shutdown-complete: "Plugin wurde in §c%time%§a runtergefahren."
     configuration:
       loaded: "§aPlugin-Konfiguration erfolgreich in §c%time%§a geladen!"
+messages:
   auto-converter:
     startup:
-      start: "Auto-Converter legt los..."
+      start: Auto-Converter legt los...
       complete: "Auto-Converter ist durch! Hat §c%time%§a gedauert."
-      disabled: "Auto-Conversion ist aus. Nutz /cec convert für den manuellen Weg."
-
+      disabled: Auto-Conversion ist aus. Nutz /cec convert für den manuellen Weg.
 warning:
   file:
     delete-failure: "Konnte die Datei §e%file% (%path%)§c nicht löschen!"
   folder:
     delete-failure: "Konnte den Ordner §e%folder% (%path%)§c nicht löschen!"
-
   converter:
-    circular-dependency: "§eZirkuläre Abhängigkeit erkannt, benutze Originalreihenfolge für nicht aufgelöste Items."
     nexo:
       tool:
         no-blocks-found: "Keine Blöcke für die Tool-Rules in §e%item%§c gefunden. Überspringe den Part."
@@ -134,18 +129,47 @@ warning:
           process-failure: "Armbrust-Models für §e%item%§c machen Probleme."
       custom-block:
         sapling-not-supported: "Setzling-Support für §e%item%§c fehlt noch. Wird geskippt."
+        sapling-natural-only: "CraftEngine checkt nur natürliches Wachstum. §e%item%§c wird nur natürlich wachsen."
         block-data-failure: "Konnte BlockData für die Variation §e%variation%§c von §e%item%§c nicht erstellen."
         unknown-minimal-type: "Unbekannter minimal_type §e%type%§c bei Item §e%item%§c."
         unknown-best-tool: "Unbekanntes best_tool §e%tool%§c bei Item §e%item%§c."
-        sapling-natural-only: "CraftEngine checkt nur natürliches Wachstum. §e%item%§c wird nur natürlich wachsen."
+      recipe:
+        no-mapping-ingredient: "§cKein Mapping für Zutat §e%item%§c in Rezept §e%recipe%§c gefunden."
+        no-mapping-result: "§cKein Mapping für Ergebnis §e%item%§c in Rezept §e%recipe%§c gefunden."
+        no-mapping-input: "§cKein Mapping für Input §e%item%§c in Rezept §e%recipe%§c gefunden."
+        no-mapping-container: "§cKein Mapping für Container §e%item%§c in Rezept §e%recipe%§c gefunden."
+        could-not-determine-recipe-type: "§cRezept-Typ für §e%file%§c konnte nicht ermittelt werden. Übersprungen."
+        error:
+          failed-load-recipe-file: "§cRezept-Datei §e%file%§c konnte nicht geladen werden. Übersprungen."
+          unknown-recipe-type-folder: "§cUnbekannter Rezept-Typ-Ordner §e%type%§c in Datei §e%file%§c. Übersprungen."
+      sound:
+        file-not-found: "Sound-Datei nicht gefunden: §e%path%§c."
+        sounds-file-empty: "Sounds-Datei ist leer: §e%path%§c."
+      language:
+        languages-file-empty: "Sprachdatei ist leer: §e%path%§c."
+        no-languages-found: Keine Sprachen in der Sprachdatei gefunden.
+      glyph:
+        no-glyphs-found: Keine Glyphen zum Konvertieren gefunden.
+      brewing-ingredient-no-mapping: "§cKein Mapping für Brau-Zutat §e%item%§c in Rezept §e%recipe%§c gefunden."
+    pack-directory-not-found: "Nexo Pack-Ordner nicht gefunden unter: %path%"
+    items-directory-not-found: "Items-Ordner nicht gefunden unter: %path%"
+    emojis-directory-not-found: "Emojis-Ordner nicht gefunden unter: %path%"
+    languages-file-not-found: "Sprachdatei nicht gefunden unter: %path%"
+    recipes-directory-not-found: "Rezepte-Ordner nicht gefunden unter: %path%"
+    glyph-directory-not-found: "Glyph-Ordner nicht gefunden unter: %path%"
+    no-emojis-found: Keine Emojis zum Konvertieren vorhanden.
+    circular-dependency: "§eZirkuläre Abhängigkeit erkannt, benutze Originalreihenfolge für nicht aufgelöste Items."
     ia:
+      furniture:
+        unknown-display-transform: "§cUnbekannter Möbel-Display-Transform §e%transform%§c bei Item §e%item%§c."
       items:
         no-section: "Keine 'items'-Section gefunden in: §e%file%§c"
         skipped-no-section: "Item geskippt (keine Section): §e%item%§c in Datei: §e%file%§c"
       images:
-        none-found: "Keine Font-Images von ItemsAdder zum Konvertieren da."
+        none-found: Keine Font-Images von ItemsAdder zum Konvertieren da.
       languages:
-        none-found: "Keine ItemsAdder Sprachdateien gefunden."
+        none-found: Keine ItemsAdder Sprachdateien gefunden.
+        no-entries-found: Keine Spracheinträge zum Konvertieren im ItemsAdder-Contents-Ordner gefunden.
       sounds:
         no-section: "Keine 'sounds'-Section gefunden in: §e%file%§c"
         skipped-no-section: "Sound geskippt: §e%sound%§c in Datei: §e%file%§c"
@@ -179,39 +203,82 @@ warning:
     invalid-barrier-range: "§cRange §e%range%§c im Barriere-Eintrag ist falsch."
     non-numeric-barrier-range-bounds: "§cRange-Grenzen müssen Zahlen sein (§e%range%§c)."
     non-numeric-barrier-value: "§cFehlerhafter Wert §e%value%§c im Barriere-Eintrag."
-
+  no-assets-folder: "Assets-Ordner nicht in der ZIP §e%zip%§c gefunden."
 error:
-  mkdir-failure: "Konnte Verzeichnis §e%directory% (%path%)§c nicht erstellen!"
-  plugin:
-    type-mismatch: "§cTypinkompatibilität für §e%path%§c in der Konfiguration, erwartet §e%expected%§c aber erhalten §e%got%§c, Standardwert wird verwendet: §e%default%§c"
-  file-operations:
-    timeout: "Timeout bei den Datei-Operationen."
-    force-shutdown: "Erzwinge Shutdown der File-Operation-Threads."
-  file:
-    copy-exception: "Fehler beim Kopieren von §e%file%§c: §e%message%§c"
-    load-failure: "Datei '%file%' nicht gefunden oder YAML-Format ist kaputt."
-  pack-conversion:
-    exception: "Fehler bei der Pack-Konvertierung für §e%plugin%§c."
+  failed-count-files-zip: "Fehler beim Zählen der Dateien in ZIP: §e%zip%§c. Fehler: §e%message%§c"
+  extract-file-from-zip: "Fehler beim Extrahieren von §e%file%§c aus ZIP §e%zip%§c. Fehler: §e%message%§c"
   converter:
     missing-dependency: "§cAbhängigkeit §e%item-id%§c wurde in keiner Datei gefunden."
+    item-load-failure: "Item §e%item%§c aus Datei §e%file%§c konnte nicht geladen werden."
+    failed-convert-emoji: "Emoji §e%emoji%§c in Datei §e%file%§c konnte nicht konvertiert werden."
+    failed-convert-sound: "Sound §e%sound%§c in Datei §e%file%§c konnte nicht konvertiert werden."
+    recipes:
+      no-valid-ingredients: "§cKeine gültigen Zutaten für Rezept §e%recipe%§c in §e%file%§c."
     invalid-glow-drop-color: "[%converter%] §c'%color%' ist keine gültige Farbe für den Glow-Drop bei §e%item%§c. Gültig: §e%valid_colors%§c"
+    nexo:
+      unsupported-recipe-type: "Nicht unterstützter Rezept-Typ: §e%type%§c für Rezept §e%recipe%§c in §e%file%§c"
+      sound:
+        invalid-duration-format: "§cUngültiges Dauer-Format §e%duration%§c für Sound §e%sound%§c."
+      language:
+        failed-convert-language: "Sprache §e%lang%§c in Datei §e%file%§c konnte nicht konvertiert werden."
+        failed-convert-translation: "Übersetzungs-Key §e%key%§c für Sprache §e%lang%§c konnte nicht konvertiert werden."
+      items:
+        conversion-exception: Fehler bei der Nexo Items-Konvertierung.
+      emojis:
+        conversion-exception: Fehler bei der Nexo Emoji-Konvertierung.
+      images:
+        conversion-exception: Fehler bei der Nexo Bilder-Konvertierung.
+        save-failure: "Konvertierte Bilddatei konnte nicht gespeichert werden: §e%file%§c"
+        relative-path-failure: "Relativer Pfad für Bilddatei konnte nicht berechnet werden: §e%file%§c"
+      recipes:
+        conversion-exception: Fehler bei der Nexo Rezept-Konvertierung.
+      sounds:
+        load-failure: "Nexo Sounds-Datei konnte nicht geladen werden: §e%file%§c"
+        convert-failure: "Nexo Sounds-Datei konnte nicht konvertiert werden: §e%file%§c"
+      languages:
+        load-failure: "Nexo Sprachdatei konnte nicht geladen werden: §e%file%§c"
+        convert-failure: "Nexo Sprachdatei konnte nicht konvertiert werden: §e%file%§c"
+      pack:
+        zip-extract-failure: "Fehler beim Extrahieren des ZIP-Archives: §e%file%§c"
     ia:
       contents-folder-not-found: "ItemsAdder 'contents' Ordner fehlt unter: §e%path%§c"
       output-folder-creation-failed: "Konnte den Output-Ordner nicht erstellen: §e%path%§c"
-      item-conversion-exception: "Kritischer Fehler bei der ItemsAdder Konvertierung."
+      item-conversion-exception: Kritischer Fehler bei der ItemsAdder Konvertierung.
       missing-name-mapping: "Keine CraftEngine-Namenszuordnung für den ItemsAdder-Block §e%block%§c gefunden. Blockzustands-Konvertierung wird übersprungen."
-      block-state-conversion-failure: "Konvertierung des ItemsAdder-Blockzustands für §e%block%§c mit der Variation §e%variation%§c fehlgeschlagen. Blockzustands-Konvertierung wird übersprungen."
+      block-state-conversion-failure: "Konvertierung des ItemsAdder-Blockzustands für §e%block%§c mit der Variation §e%variation%§c fehlgeschlagen."
       items:
         conversion-failure: "Fehler beim Konvertieren von §e%item%§c (Datei: §e%file%§c)"
       languages:
         count-failure: "Konnte Einträge in §e%file%§c nicht zählen."
-        conversion-exception: "Fehler bei der ItemsAdder Sprach-Konvertierung."
+        conversion-exception: Fehler bei der ItemsAdder Sprach-Konvertierung.
         key-conversion-failure: "Konnte Key §e%key%§c für §e%lang%§c nicht konvertieren."
         file-conversion-failure: "Sprachdatei §e%file%§c konnte nicht konvertiert werden."
       images:
-        conversion-exception: "Fehler bei der Font-Image-Konvertierung."
+        conversion-exception: Fehler bei der Font-Image-Konvertierung.
       sounds:
         conversion-failure: "Konnte Sound §e%sound%§c nicht konvertieren."
-        conversion-exception: "Fehler bei der Sound-Konvertierung."
+        conversion-exception: Fehler bei der Sound-Konvertierung.
       recipes:
-        conversion-exception: "Fehler bei der Rezept-Konvertierung."
+        conversion-exception: Fehler bei der Rezept-Konvertierung.
+        conversion-failure: "Fehler beim Konvertieren von Rezept §e%recipe%§c in Datei §e%file%§c."
+    item-convert-exception: "Fehler beim Konvertieren von Item §e%item%§c."
+    item-serialize-exception: "Fehler beim Serialisieren von Item §e%item%§c."
+    failed-save-file: "Konvertierte Datei §e%type%§c konnte nicht gespeichert werden: §e%file%§c"
+  cache:
+    null-result: "Cache hat null zurückgegeben für Pfad: §e%path%§c"
+    exception: "Fehler beim Zugriff auf den Cache für Pfad: §e%path%§c. Fehler: §e%message%§c"
+  mkdir-failure: "Konnte Verzeichnis §e%directory% (%path%)§c nicht erstellen!"
+  file:
+    copy-exception: "Fehler beim Kopieren von §e%file%§c: §e%message%§c"
+    load-failure: "Datei '%file%' nicht gefunden oder YAML-Format ist kaputt."
+  file-operations:
+    timeout: Timeout bei den Datei-Operationen.
+    force-shutdown: Erzwinge Shutdown der File-Operation-Threads.
+  json:
+    malformed-auto-fixed: "Fehlerhaftes JSON in §e%file%§c erkannt, auto-korrigiert."
+    load-failure: "JSON-Datei '%file%' konnte nicht geladen werden: nicht gefunden oder ungültiges Format."
+  pack-conversion:
+    exception: "Fehler bei der Pack-Konvertierung für §e%plugin%§c."
+  plugin:
+    configuration:
+      type-mismatch: "§cTypinkompatibilität für §e%path%§c in der Konfiguration, erwartet §e%expected%§c aber erhalten §e%got%§c, Standardwert wird verwendet: §e%default%§c"

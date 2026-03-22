@@ -84,7 +84,7 @@ public class NexoConverter extends Converter {
             processConfigs(toConvert, outputBase, progress);
             toConvert.clear();
         } catch (Exception e) {
-            Logger.showException("Error during Nexo items conversion", e);
+            Logger.showException(Message.ERROR__CONVERTER__NEXO__ITEMS__CONVERSION_EXCEPTION, e);
         } finally {
             progress.stop();
         }
@@ -97,12 +97,12 @@ public class NexoConverter extends Converter {
 
     private void processConfigs(Queue<ConfigFile> toConvert, File outputBase, BukkitProgressBar progress) {
         ItemConversionContext<NexoItemConverter> ctx = new ItemConversionContext<>(new ArrayList<>(toConvert),
-            (configFile, rawItemId, finalItemId, itemSection, convertedConfig) ->
-                new NexoItemConverter(this, itemSection, finalItemId, convertedConfig)
+                (configFile, rawItemId, finalItemId, itemSection, convertedConfig) ->
+                        new NexoItemConverter(this, itemSection, finalItemId, convertedConfig)
         );
         ctx.scanWithDependencies();
         ctx.convertInOrder(progress, (rawItemId, converter) ->
-            PluginNameMapper.getInstance().storeMapping(Plugins.NEXO, rawItemId, ctx.getFinalId(rawItemId))
+                PluginNameMapper.getInstance().storeMapping(Plugins.NEXO, rawItemId, ctx.getFinalId(rawItemId))
         );
         ctx.saveAll(outputBase, this);
     }
@@ -151,7 +151,7 @@ public class NexoConverter extends Converter {
             processEmojisConfigs(toConvert, outputEmojisFolder, progress);
             toConvert.clear();
         } catch (Exception e) {
-            Logger.showException("Error during Nexo emojis conversion", e);
+            Logger.showException(Message.ERROR__CONVERTER__NEXO__EMOJIS__CONVERSION_EXCEPTION, e);
         } finally {
             progress.stop();
         }
@@ -275,7 +275,7 @@ public class NexoConverter extends Converter {
             processRecipeConfigs(toConvert, outputFolder, progress);
             toConvert.clear();
         } catch (Exception e) {
-            Logger.showException("Error during Nexo recipes conversion", e);
+            Logger.showException(Message.ERROR__CONVERTER__NEXO__RECIPES__CONVERSION_EXCEPTION, e);
         } finally {
             progress.stop();
         }
@@ -544,7 +544,7 @@ public class NexoConverter extends Converter {
                 if (isValidString(newName)) {
                     ceRecipeSection.set("ingredient", newName);
                 } else {
-                    Logger.debug("No mapping found for Nexo item ingredient: " + nexoItem + " in recipe: " + finalRecipeId, LogType.WARNING);
+                    this.logDebug(Message.WARNING__CONVERTER__NEXO__BREWING_INGREDIENT_NO_MAPPING, LogType.WARNING, "item", nexoItem, "recipe", finalRecipeId);
                 }
             }
         }
@@ -649,13 +649,13 @@ public class NexoConverter extends Converter {
                         craftEngineSounds.save(outputSoundFile);
                 }
             } catch (Exception e) {
-                Logger.showException("Failed to copyFileWithProgress sounds file: " + inputSoundFile.getName(), e);
+                Logger.showException(Message.ERROR__CONVERTER__NEXO__SOUNDS__CONVERT_FAILURE, e, "file", inputSoundFile.getName());
             } finally {
                 nexoSounds.close();
                 progress.stop();
             }
         } catch (Exception e) {
-            Logger.showException("Failed to convert sounds file: " + inputSoundFile.getName(), e);
+            Logger.showException(Message.ERROR__CONVERTER__NEXO__SOUNDS__LOAD_FAILURE, e, "file", inputSoundFile.getName());
         }
     }
 
@@ -846,12 +846,12 @@ public class NexoConverter extends Converter {
                         craftEngineLanguages.save(outputFile);
                 }
             } catch (Exception e) {
-                Logger.showException("Failed to convert languages file: " + languagesFile.getName(), e);
+                Logger.showException(Message.ERROR__CONVERTER__NEXO__LANGUAGES__CONVERT_FAILURE, e, "file", languagesFile.getName());
             } finally {
                 progress.stop();
             }
         } catch (Exception e) {
-            Logger.showException("Failed to load languages file: " + languagesFile.getName(), e);
+            Logger.showException(Message.ERROR__CONVERTER__NEXO__LANGUAGES__LOAD_FAILURE, e, "file", languagesFile.getName());
         }
     }
 
@@ -917,7 +917,7 @@ public class NexoConverter extends Converter {
             processImagesConfigs(toConvert, outputFolder, progress);
             toConvert.clear();
         } catch (Exception e) {
-            Logger.showException("Error during Nexo images conversion", e);
+            Logger.showException(Message.ERROR__CONVERTER__NEXO__IMAGES__CONVERSION_EXCEPTION, e);
         } finally {
             progress.stop();
         }
@@ -991,16 +991,15 @@ public class NexoConverter extends Converter {
 
                 if (!output.getParentFile().exists()) {
                     if (!output.getParentFile().mkdirs()) {
-                        Logger.debug("Failed to create output directory for converted image file: " +
-                                output.getParentFile().getAbsolutePath(), LogType.ERROR);
+                        this.logDebug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", output.getParentFile().getName(), "path", output.getParentFile().getAbsolutePath());
                     }
                 }
 
                 convertedConfig.save(output);
             } catch (IOException e) {
-                Logger.showException("Failed to save converted image file: " + fileName, e);
+                Logger.showException(Message.ERROR__CONVERTER__NEXO__IMAGES__SAVE_FAILURE, e, "file", fileName);
             } catch (IllegalArgumentException e) {
-                Logger.showException("Failed to compute relative path for: " + configFile.sourceFile().getPath(), e);
+                Logger.showException(Message.ERROR__CONVERTER__NEXO__IMAGES__RELATIVE_PATH_FAILURE, e, "file", configFile.sourceFile().getPath());
             }
         }
     }
@@ -1161,7 +1160,7 @@ public class NexoConverter extends Converter {
                 deleteDirectory(tempDir);
             }
         } catch (IOException e) {
-            Logger.showException("Failed to extract and copy assets from ZIP: " + zipFile.getName(), e);
+            Logger.showException(Message.ERROR__CONVERTER__NEXO__PACK__ZIP_EXTRACT_FAILURE, e, "file", zipFile.getName());
             errorRef.compareAndSet(null, e);
         } finally {
             if (!this.settings.dryRunEnabled() && tempDir.exists()) {

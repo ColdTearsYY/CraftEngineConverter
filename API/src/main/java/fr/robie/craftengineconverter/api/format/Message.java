@@ -231,7 +231,32 @@ public enum Message {
     ERROR__JSON__LOAD_FAILURE("Unable to load JSON file '%file%': file not found or invalid JSON format"),
 
     ERROR__PACK_CONVERSION__EXCEPTION("An error occurred during pack conversion for plugin §e%plugin%§c"),
-    ERROR__PLUGIN__CONFIGURATION__TYPE_MISMATCH("§cType mismatch for §e%path%§c in configuration, expected §e%expected%§c but got §e%got%§c, using default value: §e%default%§c")
+    ERROR__PLUGIN__CONFIGURATION__TYPE_MISMATCH("§cType mismatch for §e%path%§c in configuration, expected §e%expected%§c but got §e%got%§c, using default value: §e%default%§c"),
+
+    // Generic item conversion context errors
+    ERROR__CONVERTER__ITEM_CONVERT_EXCEPTION("An error occurred while converting item §e%item%§c"),
+    ERROR__CONVERTER__ITEM_SERIALIZE_EXCEPTION("An error occurred while serializing item §e%item%§c"),
+    ERROR__CONVERTER__FAILED_SAVE_FILE("Failed to save converted §e%type%§c file: §e%file%§c"),
+
+    // IA-specific missing
+    WARNING__CONVERTER__IA__LANGUAGES__NO_ENTRIES_FOUND("No language entries found to convert in the ItemsAdder contents folder."),
+
+    // Nexo conversion exceptions
+    ERROR__CONVERTER__NEXO__ITEMS__CONVERSION_EXCEPTION("An error occurred during Nexo items conversion"),
+    ERROR__CONVERTER__NEXO__EMOJIS__CONVERSION_EXCEPTION("An error occurred during Nexo emojis conversion"),
+    ERROR__CONVERTER__NEXO__IMAGES__CONVERSION_EXCEPTION("An error occurred during Nexo images conversion"),
+    ERROR__CONVERTER__NEXO__RECIPES__CONVERSION_EXCEPTION("An error occurred during Nexo recipes conversion"),
+
+    ERROR__CONVERTER__NEXO__SOUNDS__LOAD_FAILURE("Failed to load Nexo sounds file: §e%file%§c"),
+    ERROR__CONVERTER__NEXO__SOUNDS__CONVERT_FAILURE("Failed to convert Nexo sounds file: §e%file%§c"),
+    ERROR__CONVERTER__NEXO__LANGUAGES__LOAD_FAILURE("Failed to load Nexo languages file: §e%file%§c"),
+    ERROR__CONVERTER__NEXO__LANGUAGES__CONVERT_FAILURE("Failed to convert Nexo languages file: §e%file%§c"),
+
+    ERROR__CONVERTER__NEXO__PACK__ZIP_EXTRACT_FAILURE("Failed to extract and copy assets from ZIP: §e%file%§c"),
+    ERROR__CONVERTER__NEXO__IMAGES__SAVE_FAILURE("Failed to save converted image file: §e%file%§c"),
+    ERROR__CONVERTER__NEXO__IMAGES__RELATIVE_PATH_FAILURE("Failed to compute relative path for image file: §e%file%§c"),
+
+    WARNING__CONVERTER__NEXO__BREWING_INGREDIENT_NO_MAPPING("§cNo mapping found for brewing ingredient §e%item%§c in recipe §e%recipe%§c")
     ;
     private List<String> messages;
     private String message;
