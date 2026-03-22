@@ -80,13 +80,14 @@ command:
       database-disabled: "§cOhne Datenbank-History klappt das Restore nicht."
 message:
   plugin:
-    startup: Plugin wird geladen...
-    startup-complete: "Plugin ist ready! (Dauer: §c%time%§a)"
-    shutdown: Plugin wird deaktiviert...
-    shutdown-complete: "Plugin wurde in §c%time%§a runtergefahren."
+    startup:
+      start: Plugin wird geladen...
+      complete: "Plugin ist ready! (Dauer: §c%time%§a)"
+    shutdown:
+      start: Plugin wird deaktiviert...
+      complete: "Plugin wurde in §c%time%§a runtergefahren."
     configuration:
       loaded: "§aPlugin-Konfiguration erfolgreich in §c%time%§a geladen!"
-messages:
   auto-converter:
     startup:
       start: Auto-Converter legt los...

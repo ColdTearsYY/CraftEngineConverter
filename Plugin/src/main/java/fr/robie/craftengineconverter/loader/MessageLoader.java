@@ -99,11 +99,26 @@ public class MessageLoader extends ObjectUtils implements Manageable {
             config.set(key, null);
         }
 
+        removeEmptySections(config);
+
         Logger.info(
                 "Removed " + obsoleteKeys.size() + " obsolete key(s) from language file '" + lang.name() + "': " + obsoleteKeys,
                 LogType.WARNING
         );
         return true;
+    }
+
+    private void removeEmptySections(YamlConfiguration config) {
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (String key : new ArrayList<>(config.getKeys(true))) {
+                if (config.isConfigurationSection(key) && config.getConfigurationSection(key).getKeys(false).isEmpty()) {
+                    config.set(key, null);
+                    changed = true;
+                }
+            }
+        }
     }
 
     private Set<String> buildValidKeySet() {
@@ -291,9 +306,15 @@ public class MessageLoader extends ObjectUtils implements Manageable {
 
     private void validateLoadedMessages(List<Message> loadedMessages, Languages language) {
         if (loadedMessages.size() != Message.values().length) {
+            Set<Message> loaded = new HashSet<>(loadedMessages);
+            List<String> missing = Arrays.stream(Message.values())
+                    .filter(m -> !loaded.contains(m))
+                    .map(m -> enumNameToKey(m.name()))
+                    .toList();
+
             Logger.info(String.format(
-                    "Loaded messages (%d) do not match expected count (%d) for language %s",
-                    loadedMessages.size(), Message.values().length, language.name()
+                    "Loaded messages (%d) do not match expected count (%d) for language %s. Missing keys: %s",
+                    loadedMessages.size(), Message.values().length, language.name(), missing
             ), LogType.WARNING);
         }
     }

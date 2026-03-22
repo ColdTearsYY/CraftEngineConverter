@@ -81,13 +81,14 @@ command:
       database-disabled: "§cLa base de données n'est pas activée. La restauration nécessite l'historique en base de données."
 message:
   plugin:
-    startup: Activation du plugin ...
-    startup-complete: "Plugin activé en §c%time%§a."
-    shutdown: Désactivation du plugin ...
-    shutdown-complete: "Plugin désactivé en §c%time%§a."
+    startup:
+      start: Activation du plugin ...
+      complete: "Plugin activé en §c%time%§a."
+    shutdown:
+      start: Désactivation du plugin ...
+      complete: "Plugin désactivé en §c%time%§a."
     configuration:
       loaded: "§aConfiguration du plugin chargée en §c%time%§a."
-messages:
   auto-converter:
     startup:
       start: La conversion automatique pour les plugins supportés démarre...

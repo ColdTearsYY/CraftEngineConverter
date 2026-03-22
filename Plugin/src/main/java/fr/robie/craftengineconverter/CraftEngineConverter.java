@@ -101,7 +101,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         INSTANCE = this;
 
         long startTime = System.currentTimeMillis();
-        Logger.info(Message.MESSAGE__PLUGIN__STARTUP);
+        Logger.info(Message.MESSAGE__PLUGIN__STARTUP__START);
 
         if (!this.getDataFolder().exists() && !this.getDataFolder().mkdirs()){
             Logger.info("Unable to create plugin folder ! Disabling CraftEngineConverter ...",LogType.ERROR);
@@ -141,7 +141,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         this.getServer().getServicesManager().register(ITagResolver.class, this.tagResolver, this, ServicePriority.Normal);
 
         if (Configuration.<Boolean>get(ConfigurationKey.AUTO_CONVERT_ON_STARTUP)) {
-            Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__START);
+            Logger.info(Message.MESSAGE__AUTO_CONVERTER__STARTUP__START);
             long startTimeAutoConverter = System.currentTimeMillis();
 
             Map<String, List<ConverterOption>> autoConvertOptions = Configuration.get(ConfigurationKey.AUTO_CONVERT_ON_STARTUP_TYPES);
@@ -168,15 +168,15 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
                 for (CompletableFuture<Void> future : futures) {
                     future.thenAccept(v -> {
                         if (counter.decrementAndGet() == 0) {
-                            Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
+                            Logger.info(Message.MESSAGE__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
                         }
                     });
                 }
             } else {
-                Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
+                Logger.info(Message.MESSAGE__AUTO_CONVERTER__STARTUP__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeAutoConverter));
             }
         } else {
-            Logger.info(Message.MESSAGES__AUTO_CONVERTER__STARTUP__DISABLED);
+            Logger.info(Message.MESSAGE__AUTO_CONVERTER__STARTUP__DISABLED);
         }
 
         if (Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ENABLE))
@@ -201,7 +201,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     @Override
     public void onDisable() {
         long startTime = System.currentTimeMillis();
-        Logger.info(Message.MESSAGE__PLUGIN__SHUTDOWN);
+        Logger.info(Message.MESSAGE__PLUGIN__SHUTDOWN__START);
 
         this.foliaCompatibilityManager.cancelAllTasks();
 

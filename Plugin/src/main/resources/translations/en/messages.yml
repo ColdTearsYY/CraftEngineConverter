@@ -81,13 +81,14 @@ command:
       database-disabled: "§cDatabase is not enabled. Restoration requires database history."
 message:
   plugin:
-    startup: Enabling plugin ...
-    startup-complete: "Plugin enabled in §c%time%§a!"
-    shutdown: Disabling plugin ...
-    shutdown-complete: "Plugin disabled in §c%time%§a!"
+    startup:
+      start: Enabling plugin ...
+      complete: "Plugin enabled in §c%time%§a!"
+    shutdown:
+      start: Disabling plugin ...
+      complete: "Plugin disabled in §c%time%§a!"
     configuration:
       loaded: "§aPlugin configuration loaded in §c%time%§a!"
-messages:
   auto-converter:
     startup:
       start: Auto-conversion for supported plugins is starting...
