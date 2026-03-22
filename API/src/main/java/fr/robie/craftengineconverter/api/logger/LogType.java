@@ -13,6 +13,6 @@ public enum LogType {
     }
 
     public String getColor() {
-        return color;
+        return this.color;
     }
 }

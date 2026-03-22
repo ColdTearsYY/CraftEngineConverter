@@ -23,12 +23,12 @@ public class InvulnerableSettingConfiguration implements ItemConfigurationSerial
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
-        if (invulnerableTypes == null || invulnerableTypes.isEmpty()) return;
+        if (this.invulnerableTypes == null || this.invulnerableTypes.isEmpty()) return;
 
         ConfigurationSection settings = getOrCreateSection(itemSection, "settings");
         if (this.mergeInvulnerableTypes) {
             List<String> invulnerable = settings.getStringList("invulnerable");
-            for (InvulnerableType type : invulnerableTypes) {
+            for (InvulnerableType type : this.invulnerableTypes) {
                 String typeName = type.name().toLowerCase();
                 if (!invulnerable.contains(typeName)) {
                     invulnerable.add(typeName);
@@ -36,7 +36,7 @@ public class InvulnerableSettingConfiguration implements ItemConfigurationSerial
             }
             settings.set("invulnerable", invulnerable);
         } else {
-            List<String> invulnerable = invulnerableTypes.stream().map(type -> type.name().toLowerCase()).toList();
+            List<String> invulnerable = this.invulnerableTypes.stream().map(type -> type.name().toLowerCase()).toList();
             settings.set("invulnerable", invulnerable);
         }
     }

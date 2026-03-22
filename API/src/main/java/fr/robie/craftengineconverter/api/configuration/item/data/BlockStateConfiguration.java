@@ -33,7 +33,7 @@ public class BlockStateConfiguration implements ItemConfigurationSerializable {
         }
 
         public String getBlockState() {
-            return blockState;
+            return this.blockState;
         }
 
         @Override
@@ -50,7 +50,7 @@ public class BlockStateConfiguration implements ItemConfigurationSerializable {
         }
 
         public Map<String, Object> getBlockStateProperties() {
-            return blockStateProperties;
+            return this.blockStateProperties;
         }
 
         @Override

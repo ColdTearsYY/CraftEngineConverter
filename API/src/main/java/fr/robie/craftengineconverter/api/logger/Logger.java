@@ -116,14 +116,14 @@ public class Logger extends TextFormatter {
     }
 
     public String getPrefix() {
-        return prefix;
+        return this.prefix;
     }
 
     // Core log method with optional subPrefix
     public void log(@Nullable String subPrefix, String message, LogType logType, Object... args) {
         String prefixPart = subPrefix != null
-                ? "§8[§e" + prefix + "§8] §8[" + subPrefix + "§8] "
-                : "§8[§e" + prefix + "§8] ";
+                ? "§8[§e" + this.prefix + "§8] §8[" + subPrefix + "§8] "
+                : "§8[§e" + this.prefix + "§8] ";
         Bukkit.getConsoleSender().sendMessage(prefixPart + logType.getColor() + parseText(message, args));
     }
 

@@ -11,8 +11,7 @@ public enum Plugins {
     CRAFTENGINE("CraftEngine"),
     PACKET_EVENTS("packetevents"),
     PLACEHOLDER_API("PlaceholderAPI"),
-    ITEMS_ADDER("ItemsAdder")
-    ;
+    ITEMS_ADDER("ItemsAdder");
     private static final Map<Plugins, Boolean> presenceCache = new ConcurrentHashMap<>();
 
     private final String pluginName;
@@ -23,12 +22,13 @@ public enum Plugins {
 
     public boolean isPresent() {
         return presenceCache.computeIfAbsent(this, plugin -> {
-            Plugin bukkitPlugin = Bukkit.getServer().getPluginManager().getPlugin(pluginName);
+            Plugin bukkitPlugin = Bukkit.getServer().getPluginManager().getPlugin(this.pluginName);
             return bukkitPlugin != null;
         });
     }
+
     public boolean isEnabled() {
-        Plugin bukkitPlugin = Bukkit.getServer().getPluginManager().getPlugin(pluginName);
+        Plugin bukkitPlugin = Bukkit.getServer().getPluginManager().getPlugin(this.pluginName);
         return bukkitPlugin != null && bukkitPlugin.isEnabled();
     }
 }

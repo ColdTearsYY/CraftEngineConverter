@@ -41,11 +41,11 @@ public abstract class ObjectConverter {
         }
 
         void increment() {
-            conversions++;
+            this.conversions++;
         }
 
         boolean hasReachedLimit() {
-            return conversions >= maxConversions;
+            return this.conversions >= this.maxConversions;
         }
     }
 }

@@ -35,17 +35,17 @@ import java.util.zip.ZipInputStream;
 
 public class NexoConverter extends Converter {
     public NexoConverter(CraftEngineConverter plugin) {
-        super(plugin,"Nexo",Plugins.NEXO);
+        super(plugin, "Nexo", Plugins.NEXO);
     }
 
     @Override
-    public CompletableFuture<Void> convertItems(boolean async, Optional<Player> player){
-        return executeTask(async, ()-> convertItemsSync(player));
+    public CompletableFuture<Void> convertItems(boolean async, Optional<Player> player) {
+        return executeTask(async, () -> convertItemsSync(player));
     }
 
     private void convertItemsSync(Optional<Player> player) {
-        File inputBase = new File("plugins/" + converterName + "/items");
-        File outputBase = new File(this.plugin.getDataFolder(), "converted/"+converterName+"/CraftEngine/resources/craftengineconverter/configuration/items");
+        File inputBase = new File("plugins/" + this.converterName + "/items");
+        File outputBase = new File(this.plugin.getDataFolder(), "converted/" + this.converterName + "/CraftEngine/resources/craftengineconverter/configuration/items");
 
         if (!inputBase.exists() || !inputBase.isDirectory()) {
             this.log(Message.WARNING__CONVERTER__ITEMS_DIRECTORY_NOT_FOUND, LogType.ERROR, "path", inputBase.getAbsolutePath());
@@ -108,13 +108,13 @@ public class NexoConverter extends Converter {
     }
 
     @Override
-    public CompletableFuture<Void> convertEmojis(boolean async, Optional<Player> player){
-        return executeTask(async, ()-> convertEmojisSync(player));
+    public CompletableFuture<Void> convertEmojis(boolean async, Optional<Player> player) {
+        return executeTask(async, () -> convertEmojisSync(player));
     }
 
     private void convertEmojisSync(Optional<Player> player) {
-        File inputEmojisFolder = new File("plugins/" + converterName + "/glyphs");
-        File outputEmojisFolder = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/emojis");
+        File inputEmojisFolder = new File("plugins/" + this.converterName + "/glyphs");
+        File outputEmojisFolder = new File(this.plugin.getDataFolder(), "converted/" + this.converterName + "/CraftEngine/resources/craftengineconverter/configuration/emojis");
 
         if (!inputEmojisFolder.exists() || !inputEmojisFolder.isDirectory()) {
             this.logDebug(Message.WARNING__CONVERTER__EMOJIS_DIRECTORY_NOT_FOUND, LogType.INFO, "path", inputEmojisFolder.getAbsolutePath());
@@ -219,33 +219,33 @@ public class NexoConverter extends Converter {
         }
         if (this.settings.dryRunEnabled()) return;
         if (convertedCount > 0) {
-            saveConvertedConfig(convertedConfig, configFile, emojiFile, outputBaseDir, "emojis","emoji");
+            saveConvertedConfig(convertedConfig, configFile, emojiFile, outputBaseDir, "emojis", "emoji");
         }
     }
 
     @Override
     public CompletableFuture<Void> convertImages(boolean async, Optional<Player> player) {
-        return executeTask(async, ()-> this.convertImagesSync(player));
+        return executeTask(async, () -> this.convertImagesSync(player));
     }
 
     @Override
     public CompletableFuture<Void> convertLanguages(boolean async, Optional<Player> player) {
-        return executeTask(async, ()->this.convertLanguagesSync(player));
+        return executeTask(async, () -> this.convertLanguagesSync(player));
     }
 
     @Override
     public CompletableFuture<Void> convertSounds(boolean async, Optional<Player> player) {
-        return executeTask(async, ()->this.convertSoundsSync(player));
+        return executeTask(async, () -> this.convertSoundsSync(player));
     }
 
     @Override
     public CompletableFuture<Void> convertRecipes(boolean async, Optional<Player> player) {
-        return executeTask(async, ()-> this.convertRecipesSync(player));
+        return executeTask(async, () -> this.convertRecipesSync(player));
     }
 
     private void convertRecipesSync(Optional<Player> player) {
-        File recipesFolder = new File("plugins/" + converterName + "/recipes");
-        File outputFolder = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/recipes");
+        File recipesFolder = new File("plugins/" + this.converterName + "/recipes");
+        File outputFolder = new File(this.plugin.getDataFolder(), "converted/" + this.converterName + "/CraftEngine/resources/craftengineconverter/configuration/recipes");
         if (!recipesFolder.exists() || !recipesFolder.isDirectory()) {
             this.logDebug(Message.WARNING__CONVERTER__RECIPES_DIRECTORY_NOT_FOUND, LogType.INFO, "path", recipesFolder.getAbsolutePath());
             return;
@@ -408,7 +408,7 @@ public class NexoConverter extends Converter {
 
         if (this.settings.dryRunEnabled()) return;
         if (convertedCount > 0) {
-            saveConvertedConfig(convertedConfig, configFile, recipeFile, outputFolder, "recipes","recipe");
+            saveConvertedConfig(convertedConfig, configFile, recipeFile, outputFolder, "recipes", "recipe");
         }
     }
 
@@ -561,7 +561,7 @@ public class NexoConverter extends Converter {
                 populateRecipeQueue(baseDir, file, toConvert);
             } else if (file.isFile() && file.getName().endsWith(".yml")) {
                 Optional<FileCacheEntry<YamlConfiguration>> entry = FileCacheManager.getYamlCache().getEntryFile(file.toPath());
-                if (entry.isPresent()){
+                if (entry.isPresent()) {
                     RecipeType recipeType = determineRecipeType(file, baseDir);
                     if (recipeType != null) {
                         ConfigFile configFile = new ConfigFile(file, baseDir, entry.get().getData());
@@ -595,8 +595,8 @@ public class NexoConverter extends Converter {
     }
 
     private void convertSoundsSync(Optional<Player> player) {
-        File inputSoundFile = new File("plugins/" + converterName + "/sounds.yml");
-        File outputSoundFile = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/sounds/sounds.yml");
+        File inputSoundFile = new File("plugins/" + this.converterName + "/sounds.yml");
+        File outputSoundFile = new File(this.plugin.getDataFolder(), "converted/" + this.converterName + "/CraftEngine/resources/craftengineconverter/configuration/sounds/sounds.yml");
 
         if (!inputSoundFile.exists() || !inputSoundFile.isFile()) {
             this.logDebug(Message.WARNING__CONVERTER__NEXO__SOUND__FILE_NOT_FOUND, LogType.INFO, "path", inputSoundFile.getAbsolutePath());
@@ -789,8 +789,8 @@ public class NexoConverter extends Converter {
     }
 
     private void convertLanguagesSync(Optional<Player> player) {
-        File languagesFile = new File("plugins/" + converterName + "/languages.yml");
-        File outputFile = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/languages/languages.yml");
+        File languagesFile = new File("plugins/" + this.converterName + "/languages.yml");
+        File outputFile = new File(this.plugin.getDataFolder(), "converted/" + this.converterName + "/CraftEngine/resources/craftengineconverter/configuration/languages/languages.yml");
 
         if (!languagesFile.exists() || !languagesFile.isFile()) {
             this.logDebug(Message.WARNING__CONVERTER__LANGUAGES_FILE_NOT_FOUND, LogType.INFO, "path", languagesFile.getAbsolutePath());
@@ -879,8 +879,8 @@ public class NexoConverter extends Converter {
 
 
     private void convertImagesSync(Optional<Player> player) {
-        File inputBase = new File("plugins/" + converterName + "/glyphs");
-        File outputFolder = new File(this.plugin.getDataFolder(), "converted/" + converterName + "/CraftEngine/resources/craftengineconverter/configuration/images");
+        File inputBase = new File("plugins/" + this.converterName + "/glyphs");
+        File outputFolder = new File(this.plugin.getDataFolder(), "converted/" + this.converterName + "/CraftEngine/resources/craftengineconverter/configuration/images");
 
         if (!inputBase.exists() || !inputBase.isDirectory()) {
             this.logDebug(Message.WARNING__CONVERTER__GLYPH_DIRECTORY_NOT_FOUND, LogType.INFO, "path", inputBase.getAbsolutePath());
@@ -1005,8 +1005,8 @@ public class NexoConverter extends Converter {
     }
 
     @Override
-    public CompletableFuture<Void> convertPack(boolean async, Optional<Player> player){
-        return executeTask(async, ()-> convertPackSync(player));
+    public CompletableFuture<Void> convertPack(boolean async, Optional<Player> player) {
+        return executeTask(async, () -> convertPackSync(player));
     }
 
     private int countFilesInZip(File zipFile) {
@@ -1034,8 +1034,8 @@ public class NexoConverter extends Converter {
     private void convertPackSync(Optional<Player> optionalPlayer) {
         ExecutorService executor = null;
         try {
-            File inputPackFile = new File("plugins/" + converterName + "/pack");
-            File outputPackFile = new File(this.plugin.getDataFolder(), "converted/"+converterName+"/CraftEngine/resources/craftengineconverter/resourcepack");
+            File inputPackFile = new File("plugins/" + this.converterName + "/pack");
+            File outputPackFile = new File(this.plugin.getDataFolder(), "converted/" + this.converterName + "/CraftEngine/resources/craftengineconverter/resourcepack");
 
             if (!inputPackFile.exists() || !inputPackFile.isDirectory()) {
                 this.log(Message.WARNING__CONVERTER__PACK_DIRECTORY_NOT_FOUND, LogType.WARNING, inputPackFile.getAbsolutePath());
@@ -1127,7 +1127,7 @@ public class NexoConverter extends Converter {
             jsonFileValidator.validateAllJsonFiles();
 
         } catch (Exception e) {
-            Logger.showException(Message.ERROR__PACK_CONVERSION__EXCEPTION, e, "plugin", converterName);
+            Logger.showException(Message.ERROR__PACK_CONVERSION__EXCEPTION, e, "plugin", this.converterName);
         } finally {
             if (executor != null && !executor.isShutdown()) {
                 executor.shutdownNow();
@@ -1243,7 +1243,6 @@ public class NexoConverter extends Converter {
             }
         }
     }
-
 
 
     private String validateZipEntryName(@Nullable String entryName) throws IOException {

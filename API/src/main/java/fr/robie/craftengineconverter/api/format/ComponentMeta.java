@@ -89,10 +89,11 @@ public class ComponentMeta implements fr.robie.craftengineconverter.api.format.M
         matcher.appendTail(sb);
         return sb.toString();
     }
+
     private String replaceLegacyColors(String message) {
         for (var entry : this.COLORS_MAPPINGS.entrySet()) {
             String key = entry.getKey();
-            String value = "<"+entry.getValue()+">";
+            String value = "<" + entry.getValue() + ">";
 
             message = message.replace("&" + key, value)
                     .replace("§" + key, value)
@@ -111,6 +112,7 @@ public class ComponentMeta implements fr.robie.craftengineconverter.api.format.M
     public void sendMessage(Audience audience, String message) {
         audience.sendMessage(getComponent(message));
     }
+
     @Override
     public void sendTitle(@NotNull Player player, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         Component titleComponent = null;
@@ -148,9 +150,10 @@ public class ComponentMeta implements fr.robie.craftengineconverter.api.format.M
     public String getMessageColorized(String message) {
         return colorMiniMessage(message);
     }
+
     @Override
     public String getMessageLegacyColorized(String message) {
-        return LEGACY_SERIALIZER.serialize(getComponent(message));
+        return this.LEGACY_SERIALIZER.serialize(getComponent(message));
     }
 
     public List<Component> getComponents(List<String> messages) {
@@ -158,6 +161,7 @@ public class ComponentMeta implements fr.robie.craftengineconverter.api.format.M
                 .map(this::getComponent)
                 .collect(Collectors.toList());
     }
+
     public String getRawMessage(Component component) {
         return this.MINI_MESSAGE.serialize(component);
     }

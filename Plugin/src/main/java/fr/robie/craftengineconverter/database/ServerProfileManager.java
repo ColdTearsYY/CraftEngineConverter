@@ -38,16 +38,16 @@ public class ServerProfileManager implements ServerProfile {
             return;
         }
         List<BlockHistory> allBlockHistories = this.storageManager.getAllActiveConversions();
-        
+
         for (BlockHistory history : allBlockHistories) {
             if (Boolean.FALSE.equals(history.isReverted())) {
                 String key = createCacheKey(
-                    history.getWorldName(),
-                    history.getChunkX(),
-                    history.getChunkZ(),
-                    history.getBlockX(),
-                    history.getBlockY(),
-                    history.getBlockZ()
+                        history.getWorldName(),
+                        history.getChunkX(),
+                        history.getChunkZ(),
+                        history.getBlockX(),
+                        history.getBlockY(),
+                        history.getBlockZ()
                 );
                 this.activeBlockCache.put(key, history);
             }
@@ -65,11 +65,11 @@ public class ServerProfileManager implements ServerProfile {
      * Creates a cache key from block and chunk coordinates.
      *
      * @param worldName The world name
-     * @param chunkX The chunk X coordinate
-     * @param chunkZ The chunk Z coordinate
-     * @param blockX The block X coordinate
-     * @param blockY The block Y coordinate
-     * @param blockZ The block Z coordinate
+     * @param chunkX    The chunk X coordinate
+     * @param chunkZ    The chunk Z coordinate
+     * @param blockX    The block X coordinate
+     * @param blockY    The block Y coordinate
+     * @param blockZ    The block Z coordinate
      * @return The cache key string in format: world=name:chunkx:chunkz:blockx:blocky:blockz
      */
     @NotNull
@@ -87,12 +87,12 @@ public class ServerProfileManager implements ServerProfile {
     public void addBlockHistory(@NotNull BlockHistory blockHistory) {
         if (Boolean.FALSE.equals(blockHistory.isReverted())) {
             String key = createCacheKey(
-                blockHistory.getWorldName(), 
-                blockHistory.getChunkX(),
-                blockHistory.getChunkZ(),
-                blockHistory.getBlockX(),
-                blockHistory.getBlockY(), 
-                blockHistory.getBlockZ()
+                    blockHistory.getWorldName(),
+                    blockHistory.getChunkX(),
+                    blockHistory.getChunkZ(),
+                    blockHistory.getBlockX(),
+                    blockHistory.getBlockY(),
+                    blockHistory.getBlockZ()
             );
             this.activeBlockCache.put(key, blockHistory);
         }
@@ -112,9 +112,9 @@ public class ServerProfileManager implements ServerProfile {
      * This is a fast O(1) operation.
      *
      * @param worldName The world name
-     * @param blockX The block X coordinate
-     * @param blockY The block Y coordinate
-     * @param blockZ The block Z coordinate
+     * @param blockX    The block X coordinate
+     * @param blockY    The block Y coordinate
+     * @param blockZ    The block Z coordinate
      * @return true if the block is converted and not reverted
      */
     @Override
@@ -137,7 +137,7 @@ public class ServerProfileManager implements ServerProfile {
      */
     @Override
     public int getActiveBlockCount() {
-        return activeBlockCache.size();
+        return this.activeBlockCache.size();
     }
 
     /**
@@ -147,7 +147,7 @@ public class ServerProfileManager implements ServerProfile {
      */
     @Override
     public int getActiveEntityCount() {
-        return activeEntityCache.size();
+        return this.activeEntityCache.size();
     }
 
     /**
@@ -164,12 +164,12 @@ public class ServerProfileManager implements ServerProfile {
     @Override
     public void markBlockAsReverted(@NonNull BlockHistory history) {
         String key = createCacheKey(
-            history.getWorldName(),
-            history.getChunkX(),
-            history.getChunkZ(),
-            history.getBlockX(),
-            history.getBlockY(),
-            history.getBlockZ()
+                history.getWorldName(),
+                history.getChunkX(),
+                history.getChunkZ(),
+                history.getBlockX(),
+                history.getBlockY(),
+                history.getBlockZ()
         );
         this.activeBlockCache.remove(key);
         this.storageManager.markBlockAsReverted(history);

@@ -19,11 +19,11 @@ public class CraftEngineConverterCommand extends VCommand {
     @Override
     protected CommandType perform(CraftEngineConverter plugin) {
         syntaxMessage();
-        Block targetBlockExact = player.getTargetBlockExact(100);
+        Block targetBlockExact = this.player.getTargetBlockExact(100);
         if (targetBlockExact != null) {
-            player.sendMessage("Target block: " + targetBlockExact.getBlockData().getAsString());
+            this.player.sendMessage("Target block: " + targetBlockExact.getBlockData().getAsString());
         } else {
-            player.sendMessage("No target block within range.");
+            this.player.sendMessage("No target block within range.");
         }
         return CommandType.SUCCESS;
     }

@@ -27,7 +27,7 @@ public class EnchantmentConfiguration implements ItemConfigurationSerializable {
     }
 
     public boolean isMerge() {
-        return merge;
+        return this.merge;
     }
 
     @Override

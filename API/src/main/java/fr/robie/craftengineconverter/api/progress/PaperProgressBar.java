@@ -19,17 +19,18 @@ public class PaperProgressBar extends BukkitProgressBar {
         } else {
             this.componentMeta = new ComponentMeta();
         }
-        if (isNotNull(builder.player)){
+        if (isNotNull(builder.player)) {
             BossBar.Color color = BossBar.Color.BLUE;
             if (isNotNull(builder.progressColor)) {
                 switch (builder.progressColor) {
                     case GREEN -> color = BossBar.Color.GREEN;
-                    case RED,DARK_RED -> color = BossBar.Color.RED;
-                    case GOLD,YELLOW -> color = BossBar.Color.YELLOW;
+                    case RED, DARK_RED -> color = BossBar.Color.RED;
+                    case GOLD, YELLOW -> color = BossBar.Color.YELLOW;
                     case DARK_PURPLE -> color = BossBar.Color.PURPLE;
                     case LIGHT_PURPLE -> color = BossBar.Color.PINK;
                     case WHITE -> color = BossBar.Color.WHITE;
-                    default -> {}
+                    default -> {
+                    }
                 }
             }
             this.bossBar = BossBar.bossBar(this.componentMeta.getComponent(isNotNull(builder.prefix) ? builder.prefix : "Progress"), 0f, color, BossBar.Overlay.PROGRESS);
@@ -41,24 +42,24 @@ public class PaperProgressBar extends BukkitProgressBar {
     @Override
     public void start() {
         super.start();
-        if (isNotNull(this.player) && isNotNull(this.bossBar) && player.isOnline()) {
-            player.showBossBar(this.bossBar);
+        if (isNotNull(this.player) && isNotNull(this.bossBar) && this.player.isOnline()) {
+            this.player.showBossBar(this.bossBar);
         }
     }
 
     @Override
     public void stop() {
         super.stop();
-        if (isNotNull(this.player) && isNotNull(this.bossBar) && player.isOnline()) {
-            player.hideBossBar(this.bossBar);
+        if (isNotNull(this.player) && isNotNull(this.bossBar) && this.player.isOnline()) {
+            this.player.hideBossBar(this.bossBar);
         }
     }
 
     @Override
     public void displayProgress() {
-        if (isNotNull(this.bossBar) && isNotNull(this.player) && player.isOnline()) {
+        if (isNotNull(this.bossBar) && isNotNull(this.player) && this.player.isOnline()) {
             float progress = Math.min(1f, Math.max(0f, (float) getCurrent() / getTotal()));
-            if (this.bossBar.progress() == progress){
+            if (this.bossBar.progress() == progress) {
                 return;
             }
             this.bossBar.progress(progress);

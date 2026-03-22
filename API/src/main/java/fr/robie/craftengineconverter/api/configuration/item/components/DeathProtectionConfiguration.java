@@ -21,11 +21,11 @@ public class DeathProtectionConfiguration extends AbstractEffectsConfiguration {
         ConfigurationSection components = getOrCreateSection(itemSection, "components");
         ConfigurationSection deathProtectionSection = getOrCreateSection(components, "minecraft:death_protection");
 
-        if (deathEffects == null || deathEffects.isEmpty()) {
+        if (this.deathEffects == null || this.deathEffects.isEmpty()) {
             deathProtectionSection.set("death_effects", new ArrayList<>());
             return;
         }
 
-        deathProtectionSection.set("death_effects", serializeEffects(deathEffects));
+        deathProtectionSection.set("death_effects", serializeEffects(this.deathEffects));
     }
 }

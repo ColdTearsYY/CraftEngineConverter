@@ -23,28 +23,28 @@ public class FoliaCompatibilityManager {
      * Get the FoliaLib instance for direct access if needed.
      */
     public FoliaLib getFoliaLib() {
-        return foliaLib;
+        return this.foliaLib;
     }
 
     /**
      * Check if running on Folia.
      */
     public boolean isFolia() {
-        return foliaLib.isFolia();
+        return this.foliaLib.isFolia();
     }
 
     /**
      * Check if running on Paper.
      */
     public boolean isPaper() {
-        return foliaLib.isPaper();
+        return this.foliaLib.isPaper();
     }
 
     /**
      * Check if running on Spigot.
      */
     public boolean isSpigot() {
-        return foliaLib.isSpigot();
+        return this.foliaLib.isSpigot();
     }
 
     /**
@@ -53,7 +53,7 @@ public class FoliaCompatibilityManager {
      * On Paper/Spigot: Uses main thread scheduler
      */
     public void runNextTick(Runnable task) {
-        foliaLib.getScheduler().runNextTick(wrappedTask -> task.run());
+        this.foliaLib.getScheduler().runNextTick(wrappedTask -> task.run());
     }
 
     /**
@@ -61,106 +61,106 @@ public class FoliaCompatibilityManager {
      * Works the same on all platforms.
      */
     public void runAsync(Runnable task) {
-        foliaLib.getScheduler().runAsync(wrappedTask -> task.run());
+        this.foliaLib.getScheduler().runAsync(wrappedTask -> task.run());
     }
 
     public CompletableFuture<Void> runAsyncComplatable(Runnable task) {
-        return foliaLib.getScheduler().runAsync(wrappedTask -> task.run());
+        return this.foliaLib.getScheduler().runAsync(wrappedTask -> task.run());
     }
 
     /**
      * Run a task after a delay.
      *
-     * @param task The task to run
+     * @param task  The task to run
      * @param delay Delay in ticks
      */
     public void runLater(Runnable task, long delay) {
-        foliaLib.getScheduler().runLater(wrappedTask -> task.run(), delay);
+        this.foliaLib.getScheduler().runLater(wrappedTask -> task.run(), delay);
     }
 
     public CompletableFuture<Void> runLaterComplatable(Runnable task, long delay) {
-        return foliaLib.getScheduler().runLater(wrappedTask -> task.run(), delay);
+        return this.foliaLib.getScheduler().runLater(wrappedTask -> task.run(), delay);
     }
 
     /**
      * Run a task after a delay asynchronously.
      *
-     * @param task The task to run
+     * @param task  The task to run
      * @param delay Delay in ticks
      */
     public void runLaterAsync(Runnable task, long delay) {
-        foliaLib.getScheduler().runLaterAsync(wrappedTask -> task.run(), delay);
+        this.foliaLib.getScheduler().runLaterAsync(wrappedTask -> task.run(), delay);
     }
 
     /**
      * Run a task after a delay with TimeUnit.
      *
-     * @param task The task to run
+     * @param task  The task to run
      * @param delay Delay amount
-     * @param unit Time unit
+     * @param unit  Time unit
      */
     public void runLater(Runnable task, long delay, TimeUnit unit) {
-        foliaLib.getScheduler().runLater(wrappedTask -> task.run(), delay, unit);
+        this.foliaLib.getScheduler().runLater(wrappedTask -> task.run(), delay, unit);
     }
 
     /**
      * Run a task after a delay asynchronously with TimeUnit.
      *
-     * @param task The task to run
+     * @param task  The task to run
      * @param delay Delay amount
      */
     public void runLaterAsync(Runnable task, long delay, TimeUnit unit) {
-        foliaLib.getScheduler().runLaterAsync(wrappedTask -> task.run(), delay, unit);
+        this.foliaLib.getScheduler().runLaterAsync(wrappedTask -> task.run(), delay, unit);
     }
 
     public CompletableFuture<Void> runLaterAsyncComplatable(Consumer<WrappedTask> task, long delay, TimeUnit unit) {
-        return foliaLib.getScheduler().runLaterAsync(task, delay, unit);
+        return this.foliaLib.getScheduler().runLaterAsync(task, delay, unit);
     }
 
     public CompletableFuture<Void> runLaterAsyncComplatable(Runnable task, long delay) {
-        return foliaLib.getScheduler().runLaterAsync(wrappedTask -> task.run(), delay);
+        return this.foliaLib.getScheduler().runLaterAsync(wrappedTask -> task.run(), delay);
     }
 
     /**
      * Run a task repeatedly at fixed intervals.
      *
-     * @param task The task to run
+     * @param task         The task to run
      * @param initialDelay Initial delay in ticks
-     * @param period Period between executions in ticks
+     * @param period       Period between executions in ticks
      */
     public void runTimer(Runnable task, long initialDelay, long period) {
-        foliaLib.getScheduler().runTimer(wrappedTask -> task.run(), initialDelay, period);
+        this.foliaLib.getScheduler().runTimer(wrappedTask -> task.run(), initialDelay, period);
     }
 
     /**
      * Run a task repeatedly at fixed intervals asynchronously.
      *
-     * @param task The task to run
+     * @param task         The task to run
      * @param initialDelay Initial delay in ticks
-     * @param period Period between executions in ticks
+     * @param period       Period between executions in ticks
      */
     public void runTimerAsync(Runnable task, long initialDelay, long period) {
-        foliaLib.getScheduler().runTimerAsync(wrappedTask -> task.run(), initialDelay, period);
+        this.foliaLib.getScheduler().runTimerAsync(wrappedTask -> task.run(), initialDelay, period);
     }
 
     public WrappedTask runTimerAsyncWrapped(Runnable task, long initialDelay, long period, TimeUnit unit) {
-        return foliaLib.getScheduler().runTimerAsync(task, initialDelay, period, unit);
+        return this.foliaLib.getScheduler().runTimerAsync(task, initialDelay, period, unit);
     }
 
     /**
      * Run a task repeatedly at fixed intervals asynchronously with TimeUnit.
      *
-     * @param task The task to run
+     * @param task         The task to run
      * @param initialDelay Initial delay
-     * @param period Period between executions
-     * @param unit Time unit for both delay and period
+     * @param period       Period between executions
+     * @param unit         Time unit for both delay and period
      */
     public void runTimerAsync(Runnable task, long initialDelay, long period, TimeUnit unit) {
-        foliaLib.getScheduler().runTimerAsync(wrappedTask -> task.run(), initialDelay, period, unit);
+        this.foliaLib.getScheduler().runTimerAsync(wrappedTask -> task.run(), initialDelay, period, unit);
     }
 
     public void runTimerAsync(Consumer<WrappedTask> task, long initialDelay, long period, TimeUnit unit) {
-        foliaLib.getScheduler().runTimerAsync(task, initialDelay, period, unit);
+        this.foliaLib.getScheduler().runTimerAsync(task, initialDelay, period, unit);
     }
 
     /**
@@ -169,10 +169,10 @@ public class FoliaCompatibilityManager {
      * On Paper/Spigot: Uses main thread scheduler
      *
      * @param location The location
-     * @param task The task to run
+     * @param task     The task to run
      */
     public void runAtLocation(Location location, Runnable task) {
-        foliaLib.getScheduler().runAtLocation(location, wrappedTask -> task.run());
+        this.foliaLib.getScheduler().runAtLocation(location, wrappedTask -> task.run());
     }
 
     /**
@@ -181,10 +181,10 @@ public class FoliaCompatibilityManager {
      * On Paper/Spigot: Uses main thread scheduler
      *
      * @param entity The entity
-     * @param task The task to run
+     * @param task   The task to run
      */
     public void runAtEntity(Entity entity, Runnable task) {
-        foliaLib.getScheduler().runAtEntity(entity, wrappedTask -> task.run());
+        this.foliaLib.getScheduler().runAtEntity(entity, wrappedTask -> task.run());
     }
 
     /**
@@ -192,31 +192,31 @@ public class FoliaCompatibilityManager {
      * On Folia: Uses native async teleportation
      * On Paper/Spigot: Falls back to synchronous teleportation on next tick
      *
-     * @param entity The entity to teleport
+     * @param entity   The entity to teleport
      * @param location The destination location
      * @return CompletableFuture<Boolean> indicating success
      */
     public CompletableFuture<Boolean> teleportAsync(Entity entity, Location location) {
-        return foliaLib.getScheduler().teleportAsync(entity, location);
+        return this.foliaLib.getScheduler().teleportAsync(entity, location);
     }
 
     /**
      * Teleport an entity asynchronously with a specific cause.
      *
-     * @param entity The entity to teleport
+     * @param entity   The entity to teleport
      * @param location The destination location
-     * @param cause The teleportation cause
+     * @param cause    The teleportation cause
      * @return CompletableFuture<Boolean> indicating success
      */
     public CompletableFuture<Boolean> teleportAsync(Entity entity, Location location, PlayerTeleportEvent.TeleportCause cause) {
-        return foliaLib.getScheduler().teleportAsync(entity, location, cause);
+        return this.foliaLib.getScheduler().teleportAsync(entity, location, cause);
     }
 
     /**
      * Teleport a player safely (with appropriate region context).
      * This method ensures the teleportation happens in the correct thread context.
      *
-     * @param player The player to teleport
+     * @param player   The player to teleport
      * @param location The destination location
      * @return CompletableFuture<Boolean> indicating success
      */
@@ -229,16 +229,16 @@ public class FoliaCompatibilityManager {
      * Should be called during plugin shutdown.
      */
     public void cancelAllTasks() {
-        foliaLib.getScheduler().cancelAllTasks();
+        this.foliaLib.getScheduler().cancelAllTasks();
     }
 
     /**
      * Get platform information for debugging.
      */
     public String getPlatformInfo() {
-        if (foliaLib.isFolia()) {
+        if (this.foliaLib.isFolia()) {
             return "Folia (Regionised Multithreading)";
-        } else if (foliaLib.isPaper()) {
+        } else if (this.foliaLib.isPaper()) {
             return "Paper (Single Thread with Folia Compatibility)";
         } else {
             return "Spigot/Bukkit (Single Thread with Folia Compatibility)";
@@ -253,7 +253,7 @@ public class FoliaCompatibilityManager {
      * @return true if the current thread owns this location's region
      */
     public boolean isOwnedByCurrentRegion(Location location) {
-        if (foliaLib.isFolia()) {
+        if (this.foliaLib.isFolia()) {
             // Use Bukkit.isOwnedByCurrentRegion() on Folia
             try {
                 return org.bukkit.Bukkit.isOwnedByCurrentRegion(location);
@@ -273,7 +273,7 @@ public class FoliaCompatibilityManager {
      * @return true if the current thread owns this entity's region
      */
     public boolean isOwnedByCurrentRegion(Entity entity) {
-        if (foliaLib.isFolia()) {
+        if (this.foliaLib.isFolia()) {
             // Use Bukkit.isOwnedByCurrentRegion() on Folia
             try {
                 return org.bukkit.Bukkit.isOwnedByCurrentRegion(entity);

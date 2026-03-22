@@ -70,7 +70,7 @@ public class BukkitProgressBar extends ObjectUtils {
             return;
         }
         this.task = this.plugin.getFoliaCompatibilityManager()
-                .runTimerAsyncWrapped(this::printProgress, 0L, updateIntervalTicks, TimeUnit.MILLISECONDS);
+                .runTimerAsyncWrapped(this::printProgress, 0L, this.updateIntervalTicks, TimeUnit.MILLISECONDS);
         this.startTimeMillis = System.currentTimeMillis();
     }
 
@@ -109,9 +109,9 @@ public class BukkitProgressBar extends ObjectUtils {
         this.lastUpdateTime = System.currentTimeMillis();
     }
 
-    public void displayProgress(){
+    public void displayProgress() {
         String progressMessage = getProgress();
-        if (isNotNull(this.player)){
+        if (isNotNull(this.player)) {
             this.plugin.getMessageFormatter().sendMessage(this.player, progressMessage);
         } else {
             Logger.info(progressMessage);
@@ -124,47 +124,47 @@ public class BukkitProgressBar extends ObjectUtils {
     public String getProgress() {
         StringBuilder sb = new StringBuilder();
 
-        if (prefix != null && !prefix.isEmpty()) {
-            sb.append(prefix).append(" ");
+        if (this.prefix != null && !this.prefix.isEmpty()) {
+            sb.append(this.prefix).append(" ");
         }
 
-        if (showBar) {
+        if (this.showBar) {
             sb.append("[");
-            int filled = (int) ((double) current / total * barWidth);
+            int filled = (int) ((double) this.current / this.total * this.barWidth);
 
-            if (!progressColor.isEmpty()) sb.append(progressColor);
-            sb.append(String.valueOf(progressChar).repeat(Math.max(0, filled)));
+            if (!this.progressColor.isEmpty()) sb.append(this.progressColor);
+            sb.append(String.valueOf(this.progressChar).repeat(Math.max(0, filled)));
 
-            if (!emptyColor.isEmpty()) sb.append(emptyColor);
-            sb.append(String.valueOf(emptyChar).repeat(Math.max(0, barWidth - filled)));
+            if (!this.emptyColor.isEmpty()) sb.append(this.emptyColor);
+            sb.append(String.valueOf(this.emptyChar).repeat(Math.max(0, this.barWidth - filled)));
 
-            if (!normalColor.isEmpty()) sb.append(normalColor);
+            if (!this.normalColor.isEmpty()) sb.append(this.normalColor);
             sb.append("] ");
         }
 
-        if (showPercentage) {
-            double percentage = (double) current / total * 100;
-            if (!percentColor.isEmpty()) sb.append(percentColor);
+        if (this.showPercentage) {
+            double percentage = (double) this.current / this.total * 100;
+            if (!this.percentColor.isEmpty()) sb.append(this.percentColor);
             sb.append(String.format("%6.2f%%", percentage));
-            if (!normalColor.isEmpty()) sb.append(normalColor);
+            if (!this.normalColor.isEmpty()) sb.append(this.normalColor);
             sb.append(" ");
         }
 
-        if (showCount) {
-            sb.append("(").append(current).append("/").append(total).append(")");
+        if (this.showCount) {
+            sb.append("(").append(this.current).append("/").append(this.total).append(")");
         }
 
-        if (suffix != null && !suffix.isEmpty()) {
-            sb.append(" ").append(suffix);
+        if (this.suffix != null && !this.suffix.isEmpty()) {
+            sb.append(" ").append(this.suffix);
         }
 
-        if (showTime){
-            sb.append(" | ").append(TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTimeMillis)).append(" elapsed");
+        if (this.showTime) {
+            sb.append(" | ").append(TimerBuilder.formatTimeAuto(System.currentTimeMillis() - this.startTimeMillis)).append(" elapsed");
         }
 
         if (isComplete()) {
-            sb.append(" ").append(ProgressColor.GREEN.getCode()).append("✔").append(normalColor);
-            if (autoStop) {
+            sb.append(" ").append(ProgressColor.GREEN.getCode()).append("✔").append(this.normalColor);
+            if (this.autoStop) {
                 stop();
             }
         }
@@ -181,19 +181,21 @@ public class BukkitProgressBar extends ObjectUtils {
 
     /**
      * Increments the progress by the specified amount.
+     *
      * @param amount the amount to increment
      */
     public void increment(int amount) {
-        setCurrent(current + amount);
+        setCurrent(this.current + amount);
     }
 
     /**
      * Sets the current progress value.
+     *
      * @param current the new current value (clamped between 0 and total)
      */
     public void setCurrent(int current) {
         int oldCurrent = this.current;
-        this.current = Math.max(0, Math.min(current, total));
+        this.current = Math.max(0, Math.min(current, this.total));
 
         if (shouldLogMilestone(oldCurrent, this.current)) {
             printProgressForced();
@@ -201,35 +203,35 @@ public class BukkitProgressBar extends ObjectUtils {
     }
 
     private boolean shouldLogMilestone(int oldValue, int newValue) {
-        if (total < 5) return false;
+        if (this.total < 5) return false;
 
-        int oldMilestone = (oldValue * 5) / total;
-        int newMilestone = (newValue * 5) / total;
+        int oldMilestone = (oldValue * 5) / this.total;
+        int newMilestone = (newValue * 5) / this.total;
 
         return newMilestone > oldMilestone;
     }
 
     public int getCurrent() {
-        return current;
+        return this.current;
     }
 
     public int getTotal() {
-        return total;
+        return this.total;
     }
 
     public double getPercentage() {
-        return (double) current / total * 100;
+        return (double) this.current / this.total * 100;
     }
 
     public boolean isComplete() {
-        return current >= total;
+        return this.current >= this.total;
     }
 
     public long getEstimatedTimeRemaining(long startTimeMillis) {
-        if (current == 0) return -1;
+        if (this.current == 0) return -1;
 
         long elapsed = System.currentTimeMillis() - startTimeMillis;
-        long totalEstimated = (elapsed * total) / current;
+        long totalEstimated = (elapsed * this.total) / this.current;
         return totalEstimated - elapsed;
     }
 
@@ -353,6 +355,7 @@ public class BukkitProgressBar extends ObjectUtils {
 
         /**
          * Sets the update interval in milliseconds.
+         *
          * @param intervalMs interval in milliseconds
          */
         @Contract(value = "_ -> this", mutates = "this")
@@ -363,6 +366,7 @@ public class BukkitProgressBar extends ObjectUtils {
 
         /**
          * Sets whether the progress bar should automatically stop when complete.
+         *
          * @param autoStop true to auto-stop (default), false to keep running
          */
         @Contract(value = "_ -> this", mutates = "this")
@@ -378,7 +382,7 @@ public class BukkitProgressBar extends ObjectUtils {
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public Builder options(ProgressBarUtils options){
+        public Builder options(ProgressBarUtils options) {
             this.progressChar = options.getProgressChar();
             this.emptyChar = options.getEmptyChar();
             this.barWidth = options.getBarWidth();
@@ -390,6 +394,7 @@ public class BukkitProgressBar extends ObjectUtils {
 
         /**
          * Builds the BukkitProgressBar instance.
+         *
          * @param plugin the plugin instance
          */
         public BukkitProgressBar build(CraftEngineConverterPluginInterface plugin) {

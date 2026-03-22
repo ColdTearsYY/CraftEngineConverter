@@ -11,10 +11,10 @@ public class EntityCulling {
 
     public Map<String, Object> serialize() {
         Map<String, Object> map = new LinkedHashMap<>();
-        if (enabled != null) map.put("enabled", enabled);
-        if (aabb != null) map.put("aabb", aabb);
-        if (viewDistance != null) map.put("view-distance", viewDistance);
-        if (rayTracing != null) map.put("ray-tracing", rayTracing);
+        if (this.enabled != null) map.put("enabled", this.enabled);
+        if (this.aabb != null) map.put("aabb", this.aabb);
+        if (this.viewDistance != null) map.put("view-distance", this.viewDistance);
+        if (this.rayTracing != null) map.put("ray-tracing", this.rayTracing);
         return map;
     }
 }

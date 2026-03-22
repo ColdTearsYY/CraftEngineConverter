@@ -25,29 +25,100 @@ public class TextDisplayRenderer implements EntityRenderer {
     private String alignment;
 
     // Setters
-    public TextDisplayRenderer setText(String text) { this.text = text; return this; }
-    public TextDisplayRenderer setBillboard(String billboard) { this.billboard = billboard; return this; }
-    public TextDisplayRenderer setTranslation(String translation) { this.translation = translation; return this; }
-    public TextDisplayRenderer setRotation(String rotation) { this.rotation = rotation; return this; }
-    public TextDisplayRenderer setPosition(String position) { this.position = position; return this; }
-    public TextDisplayRenderer setYaw(Float yaw) { this.yaw = yaw; return this; }
-    public TextDisplayRenderer setPitch(Float pitch) { this.pitch = pitch; return this; }
-    public TextDisplayRenderer setScale(String scale) { this.scale = scale; return this; }
-    public TextDisplayRenderer setGlowColor(String glowColor) { this.glowColor = glowColor; return this; }
-    public TextDisplayRenderer setBrightness(Map<String, Integer> brightness) { this.brightness = brightness; return this; }
-    public TextDisplayRenderer setViewRange(Float viewRange) { this.viewRange = viewRange; return this; }
-    public TextDisplayRenderer setLineWidth(Integer lineWidth) { this.lineWidth = lineWidth; return this; }
-    public TextDisplayRenderer setBackgroundColor(String backgroundColor) { this.backgroundColor = backgroundColor; return this; }
-    public TextDisplayRenderer setTextOpacity(Integer textOpacity) { this.textOpacity = textOpacity; return this; }
-    public TextDisplayRenderer setHasShadow(Boolean hasShadow) { this.hasShadow = hasShadow; return this; }
-    public TextDisplayRenderer setIsSeeThrough(Boolean isSeeThrough) { this.isSeeThrough = isSeeThrough; return this; }
-    public TextDisplayRenderer setUseDefaultBackgroundColor(Boolean useDefaultBackgroundColor) { this.useDefaultBackgroundColor = useDefaultBackgroundColor; return this; }
-    public TextDisplayRenderer setAlignment(String alignment) { this.alignment = alignment; return this; }
+    public TextDisplayRenderer setText(String text) {
+        this.text = text;
+        return this;
+    }
+
+    public TextDisplayRenderer setBillboard(String billboard) {
+        this.billboard = billboard;
+        return this;
+    }
+
+    public TextDisplayRenderer setTranslation(String translation) {
+        this.translation = translation;
+        return this;
+    }
+
+    public TextDisplayRenderer setRotation(String rotation) {
+        this.rotation = rotation;
+        return this;
+    }
+
+    public TextDisplayRenderer setPosition(String position) {
+        this.position = position;
+        return this;
+    }
+
+    public TextDisplayRenderer setYaw(Float yaw) {
+        this.yaw = yaw;
+        return this;
+    }
+
+    public TextDisplayRenderer setPitch(Float pitch) {
+        this.pitch = pitch;
+        return this;
+    }
+
+    public TextDisplayRenderer setScale(String scale) {
+        this.scale = scale;
+        return this;
+    }
+
+    public TextDisplayRenderer setGlowColor(String glowColor) {
+        this.glowColor = glowColor;
+        return this;
+    }
+
+    public TextDisplayRenderer setBrightness(Map<String, Integer> brightness) {
+        this.brightness = brightness;
+        return this;
+    }
+
+    public TextDisplayRenderer setViewRange(Float viewRange) {
+        this.viewRange = viewRange;
+        return this;
+    }
+
+    public TextDisplayRenderer setLineWidth(Integer lineWidth) {
+        this.lineWidth = lineWidth;
+        return this;
+    }
+
+    public TextDisplayRenderer setBackgroundColor(String backgroundColor) {
+        this.backgroundColor = backgroundColor;
+        return this;
+    }
+
+    public TextDisplayRenderer setTextOpacity(Integer textOpacity) {
+        this.textOpacity = textOpacity;
+        return this;
+    }
+
+    public TextDisplayRenderer setHasShadow(Boolean hasShadow) {
+        this.hasShadow = hasShadow;
+        return this;
+    }
+
+    public TextDisplayRenderer setIsSeeThrough(Boolean isSeeThrough) {
+        this.isSeeThrough = isSeeThrough;
+        return this;
+    }
+
+    public TextDisplayRenderer setUseDefaultBackgroundColor(Boolean useDefaultBackgroundColor) {
+        this.useDefaultBackgroundColor = useDefaultBackgroundColor;
+        return this;
+    }
+
+    public TextDisplayRenderer setAlignment(String alignment) {
+        this.alignment = alignment;
+        return this;
+    }
 
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("type", type);
+        map.put("type", this.type);
         if (this.text != null) map.put("text", this.text);
         if (this.billboard != null) map.put("billboard", this.billboard);
         if (this.translation != null) map.put("translation", this.translation);
@@ -64,7 +135,8 @@ public class TextDisplayRenderer implements EntityRenderer {
         if (this.textOpacity != null) map.put("text-opacity", this.textOpacity);
         if (this.hasShadow != null) map.put("has-shadow", this.hasShadow);
         if (this.isSeeThrough != null) map.put("is-see-through", this.isSeeThrough);
-        if (this.useDefaultBackgroundColor != null) map.put("use-default-background-color", this.useDefaultBackgroundColor);
+        if (this.useDefaultBackgroundColor != null)
+            map.put("use-default-background-color", this.useDefaultBackgroundColor);
         if (this.alignment != null) map.put("alignment", this.alignment);
         return map;
     }

@@ -69,25 +69,25 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     private PacketLoader packetLoader;
 
     public CraftEngineConverter() {
-        new Logger(this.foliaCompatibilityManager.isPaper() ? this.getPluginMeta().getName() + " "+ this.getPluginMeta().getVersion() : this.getDescription().getFullName());
+        new Logger(this.foliaCompatibilityManager.isPaper() ? this.getPluginMeta().getName() + " " + this.getPluginMeta().getVersion() : this.getDescription().getFullName());
     }
 
     @Override
     public void onLoad() {
-        if (!Plugins.CRAFTENGINE.isPresent()){
+        if (!Plugins.CRAFTENGINE.isPresent()) {
             Logger.info("CraftEngine plugin not found ! Disabling CraftEngineConverter ...");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
         this.reloadBlockStateMappings();
         this.reloadConfig();
-        if (Plugins.PACKET_EVENTS.isPresent()){
+        if (Plugins.PACKET_EVENTS.isPresent()) {
             Logger.info("[Hook] PacketEvents", LogType.SUCCESS);
             if (Configuration.<Boolean>get(ConfigurationKey.PACKET_EVENTS_FORMATTING)) {
                 this.packetLoader = new PacketEventHook(this);
             }
         }
-        if (this.packetLoader != null){
+        if (this.packetLoader != null) {
             this.packetLoader.onLoad();
         }
 
@@ -103,12 +103,12 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         long startTime = System.currentTimeMillis();
         Logger.info(Message.MESSAGE__PLUGIN__STARTUP__START);
 
-        if (!this.getDataFolder().exists() && !this.getDataFolder().mkdirs()){
-            Logger.info("Unable to create plugin folder ! Disabling CraftEngineConverter ...",LogType.ERROR);
+        if (!this.getDataFolder().exists() && !this.getDataFolder().mkdirs()) {
+            Logger.info("Unable to create plugin folder ! Disabling CraftEngineConverter ...", LogType.ERROR);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        if (this.foliaCompatibilityManager.isPaper()){
+        if (this.foliaCompatibilityManager.isPaper()) {
             this.messageFormatter = new ComponentMeta();
         }
 
@@ -117,7 +117,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         this.storageManager.loadDatabase();
         this.serverProfile.load();
 
-        this.commandManager.registerCommand("craftengineconverter",new CraftEngineConverterCommand(this),"cengineconverter","cec");
+        this.commandManager.registerCommand("craftengineconverter", new CraftEngineConverterCommand(this), "cengineconverter", "cec");
 
         this.commandManager.validCommands();
 
@@ -126,15 +126,15 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         registerConverter(new NexoConverter(this));
         registerConverter(new IAConverter(this));
 
-        ((TagResolver)this.tagResolver).initTagProcessors();
+        ((TagResolver) this.tagResolver).initTagProcessors();
 
-        if (Plugins.PLACEHOLDER_API.isEnabled()){
+        if (Plugins.PLACEHOLDER_API.isEnabled()) {
             PlaceholderAPIUtils.registerExpansions(this);
         }
 
         this.metrics = new Metrics(this, BSTAT_PLUGIN_ID);
 
-        if (this.packetLoader != null){
+        if (this.packetLoader != null) {
             this.packetLoader.onEnable();
         }
 
@@ -182,13 +182,13 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         if (Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ENABLE))
             this.registerListener(this.worldConverterManager);
 
-        if (Plugins.NEXO.isEnabled() && Configuration.<Boolean>get(ConfigurationKey.NEXO_ENABLE_HOOK)){
+        if (Plugins.NEXO.isEnabled() && Configuration.<Boolean>get(ConfigurationKey.NEXO_ENABLE_HOOK)) {
             this.registerListener(new NexoBlockConverter(this));
             this.registerListener(new NexoFurnitureConverter(this));
             if (Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ENABLE) && Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_NEXO_HOOK))
                 this.worldConverterManager.registerConverter(new NexoWorldConverter(this));
         }
-        if (Plugins.ITEMS_ADDER.isEnabled() && Configuration.<Boolean>get(ConfigurationKey.ITEMS_ADDER_ENABLE_HOOK)){
+        if (Plugins.ITEMS_ADDER.isEnabled() && Configuration.<Boolean>get(ConfigurationKey.ITEMS_ADDER_ENABLE_HOOK)) {
             this.registerListener(new ItemsAdderBlockConverter(this));
             this.registerListener(new ItemsAdderFurnitureConverter(this));
             if (Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ENABLE) && Configuration.<Boolean>get(ConfigurationKey.WORLD_CONVERTER_ITEMS_ADDER_HOOK))
@@ -205,7 +205,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
         this.foliaCompatibilityManager.cancelAllTasks();
 
-        if (this.packetLoader != null){
+        if (this.packetLoader != null) {
             this.packetLoader.onDisable();
         }
 
@@ -213,7 +213,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         FileCacheManager.invalidateAllCaches();
         this.worldConverterManager.cancelAllConversions();
 
-        if (this.storageManager != null){
+        if (this.storageManager != null) {
             this.storageManager.close();
         }
 
@@ -221,7 +221,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
         this.commandManager.disableCommands();
 
-        if (this.placementTracker != null){
+        if (this.placementTracker != null) {
             Logger.info("Conversion stats :");
             Logger.info("Total blocks converted : " + this.placementTracker.getBlocksConverted() + " (Failed : " + this.placementTracker.getBlocksFailed() + ", Success rate : " + String.format("%.2f", this.placementTracker.getBlocksSuccessRate()) + "%)");
             Logger.info("Total furniture converted : " + this.placementTracker.getFurnitureConverted() + " (Failed : " + this.placementTracker.getFurnitureFailed() + ", Success rate : " + String.format("%.2f", this.placementTracker.getFurnitureSuccessRate()) + "%)");
@@ -231,12 +231,12 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         Logger.info(Message.MESSAGE__PLUGIN__SHUTDOWN__COMPLETE, "time", TimerBuilder.formatTimeAuto(System.currentTimeMillis() - startTime));
     }
 
-    public void reloadMessages(){
+    public void reloadMessages() {
         this.messageLoader.reload();
     }
 
-    private void registerListener(@NotNull Listener listener){
-        this.getServer().getPluginManager().registerEvents(listener,this);
+    private void registerListener(@NotNull Listener listener) {
+        this.getServer().getPluginManager().registerEvents(listener, this);
     }
 
     public CommandManager getCommandManager() {
@@ -255,7 +255,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
 
     @Override
     public FoliaCompatibilityManager getFoliaCompatibilityManager() {
-        return foliaCompatibilityManager;
+        return this.foliaCompatibilityManager;
     }
 
     public void registerConverter(Converter converter) {
@@ -281,7 +281,7 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
     public StorageManager getStorageManager() {
         return this.storageManager;
     }
-    
+
     /**
      * Gets the ServerProfile for cache access.
      *
@@ -292,14 +292,14 @@ public final class CraftEngineConverter extends CraftEngineConverterPlugin {
         return this.serverProfile;
     }
 
-    public void reloadConfig(){
+    public void reloadConfig() {
         this.saveDefaultConfig();
         File configFile = new File(this.getDataFolder(), "config.yml");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
         Configuration.getInstance().load(config, configFile);
     }
 
-    public void reloadBlockStateMappings(){
+    public void reloadBlockStateMappings() {
         new BlockStateMappingScanner(this.getDataFolder().getParentFile().toPath().resolve("CraftEngine").toFile()).scan();
     }
 

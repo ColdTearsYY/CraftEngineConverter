@@ -1,11 +1,13 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.block;
 
 import fr.robie.craftengineconverter.api.configuration.ItemConfigurationSerializable;
+import fr.robie.craftengineconverter.api.configuration.events.Event;
 import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.StateBlock;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.LootConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
     private final List<BlockBehavior> behaviors = new ArrayList<>();
     private StateBlock stateBlock;
     private LootConfiguration lootConfiguration;
+    private Event events;
 
     public BlockConfiguration(@NotNull String itemId) {
         this.blockSettings = new BlockSettings(itemId);
@@ -34,10 +37,13 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
         this.stateBlock = stateBlock;
     }
 
-    public void setLootConfiguration(@NotNull LootConfiguration lootConfiguration) {
+    public void setLootConfiguration(@Nullable LootConfiguration lootConfiguration) {
         this.lootConfiguration = lootConfiguration;
     }
 
+    public void setEvents(@Nullable Event events) {
+        this.events = events;
+    }
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
@@ -60,6 +66,10 @@ public class BlockConfiguration implements ItemConfigurationSerializable {
 
         if (this.stateBlock != null) {
             this.stateBlock.serialize(blockBehaviorSection);
+        }
+
+        if (this.events != null) {
+            this.events.serialize(blockBehaviorSection);
         }
 
         if (this.lootConfiguration != null) {

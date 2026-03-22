@@ -12,16 +12,35 @@ public class ArmorStandRenderer implements EntityRenderer {
     private String glowColor;
 
     // Setters
-    public ArmorStandRenderer setItem(String item) { this.item = item; return this; }
-    public ArmorStandRenderer setPosition(String position) { this.position = position; return this; }
-    public ArmorStandRenderer setScale(String scale) { this.scale = scale; return this; }
-    public ArmorStandRenderer setSmall(Boolean small) { this.small = small; return this; }
-    public ArmorStandRenderer setGlowColor(String glowColor) { this.glowColor = glowColor; return this; }
+    public ArmorStandRenderer setItem(String item) {
+        this.item = item;
+        return this;
+    }
+
+    public ArmorStandRenderer setPosition(String position) {
+        this.position = position;
+        return this;
+    }
+
+    public ArmorStandRenderer setScale(String scale) {
+        this.scale = scale;
+        return this;
+    }
+
+    public ArmorStandRenderer setSmall(Boolean small) {
+        this.small = small;
+        return this;
+    }
+
+    public ArmorStandRenderer setGlowColor(String glowColor) {
+        this.glowColor = glowColor;
+        return this;
+    }
 
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("type", type);
+        map.put("type", this.type);
         if (this.item != null) map.put("item", this.item);
         if (this.position != null) map.put("position", this.position);
         if (this.scale != null) map.put("scale", this.scale);

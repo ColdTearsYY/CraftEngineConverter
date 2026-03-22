@@ -23,7 +23,7 @@ public class BlockPredicateConfiguration implements ItemConfigurationSerializabl
         }
 
         public String getComponentKey() {
-            return componentKey;
+            return this.componentKey;
         }
     }
 
@@ -40,13 +40,13 @@ public class BlockPredicateConfiguration implements ItemConfigurationSerializabl
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
-        if (predicates == null || predicates.isEmpty()) return;
+        if (this.predicates == null || this.predicates.isEmpty()) return;
 
         ConfigurationSection components = getOrCreateSection(itemSection, "components");
-        ConfigurationSection predicateSection = getOrCreateSection(components, type.getComponentKey());
+        ConfigurationSection predicateSection = getOrCreateSection(components, this.type.getComponentKey());
 
         List<Map<String, Object>> serialized = new ArrayList<>();
-        for (BlockPredicate predicate : predicates) {
+        for (BlockPredicate predicate : this.predicates) {
             Map<String, Object> map = new HashMap<>();
             map.put("blocks", predicate.blocks());
             serialized.add(map);

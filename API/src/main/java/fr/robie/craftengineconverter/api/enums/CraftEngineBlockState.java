@@ -148,7 +148,7 @@ public enum CraftEngineBlockState {
     }
 
     public String getLastBlockState() {
-        return lastBlockState;
+        return this.lastBlockState;
     }
 
     public void setLastBlockStateAndIncrementLimit(@NotNull String lastBlockState) {
@@ -187,6 +187,7 @@ public enum CraftEngineBlockState {
     /**
      * Check if this CraftEngineBlockState has reached its limit.
      * Available slots = limit - start. If start >= limit, no slots are available.
+     *
      * @param plugin The plugin to check
      * @return true if the limit is reached, false otherwise
      */
@@ -220,6 +221,7 @@ public enum CraftEngineBlockState {
 
     /**
      * Check if after incrementing once, this state would be at its last available slot.
+     *
      * @param plugin The plugin to check
      * @return true if the next increment would be the last available slot
      */
@@ -243,6 +245,7 @@ public enum CraftEngineBlockState {
     /**
      * Get the current count for this CraftEngineBlockState.
      * Returns the current index for this node (or aggregated from children).
+     *
      * @param plugin The plugin to check
      * @return The current count/index
      */
@@ -298,6 +301,7 @@ public enum CraftEngineBlockState {
     /**
      * Increment the usage counter.
      * Stores the index on THIS node (not the root), so that each node tracks its own range.
+     *
      * @param plugin The plugin using this CraftEngineBlockState
      */
     public void increment(Plugins plugin) {
@@ -308,6 +312,7 @@ public enum CraftEngineBlockState {
     /**
      * Decrement the usage counter.
      * Decrements THIS node's counter.
+     *
      * @param plugin The plugin using this CraftEngineBlockState
      */
     public void decrement(Plugins plugin) {
@@ -321,6 +326,7 @@ public enum CraftEngineBlockState {
 
     /**
      * Add an equivalent CraftEngineBlockState that can be used as a fallback when this one reaches its limit.
+     *
      * @param equivalent The equivalent CraftEngineBlockState
      */
     public void addEquivalent(CraftEngineBlockState equivalent) {
@@ -333,6 +339,7 @@ public enum CraftEngineBlockState {
      * Get an available BlockStateResult (name, isLast flag, and block state instance),
      * or null if this state and all equivalents have reached their limit.
      * Does NOT increment the counter — use {@link #getAvailableAndIncrement(Plugins)} for that.
+     *
      * @param plugin The plugin requesting the state
      * @return A {@link BlockStateResult}, or null if none available
      */
@@ -346,6 +353,7 @@ public enum CraftEngineBlockState {
     /**
      * Get an available BlockStateResult and increment its counter atomically.
      * Returns null if this state and all equivalents have reached their limit.
+     *
      * @param plugin The plugin requesting the state
      * @return A {@link BlockStateResult}, or null if none available
      */
@@ -371,7 +379,8 @@ public enum CraftEngineBlockState {
 
     /**
      * Internal recursive method to find an available CraftEngineBlockState instance with cycle detection.
-     * @param plugin The plugin requesting the CraftEngineBlockState
+     *
+     * @param plugin  The plugin requesting the CraftEngineBlockState
      * @param visited Set of already visited CraftEngineBlockStates to prevent infinite loops
      * @return The CraftEngineBlockState instance if available, or null if none available
      */
@@ -385,14 +394,14 @@ public enum CraftEngineBlockState {
             return this;
         }
 
-        for (CraftEngineBlockState equivalent : equivalents) {
+        for (CraftEngineBlockState equivalent : this.equivalents) {
             CraftEngineBlockState result = equivalent.getAvailableCraftEngineBlockState(plugin, visited);
             if (result != null) {
                 return result;
             }
         }
 
-        for (CraftEngineBlockState contained : contains) {
+        for (CraftEngineBlockState contained : this.contains) {
             CraftEngineBlockState result = contained.getAvailableCraftEngineBlockState(plugin, visited);
             if (result != null) {
                 return result;
@@ -421,6 +430,7 @@ public enum CraftEngineBlockState {
     /**
      * Get the number of remaining available slots.
      * Available slots = limit - current index.
+     *
      * @param plugin The plugin to check
      * @return The number of remaining slots
      */
@@ -431,6 +441,7 @@ public enum CraftEngineBlockState {
 
     /**
      * Get the current usage count (number of slots used from start).
+     *
      * @param plugin The plugin to check
      * @return The number of slots currently in use
      */
@@ -440,11 +451,11 @@ public enum CraftEngineBlockState {
     }
 
     public List<CraftEngineBlockState> getContains() {
-        return new ArrayList<>(contains);
+        return new ArrayList<>(this.contains);
     }
 
     public List<CraftEngineBlockState> getEquivalents() {
-        return new ArrayList<>(equivalents);
+        return new ArrayList<>(this.equivalents);
     }
 
     public static void resetAllLimits() {

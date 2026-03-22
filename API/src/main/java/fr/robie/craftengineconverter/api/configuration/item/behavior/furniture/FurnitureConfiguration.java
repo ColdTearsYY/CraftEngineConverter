@@ -1,6 +1,7 @@
 package fr.robie.craftengineconverter.api.configuration.item.behavior.furniture;
 
 import fr.robie.craftengineconverter.api.configuration.ItemConfigurationSerializable;
+import fr.robie.craftengineconverter.api.configuration.events.Event;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.LootConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,11 +15,13 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
     private FurnitureSettings furnitureSettings;
     private final Map<FurniturePlacement, Placement> placements = new EnumMap<>(FurniturePlacement.class);
     private LootConfiguration loot;
+    private Event events;
 
     @NotNull
     public FurnitureSettings getOrCreateSettings(String itemId) {
-        if (this.furnitureSettings == null)
+        if (this.furnitureSettings == null) {
             this.furnitureSettings = new FurnitureSettings(itemId);
+        }
         return this.furnitureSettings;
     }
 
@@ -28,6 +31,10 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
 
     public void setLoot(@Nullable LootConfiguration loot) {
         this.loot = loot;
+    }
+
+    public void setEvents(@Nullable Event events) {
+        this.events = events;
     }
 
     @Override
@@ -58,6 +65,10 @@ public class FurnitureConfiguration implements ItemConfigurationSerializable {
 
         if (this.loot != null) {
             this.loot.serialize(furnitureSection);
+        }
+
+        if (this.events != null) {
+            this.events.serialize(furnitureSection);
         }
 
         if (!this.placements.isEmpty()) {

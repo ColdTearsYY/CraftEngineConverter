@@ -42,7 +42,7 @@ public abstract class Converter extends YamlUtils {
     protected final ConverterSettings settings;
     protected final Map<String, List<PackMapping>> packMappings = new HashMap<>();
 
-    public Converter(@NotNull CraftEngineConverter plugin,@NotNull String converterName,@NotNull Plugins pluginType) {
+    public Converter(@NotNull CraftEngineConverter plugin, @NotNull String converterName, @NotNull Plugins pluginType) {
         super(plugin);
         this.plugin = plugin;
         this.converterName = converterName;
@@ -50,7 +50,7 @@ public abstract class Converter extends YamlUtils {
         this.settings = new BasicConverterSettings();
     }
 
-    public CompletableFuture<Void> convert(@NotNull ConverterOption converterOption,@NotNull Optional<Player> optionalPlayer, boolean dryRun, int threadCount) {
+    public CompletableFuture<Void> convert(@NotNull ConverterOption converterOption, @NotNull Optional<Player> optionalPlayer, boolean dryRun, int threadCount) {
         this.settings.createBackup();
         this.settings.setDryRunEnabled(dryRun);
         if (threadCount > 1) {
@@ -126,12 +126,12 @@ public abstract class Converter extends YamlUtils {
         }
     }
 
-    public void addPackMapping(@NotNull String namespaceSource, @NotNull String originalPath, @NotNull String namespaceTarget, @NotNull String targetPath, @Nullable String newName){
+    public void addPackMapping(@NotNull String namespaceSource, @NotNull String originalPath, @NotNull String namespaceTarget, @NotNull String targetPath, @Nullable String newName) {
         PackMapping mapping = new PackMapping(namespaceSource, originalPath, namespaceTarget, targetPath, newName);
         this.packMappings.computeIfAbsent(namespaceSource, k -> new ArrayList<>()).add(mapping);
     }
 
-    public void addPackMapping(@NotNull String namespaceSource, @NotNull String originalPath, @NotNull String namespaceTarget, @NotNull String targetPath){
+    public void addPackMapping(@NotNull String namespaceSource, @NotNull String originalPath, @NotNull String namespaceTarget, @NotNull String targetPath) {
         addPackMapping(namespaceSource, originalPath, namespaceTarget, targetPath, null);
     }
 
@@ -365,7 +365,7 @@ public abstract class Converter extends YamlUtils {
         if (itemsIds.isEmpty()) return;
         ConfigurationSection categoriesSection = config.createSection("categories");
         ConfigurationSection categorySection = categoriesSection.createSection(itemsIds.getFirst());
-        categorySection.set("name", (Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC) ? "<!i>":"") + "Category "+fileName);
+        categorySection.set("name", (Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC) ? "<!i>" : "") + "Category " + fileName);
         categorySection.set("icon", itemsIds.getFirst());
         categorySection.set("list", itemsIds);
     }
@@ -377,7 +377,7 @@ public abstract class Converter extends YamlUtils {
 
             if (!outputFile.getParentFile().exists()) {
                 if (!outputFile.getParentFile().mkdirs()) {
-                    Logger.debug(Message.ERROR__MKDIR_FAILURE,LogType.ERROR, "directory", outputFile.getParentFile().getName(),
+                    Logger.debug(Message.ERROR__MKDIR_FAILURE, LogType.ERROR, "directory", outputFile.getParentFile().getName(),
                             "path", outputFile.getParentFile().getAbsolutePath());
                 }
             }
@@ -394,41 +394,42 @@ public abstract class Converter extends YamlUtils {
             for (File file : files) {
                 if (file.isDirectory()) {
                     deleteDirectory(file);
-                } else if (!file.delete()){
+                } else if (!file.delete()) {
                     Logger.debug(Message.WARNING__FILE__DELETE_FAILURE, LogType.ERROR, "file", file.getName(), "path", file.getAbsolutePath());
                 }
             }
         }
-        if (!directory.delete()){
+        if (!directory.delete()) {
             Logger.debug(Message.WARNING__FOLDER__DELETE_FAILURE, LogType.ERROR, "folder", directory.getName(), "path", directory.getAbsolutePath());
         }
     }
 
-    public record PackMapping(String namespaceSource, String originalPath, String namespaceTarget, String targetPath, String newName){
+    public record PackMapping(String namespaceSource, String originalPath, String namespaceTarget, String targetPath,
+                              String newName) {
         public boolean matches(String path) {
-            if (originalPath.contains("*")) {
-                String regex = originalPath.replace("*", ".*");
+            if (this.originalPath.contains("*")) {
+                String regex = this.originalPath.replace("*", ".*");
                 return path.matches(regex);
             } else {
-                return path.equals(originalPath) || path.startsWith(originalPath + "/");
+                return path.equals(this.originalPath) || path.startsWith(this.originalPath + "/");
             }
         }
 
         public String apply(String path) {
-            if (originalPath.contains("*")) {
-                String regex = originalPath.replace("*", "(.*)");
+            if (this.originalPath.contains("*")) {
+                String regex = this.originalPath.replace("*", "(.*)");
                 String matched = path.replaceFirst(regex, "$1");
-                if (targetPath.contains("$1")) {
-                    return targetPath.replace("$1", matched);
+                if (this.targetPath.contains("$1")) {
+                    return this.targetPath.replace("$1", matched);
                 } else {
-                    return targetPath + "/" + matched;
+                    return this.targetPath + "/" + matched;
                 }
             } else {
-                if (path.equals(originalPath)) {
-                    return targetPath;
-                } else if (path.startsWith(originalPath + "/")) {
-                    String remainder = path.substring(originalPath.length() + 1);
-                    return targetPath + "/" + remainder;
+                if (path.equals(this.originalPath)) {
+                    return this.targetPath;
+                } else if (path.startsWith(this.originalPath + "/")) {
+                    String remainder = path.substring(this.originalPath.length() + 1);
+                    return this.targetPath + "/" + remainder;
                 }
             }
             return path;
@@ -693,7 +694,7 @@ public abstract class Converter extends YamlUtils {
             return this.finalItemIdsByFile.getOrDefault(file, Collections.emptyList());
         }
 
-        public void addFinalItemId(ConfigFile file, String finalItemId){
+        public void addFinalItemId(ConfigFile file, String finalItemId) {
             this.finalItemIdsByFile.get(file).add(finalItemId);
         }
 

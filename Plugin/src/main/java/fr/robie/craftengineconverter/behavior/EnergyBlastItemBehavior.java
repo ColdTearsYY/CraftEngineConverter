@@ -53,15 +53,15 @@ public class EnergyBlastItemBehavior extends ItemBehavior {
     }
 
     public InteractionResult use(World world, @Nullable Player player, InteractionHand hand) {
-        if (player == null){
+        if (player == null) {
             return InteractionResult.FAIL;
         }
-        Long lastUsed = lastUsedMap.get(player.uuid());
+        Long lastUsed = this.lastUsedMap.get(player.uuid());
         long now = System.currentTimeMillis();
-        if (lastUsed != null && (now - lastUsed) < delayMs) {
+        if (lastUsed != null && (now - lastUsed) < this.delayMs) {
             return InteractionResult.FAIL;
         }
-        lastUsedMap.put(player.uuid(), now);
+        this.lastUsedMap.put(player.uuid(), now);
 
         WorldPosition eyePosition = player.eyePosition();
 
@@ -75,7 +75,7 @@ public class EnergyBlastItemBehavior extends ItemBehavior {
         double dirY = -Math.sin(pitchRad);
         double dirZ = Math.cos(yawRad) * Math.cos(pitchRad);
 
-        int particleCount = (int) (length / spacing);
+        int particleCount = (int) (this.length / this.spacing);
 
         Context emptyContext = ItemBuildContext.empty();
 
@@ -83,7 +83,7 @@ public class EnergyBlastItemBehavior extends ItemBehavior {
 
         boolean hitEntity = false;
         for (int i = 0; i <= particleCount; i++) {
-            double distance = i * spacing;
+            double distance = i * this.spacing;
 
             double x = eyePosition.x() + (dirX * distance);
             double y = eyePosition.y() + (dirY * distance);
@@ -95,12 +95,12 @@ public class EnergyBlastItemBehavior extends ItemBehavior {
 
             for (org.bukkit.entity.Entity entity : bukkitWorld.getNearbyEntities(
                     new Location(bukkitWorld, x, y, z),
-                    damageBoxX, damageBoxY, damageBoxZ)) {
+                    this.damageBoxX, this.damageBoxY, this.damageBoxZ)) {
                 if (entity instanceof org.bukkit.entity.LivingEntity livingEntity) {
                     if (entity.getUniqueId().equals(player.uuid())) {
                         continue;
                     }
-                    if (damagePlayersOnly && !(entity instanceof org.bukkit.entity.Player)) {
+                    if (this.damagePlayersOnly && !(entity instanceof org.bukkit.entity.Player)) {
                         continue;
                     }
                     DamageSource damageSource = DamageSource.builder(DamageType.PLAYER_ATTACK)
@@ -109,12 +109,12 @@ public class EnergyBlastItemBehavior extends ItemBehavior {
                             .build();
                     livingEntity.damage(this.damage, damageSource);
                     hitEntity = true;
-                    if (stopOnFirstHit) {
+                    if (this.stopOnFirstHit) {
                         break;
                     }
                 }
             }
-            if (stopOnFirstHit && hitEntity) {
+            if (this.stopOnFirstHit && hitEntity) {
                 break;
             }
 

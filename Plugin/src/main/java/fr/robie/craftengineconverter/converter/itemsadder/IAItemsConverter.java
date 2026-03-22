@@ -23,7 +23,7 @@ import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.h
 import fr.robie.craftengineconverter.api.configuration.item.data.*;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.LootPool;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.LootTable;
-import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.SurvivesExplosionCondition;
+import fr.robie.craftengineconverter.api.configuration.conditions.SurvivesExplosionCondition;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.FurnitureItemEntry;
 import fr.robie.craftengineconverter.api.configuration.item.models.condition.ConditionModelConfiguration;
 import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
@@ -75,31 +75,31 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     @Override
-    public void convertMaterial(){
+    public void convertMaterial() {
         ConfigurationSection resourceSection = this.iaItemSection.getConfigurationSection("resource");
-        if (isNotNull(resourceSection)){
+        if (isNotNull(resourceSection)) {
             try {
-                this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(resourceSection.getString("material","").toUpperCase()));
+                this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(resourceSection.getString("material", "").toUpperCase()));
             } catch (Exception ignored) {
             }
         }
     }
 
     @Override
-    public void convertItemName(){
+    public void convertItemName() {
         String itemName = this.iaItemSection.getString("name", this.iaItemSection.getString("display_name"));
-        if (isValidString(itemName)){
+        if (isValidString(itemName)) {
             if (itemName.startsWith("display-name-")) {
-                itemName = "<l10n:"+ itemName + ">";
+                itemName = "<l10n:" + itemName + ">";
             }
             this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName, Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC)));
         }
     }
 
     @Override
-    public void convertLore(){
+    public void convertLore() {
         List<String> lore = this.iaItemSection.getStringList("lore");
-        if (!lore.isEmpty()){
+        if (!lore.isEmpty()) {
             for (int i = 0; i < lore.size(); i++) {
                 String line = lore.get(i);
                 if (line.startsWith("lore-")) {
@@ -111,7 +111,7 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     @Override
-    public void convertDyedColor(){
+    public void convertDyedColor() {
         Object color = this.iaItemSection.get("graphics.color");
         if (isNotNull(color)) {
             try {
@@ -122,29 +122,29 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     @Override
-    public void convertUnbreakable(){
+    public void convertUnbreakable() {
         ConfigurationSection durabilitySection = this.iaItemSection.getConfigurationSection("durability");
-        if (isNotNull(durabilitySection)){
+        if (isNotNull(durabilitySection)) {
             boolean unbreakable = durabilitySection.getBoolean("unbreakable", false);
-            if (unbreakable){
+            if (unbreakable) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(new UnbreakableConfiguration(true));
             }
         }
     }
 
     @Override
-    public void convertItemFlags(){
+    public void convertItemFlags() {
         List<String> itemFlags = this.iaItemSection.getStringList("item_flags");
-        if (!itemFlags.isEmpty()){
+        if (!itemFlags.isEmpty()) {
             List<ComponentFlag> convertedFlags = new ArrayList<>();
-            for (String flag : itemFlags){
+            for (String flag : itemFlags) {
                 try {
                     ItemFlag bukkitFlag = ItemFlag.valueOf(flag.toUpperCase());
                     ComponentFlag componentFlag = BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag);
-                    if (componentFlag != null){
+                    if (componentFlag != null) {
                         convertedFlags.add(componentFlag);
                     }
-                } catch (Exception ignored){
+                } catch (Exception ignored) {
                 }
             }
             this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipConfiguration(convertedFlags));
@@ -159,7 +159,9 @@ public class IAItemsConverter extends ItemConverter {
 
             for (String equipmentSlot : attributesSection.getKeys(false)) {
                 ConfigurationSection slotSection = attributesSection.getConfigurationSection(equipmentSlot);
-                if (isNull(slotSection)) continue;
+                if (isNull(slotSection)) {
+                    continue;
+                }
 
                 net.momirealms.craftengine.core.attribute.AttributeModifier.Slot slot;
                 try {
@@ -172,10 +174,14 @@ public class IAItemsConverter extends ItemConverter {
                 for (String attributeKey : slotSection.getKeys(false)) {
                     if (slotSection.isConfigurationSection(attributeKey)) {
                         ConfigurationSection attributeSection = slotSection.getConfigurationSection(attributeKey);
-                        if (isNull(attributeSection)) continue;
+                        if (isNull(attributeSection)) {
+                            continue;
+                        }
 
                         Attribute attribute = getAttributeByKey(attributeKey);
-                        if (attribute == null) continue;
+                        if (attribute == null) {
+                            continue;
+                        }
 
                         double value = attributeSection.getDouble("value", 0.0);
                         String operationStr = attributeSection.getString("operation", "add_value").toUpperCase();
@@ -193,7 +199,9 @@ public class IAItemsConverter extends ItemConverter {
                         attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier(attribute.name(), slot, null, value, operation, null));
                     } else {
                         Attribute attribute = getAttributeByKey(attributeKey);
-                        if (attribute == null) continue;
+                        if (attribute == null) {
+                            continue;
+                        }
 
                         double amount = slotSection.getDouble(attributeKey);
                         attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier(attribute.name(), slot, null, amount, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null));
@@ -201,123 +209,128 @@ public class IAItemsConverter extends ItemConverter {
                 }
             }
 
-            if (!attributeModifiers.isEmpty())
+            if (!attributeModifiers.isEmpty()) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(attributeModifiers));
+            }
         }
     }
 
     public Attribute getAttributeByKey(String key) {
         try {
             return Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(key));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         try {
             String fallbackKey = "minecraft:" + key.replaceAll("([A-Z])", "_$1").toLowerCase();
             return Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(fallbackKey));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         Logger.debug("[IAItemsConverter] Invalid attribute key: " + key + " for item " + this.itemId);
         return null;
     }
 
     @Override
-    public void convertEnchantments(){
+    public void convertEnchantments() {
         ConfigurationSection enchantsSection = this.iaItemSection.getConfigurationSection("enchants");
-        if (isNotNull(enchantsSection)){
+        if (isNotNull(enchantsSection)) {
             fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration();
-            for (String enchantmentKey : enchantsSection.getKeys(false)){
+            for (String enchantmentKey : enchantsSection.getKeys(false)) {
                 int enchantLevel = enchantsSection.getInt(enchantmentKey, 1);
                 enchantmentConfiguration.addEnchantment(enchantmentKey, enchantLevel);
             }
-            if (enchantmentConfiguration.hasEnchantments())
+            if (enchantmentConfiguration.hasEnchantments()) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
+            }
         }
         List<String> enchantments = this.iaItemSection.getStringList("enchants");
-        if (!enchantments.isEmpty()){
+        if (!enchantments.isEmpty()) {
             fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration();
-            for (String enchantmentEntry : enchantments){
+            for (String enchantmentEntry : enchantments) {
                 String enchantName;
                 int enchantLevel = 1;
                 int lastIndexOf = enchantmentEntry.lastIndexOf(':');
-                if (lastIndexOf != -1){
+                if (lastIndexOf != -1) {
                     enchantName = enchantmentEntry.substring(0, lastIndexOf);
                     try {
                         enchantLevel = Integer.parseInt(enchantmentEntry.substring(lastIndexOf + 1));
-                    } catch (NumberFormatException ignored){
+                    } catch (NumberFormatException ignored) {
                     }
                 } else {
                     enchantName = enchantmentEntry;
                 }
                 enchantmentConfiguration.addEnchantment(enchantName, enchantLevel);
             }
-            if (enchantmentConfiguration.hasEnchantments())
+            if (enchantmentConfiguration.hasEnchantments()) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
+            }
         }
     }
 
     @Override
-    public void convertCustomModelData(){
+    public void convertCustomModelData() {
         ConfigurationSection resourceSection = this.iaItemSection.getConfigurationSection("resource");
-        if (isNotNull(resourceSection)){
+        if (isNotNull(resourceSection)) {
             int customModelData = resourceSection.getInt("custom_model_data", resourceSection.getInt("model_id", 0));
-            if (customModelData != 0){
+            if (customModelData != 0) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.CustomModelDataConfiguration(customModelData));
             }
         }
     }
 
     @Override
-    public void convertItemModel(){
+    public void convertItemModel() {
         String itemModel = this.iaItemSection.getString("item_model");
-        if (isValidString(itemModel)){
+        if (isValidString(itemModel)) {
             this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.ItemModelConfiguration(itemModel));
         }
     }
 
     @Override
-    public void convertMaxStackSize(){
+    public void convertMaxStackSize() {
         int maxStackSize = this.iaItemSection.getInt("max_stack_size", -1);
-        if (maxStackSize > 0 && maxStackSize <= 99){
+        if (maxStackSize > 0 && maxStackSize <= 99) {
             this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.MaxStackSizeConfiguration(maxStackSize));
         }
     }
 
     @Override
-    public void convertEnchantmentGlintOverride(){
-        if (this.iaItemSection.getBoolean("glint", false)){
+    public void convertEnchantmentGlintOverride() {
+        if (this.iaItemSection.getBoolean("glint", false)) {
             this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.EnchantmentGlintOverrideConfiguration(true));
         }
     }
 
     @Override
-    public void convertFireResistance(){
+    public void convertFireResistance() {
         // Not supported ?
     }
 
     @Override
-    public void convertMaxDamage(){
+    public void convertMaxDamage() {
         ConfigurationSection durability = this.iaItemSection.getConfigurationSection("durability");
-        if (isNotNull(durability)){
+        if (isNotNull(durability)) {
             int maxDamage = durability.getInt("max_durability", -1);
-            if (maxDamage > 0){
+            if (maxDamage > 0) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.MaxDamageConfiguration(maxDamage));
             }
         }
     }
 
     @Override
-    public void convertGlowDropColor(){
+    public void convertGlowDropColor() {
         ConfigurationSection dropSection = this.iaItemSection.getConfigurationSection("drop");
-        if (isNotNull(dropSection)){
+        if (isNotNull(dropSection)) {
             ConfigurationSection glowSection = dropSection.getConfigurationSection("glow");
-            if (isNotNull(glowSection)){
+            if (isNotNull(glowSection)) {
                 boolean glow = glowSection.getBoolean("enabled", false);
-                if (glow){
+                if (glow) {
                     String color = glowSection.getString("color");
                     try {
                         this.craftEngineItemsConfiguration.addItemConfiguration(new GlowDropColorConfiguration(DyeColor.valueOf(color.toLowerCase())));
-                    } catch (Exception e){
-                        Logger.debug(Message.ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR,"converter", "IAItemsConverter", "item", this.itemId, "color", color, "valid_colors", Arrays.toString(DyeColor.values()));
+                    } catch (Exception e) {
+                        Logger.debug(Message.ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR, "converter", "IAItemsConverter", "item", this.itemId, "color", color, "valid_colors", Arrays.toString(DyeColor.values()));
                     }
                 }
             }
@@ -325,36 +338,36 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     @Override
-    public void convertDropShowName(){
+    public void convertDropShowName() {
         ConfigurationSection dropSection = this.iaItemSection.getConfigurationSection("drop");
-        if (isNotNull(dropSection)){
+        if (isNotNull(dropSection)) {
             boolean showName = dropSection.getBoolean("show_name", true);
-            if (!showName){
+            if (!showName) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.DropDisplayConfiguration(false));
             }
         }
     }
 
     @Override
-    public void convertHideTooltip(){
+    public void convertHideTooltip() {
         // Not supported ?
     }
 
     @Override
-    public void convertToolTipStyle(){
+    public void convertToolTipStyle() {
         String toolTipStyle = this.iaItemSection.getString("tooltip_style");
-        if (isValidString(toolTipStyle)){
+        if (isValidString(toolTipStyle)) {
             this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.TooltipStyleConfiguration(toolTipStyle));
         }
     }
 
     @Override
-    public void convertFood(){
+    public void convertFood() {
         ConfigurationSection consumableSection = this.iaItemSection.getConfigurationSection("consumable");
-        if (isNotNull(consumableSection)){
+        if (isNotNull(consumableSection)) {
             int nutrition = consumableSection.getInt("nutrition", -1);
             float saturation = (float) consumableSection.getDouble("saturation", -1.0);
-            if (nutrition >= 0 && saturation >= 0){
+            if (nutrition >= 0 && saturation >= 0) {
                 this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.FoodConfiguration(nutrition, saturation));
             }
         }
@@ -363,7 +376,7 @@ public class IAItemsConverter extends ItemConverter {
     @Override
     public void convertJukeboxPlayable() {
         String song = this.iaItemSection.getString("jukebox_disc.song", this.iaItemSection.getString("behaviours.music_disc.song.name"));
-        if (isValidString(song)){
+        if (isValidString(song)) {
             this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.JukeboxPlayableConfiguration(song));
         }
     }
@@ -376,10 +389,14 @@ public class IAItemsConverter extends ItemConverter {
 
     private void convertEquipmentSection() {
         ConfigurationSection equipmentSection = this.iaItemSection.getConfigurationSection("equipment");
-        if (!isNotNull(equipmentSection)) return;
+        if (!isNotNull(equipmentSection)) {
+            return;
+        }
 
         String assetId = equipmentSection.getString("id");
-        if (!isValidString(assetId)) return;
+        if (!isValidString(assetId)) {
+            return;
+        }
 
         assetId = namespaced(assetId, this.namespace);
         EquipmentSlot equipmentSlot = resolveEquipmentSlot(equipmentSection);
@@ -390,31 +407,49 @@ public class IAItemsConverter extends ItemConverter {
 
     private EquipmentSlot resolveEquipmentSlot(ConfigurationSection equipmentSection) {
         EquipmentSlot fromItemId = getEquipmentSlotFromSuffix(this.itemId.toLowerCase(), false);
-        if (fromItemId != null) return fromItemId;
+        if (fromItemId != null) {
+            return fromItemId;
+        }
 
         String slot = equipmentSection.getString("slot");
-        if (isValidString(slot)) return null;
+        if (isValidString(slot)) {
+            return null;
+        }
 
         return getEquipmentSlotFromSuffix(this.craftEngineItemsConfiguration.getMaterial().name(), true);
     }
 
     private EquipmentSlot getEquipmentSlotFromSuffix(String name, boolean uppercase) {
         String upString = uppercase ? name.toUpperCase() : name;
-        if (upString.endsWith(uppercase ? "_HELMET" : "_helmet") || upString.endsWith("_SKULL") || upString.endsWith("_HAT")) return EquipmentSlot.HEAD;
-        if (upString.endsWith(uppercase ? "_CHESTPLATE" : "_chestplate") || upString.endsWith("_ELYTRA")) return EquipmentSlot.CHEST;
-        if (upString.endsWith(uppercase ? "_LEGGINGS" : "_leggings")) return EquipmentSlot.LEGS;
-        if (upString.endsWith(uppercase ? "_BOOTS" : "_boots")) return EquipmentSlot.FEET;
+        if (upString.endsWith(uppercase ? "_HELMET" : "_helmet") || upString.endsWith("_SKULL") || upString.endsWith("_HAT")) {
+            return EquipmentSlot.HEAD;
+        }
+        if (upString.endsWith(uppercase ? "_CHESTPLATE" : "_chestplate") || upString.endsWith("_ELYTRA")) {
+            return EquipmentSlot.CHEST;
+        }
+        if (upString.endsWith(uppercase ? "_LEGGINGS" : "_leggings")) {
+            return EquipmentSlot.LEGS;
+        }
+        if (upString.endsWith(uppercase ? "_BOOTS" : "_boots")) {
+            return EquipmentSlot.FEET;
+        }
         return null;
     }
 
     private void applySlotAttributeModifiers(ConfigurationSection equipmentSection, EquipmentSlot equipmentSlot) {
-        if (equipmentSlot == null) return;
+        if (equipmentSlot == null) {
+            return;
+        }
 
         ConfigurationSection slotAttributeModifiers = equipmentSection.getConfigurationSection("slot_attribute_modifiers");
-        if (!isNotNull(slotAttributeModifiers)) return;
+        if (!isNotNull(slotAttributeModifiers)) {
+            return;
+        }
 
         net.momirealms.craftengine.core.attribute.AttributeModifier.Slot attributeSlot = toAttributeSlot(equipmentSlot);
-        if (attributeSlot == null) return;
+        if (attributeSlot == null) {
+            return;
+        }
 
         double armor = slotAttributeModifiers.getDouble("armor", 0.0);
         fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier modifier = new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier("minecraft:armor", attributeSlot, null, armor, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null);
@@ -433,10 +468,14 @@ public class IAItemsConverter extends ItemConverter {
 
     private void convertSpecificPropertiesArmorSection() {
         ConfigurationSection specificPropertiesSection = this.iaItemSection.getConfigurationSection("specific_properties");
-        if (!isNotNull(specificPropertiesSection)) return;
+        if (!isNotNull(specificPropertiesSection)) {
+            return;
+        }
 
         ConfigurationSection armorSection = specificPropertiesSection.getConfigurationSection("armor");
-        if (!isNotNull(armorSection)) return;
+        if (!isNotNull(armorSection)) {
+            return;
+        }
 
         String color = armorSection.getString("color");
         if (isValidString(color)) {
@@ -460,7 +499,9 @@ public class IAItemsConverter extends ItemConverter {
         }
 
         String assetId = armorSection.getString("custom_armor");
-        if (!isValidString(assetId)) return;
+        if (!isValidString(assetId)) {
+            return;
+        }
 
         assetId = namespaced(assetId, this.namespace);
         this.isValidString(assetId);
@@ -472,7 +513,9 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private EquipmentSlot parseEquipmentSlot(String slot) {
-        if (slot == null) return null;
+        if (slot == null) {
+            return null;
+        }
         try {
             return EquipmentSlot.valueOf(slot.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -509,7 +552,8 @@ public class IAItemsConverter extends ItemConverter {
             case NONE -> handleNoneDirectionalMode(resourceSection);
             case ALL, LOG -> handleAllOrLogDirectionalMode(resourceSection);
             case FURNACE -> handleFurnaceDirectionalMode(resourceSection);
-            default -> Logger.debug("[IAItemsConverter] Directional mode " + directionalMode + " is not supported for item " + this.itemId);
+            default ->
+                    Logger.debug("[IAItemsConverter] Directional mode " + directionalMode + " is not supported for item " + this.itemId);
         }
     }
 
@@ -527,7 +571,7 @@ public class IAItemsConverter extends ItemConverter {
         if (isValidString(texturePath)) {
             texturePath = namespaced(texturePath, this.namespace);
             ConfigurationSection blockSection = this.iaItemSection.getConfigurationSection("specific_properties.block");
-            if (isNotNull(blockSection)){
+            if (isNotNull(blockSection)) {
                 this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(texturePath));
                 handleBlockItem(resourceSection, blockSection);
 
@@ -543,7 +587,9 @@ public class IAItemsConverter extends ItemConverter {
 
     private void handleAllOrLogDirectionalMode(ConfigurationSection resourceSection) {
         Map<BlockFace, String> faceTextureMap = buildFaceTextureMap(resourceSection, "ALL");
-        if (faceTextureMap == null) return;
+        if (faceTextureMap == null) {
+            return;
+        }
 
         SimpleModelConfiguration simpleModelConfiguration = createCubeModelTemplate(faceTextureMap);
         this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
@@ -551,13 +597,13 @@ public class IAItemsConverter extends ItemConverter {
         BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
 
         blockConfiguration.setStateBlock(
-            new PillarBlockState(
-                Plugins.ITEMS_ADDER,
-                this.itemId,
-                CraftEngineBlockState.SOLID, simpleModelConfiguration,
-                CraftEngineBlockState.SOLID, simpleModelConfiguration,
-                CraftEngineBlockState.SOLID, simpleModelConfiguration
-            )
+                new PillarBlockState(
+                        Plugins.ITEMS_ADDER,
+                        this.itemId,
+                        CraftEngineBlockState.SOLID, simpleModelConfiguration,
+                        CraftEngineBlockState.SOLID, simpleModelConfiguration,
+                        CraftEngineBlockState.SOLID, simpleModelConfiguration
+                )
         );
 
         this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
@@ -566,7 +612,9 @@ public class IAItemsConverter extends ItemConverter {
 
     private void handleFurnaceDirectionalMode(ConfigurationSection resourceSection) {
         Map<BlockFace, String> faceTextureMap = buildFaceTextureMap(resourceSection, "Furnace");
-        if (faceTextureMap == null) return;
+        if (faceTextureMap == null) {
+            return;
+        }
 
         SimpleModelConfiguration simpleModelConfiguration = createCubeModelTemplate(faceTextureMap);
         this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
@@ -601,7 +649,9 @@ public class IAItemsConverter extends ItemConverter {
 
         for (String faceTexture : faceTextures) {
             String cleanedTexture = cleanPath(faceTexture);
-            if (isNull(cleanedTexture)) continue;
+            if (isNull(cleanedTexture)) {
+                continue;
+            }
 
             BlockFace face = determineBlockFace(cleanedTexture);
             if (face != null) {
@@ -621,23 +671,35 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private BlockFace determineBlockFace(String textureName) {
-        if (textureName.endsWith("_down")) return BlockFace.DOWN;
-        if (textureName.endsWith("_up")) return BlockFace.UP;
-        if (textureName.endsWith("_north")) return BlockFace.NORTH;
-        if (textureName.endsWith("_south")) return BlockFace.SOUTH;
-        if (textureName.endsWith("_west")) return BlockFace.WEST;
-        if (textureName.endsWith("_east")) return BlockFace.EAST;
+        if (textureName.endsWith("_down")) {
+            return BlockFace.DOWN;
+        }
+        if (textureName.endsWith("_up")) {
+            return BlockFace.UP;
+        }
+        if (textureName.endsWith("_north")) {
+            return BlockFace.NORTH;
+        }
+        if (textureName.endsWith("_south")) {
+            return BlockFace.SOUTH;
+        }
+        if (textureName.endsWith("_west")) {
+            return BlockFace.WEST;
+        }
+        if (textureName.endsWith("_east")) {
+            return BlockFace.EAST;
+        }
         return null;
     }
 
     private SimpleModelConfiguration createCubeModelTemplate(Map<BlockFace, String> faceTextureMap) {
         GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube");
-        generation.addTexture("down",  faceTextureMap.get(BlockFace.DOWN));
-        generation.addTexture("up",    faceTextureMap.get(BlockFace.UP));
+        generation.addTexture("down", faceTextureMap.get(BlockFace.DOWN));
+        generation.addTexture("up", faceTextureMap.get(BlockFace.UP));
         generation.addTexture("north", faceTextureMap.get(BlockFace.NORTH));
         generation.addTexture("south", faceTextureMap.get(BlockFace.SOUTH));
-        generation.addTexture("west",  faceTextureMap.get(BlockFace.WEST));
-        generation.addTexture("east",  faceTextureMap.get(BlockFace.EAST));
+        generation.addTexture("west", faceTextureMap.get(BlockFace.WEST));
+        generation.addTexture("east", faceTextureMap.get(BlockFace.EAST));
 
         SimpleModelConfiguration model = new SimpleModelConfiguration(faceTextureMap.get(BlockFace.NORTH));
         model.setGeneration(generation);
@@ -655,21 +717,21 @@ public class IAItemsConverter extends ItemConverter {
             return;
         }
         modelPath = namespaced(modelPath, this.namespace);
-        if (isNull(modelPath)){
+        if (isNull(modelPath)) {
             Logger.debug("[IAItemsConverter] Missing model path for item " + this.itemId + ". Cannot convert item texture.");
             return;
         }
         Material itemMaterial = this.craftEngineItemsConfiguration.getMaterial();
-        if (itemMaterial == Material.FISHING_ROD){
-            handleFishingRod3D(modelPath,modelPath+"_cast");
+        if (itemMaterial == Material.FISHING_ROD) {
+            handleFishingRod3D(modelPath, modelPath + "_cast");
             return;
         }
-        if (itemMaterial == Material.BOW){
-            handleBow3D(modelPath,modelPath+"_0",modelPath+"_1",modelPath+"_2");
+        if (itemMaterial == Material.BOW) {
+            handleBow3D(modelPath, modelPath + "_0", modelPath + "_1", modelPath + "_2");
             return;
         }
-        if (itemMaterial == Material.SHIELD){
-            handleShield3D(modelPath,modelPath+"_blocking");
+        if (itemMaterial == Material.SHIELD) {
+            handleShield3D(modelPath, modelPath + "_blocking");
             return;
         }
         handleSimpleModelPath(modelPath);
@@ -772,8 +834,12 @@ public class IAItemsConverter extends ItemConverter {
 
         if (placeableOnWater || placeableOnLava) {
             OnLiquidBlockBehavior onLiquidBlockBehavior = new OnLiquidBlockBehavior();
-            if (placeableOnWater) onLiquidBlockBehavior.addLiquidType("water");
-            if (placeableOnLava) onLiquidBlockBehavior.addLiquidType("lava");
+            if (placeableOnWater) {
+                onLiquidBlockBehavior.addLiquidType("water");
+            }
+            if (placeableOnLava) {
+                onLiquidBlockBehavior.addLiquidType("lava");
+            }
             blockConfiguration.addBehavior(onLiquidBlockBehavior);
         }
     }
@@ -793,9 +859,13 @@ public class IAItemsConverter extends ItemConverter {
 
     private void handleGraphicsSection() {
         ConfigurationSection graphicsSection = this.iaItemSection.getConfigurationSection("graphics");
-        if (isNull(graphicsSection)) return;
+        if (isNull(graphicsSection)) {
+            return;
+        }
 
-        if (handleGraphicsModel(graphicsSection)) return;
+        if (handleGraphicsModel(graphicsSection)) {
+            return;
+        }
 
         boolean isBlock = this.iaItemSection.contains("behaviours.block.placed_model.type");
         String texturePath = graphicsSection.getString("texture");
@@ -872,7 +942,9 @@ public class IAItemsConverter extends ItemConverter {
 
     private void handleCrossBlock(ConfigurationSection graphicsSection) {
         String crossTexture = graphicsSection.getString("textures.cross", graphicsSection.getString("texture"));
-        if (!isValidString(crossTexture)) return;
+        if (!isValidString(crossTexture)) {
+            return;
+        }
 
         crossTexture = namespaced(crossTexture, this.namespace);
 
@@ -922,9 +994,9 @@ public class IAItemsConverter extends ItemConverter {
                     namespaced(modelsSection.getString("pulling_0"), this.namespace),
                     namespaced(modelsSection.getString("pulling_1"), this.namespace),
                     namespaced(modelsSection.getString("pulling_2"), this.namespace)
-                );
+            );
         } else if (IAModelsKeys.FISHING_ROD.containsAny(keys) && keys.size() == IAModelsKeys.FISHING_ROD.getKeysCount()) {
-            handleFishingRod3D(namespaced(modelsSection.getString("normal"),this.namespace),namespaced(modelsSection.getString("cast"),this.namespace));
+            handleFishingRod3D(namespaced(modelsSection.getString("normal"), this.namespace), namespaced(modelsSection.getString("cast"), this.namespace));
         } else if (IAModelsKeys.CROSSBOW.containsAny(keys) && keys.size() == IAModelsKeys.CROSSBOW.getKeysCount()) {
             handleCrossbow3D(modelsSection);
         } else if (IAModelsKeys.TRIDENT.containsAny(keys) && keys.size() == IAModelsKeys.TRIDENT.getKeysCount()) {
@@ -961,7 +1033,7 @@ public class IAItemsConverter extends ItemConverter {
 
         ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
         castCondition.setOnFalse(buildSimpleModel("minecraft:item/fishing_rod", normalTexture));
-        castCondition.setOnTrue(buildSimpleModel("minecraft:item/fishing_rod",  castTexture));
+        castCondition.setOnTrue(buildSimpleModel("minecraft:item/fishing_rod", castTexture));
 
         this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
     }
@@ -1014,12 +1086,12 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private void handleCrossbow3D(ConfigurationSection modelsSection) {
-        String normalModel = namespaced(modelsSection.getString("normal"),    this.namespace);
+        String normalModel = namespaced(modelsSection.getString("normal"), this.namespace);
         String pulling0Model = namespaced(modelsSection.getString("pulling_0"), this.namespace);
         String pulling1Model = namespaced(modelsSection.getString("pulling_1"), this.namespace);
         String pulling2Model = namespaced(modelsSection.getString("pulling_2"), this.namespace);
-        String rocketModel = namespaced(modelsSection.getString("rocket"),    this.namespace);
-        String arrowModel = namespaced(modelsSection.getString("arrow"),     this.namespace);
+        String rocketModel = namespaced(modelsSection.getString("rocket"), this.namespace);
+        String arrowModel = namespaced(modelsSection.getString("arrow"), this.namespace);
 
         ChargeTypeSelectConfiguration chargeTypeSelect = new ChargeTypeSelectConfiguration();
         chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ARROW, new SimpleModelConfiguration(arrowModel));
@@ -1028,7 +1100,7 @@ public class IAItemsConverter extends ItemConverter {
 
         UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
         pullingDispatch.addEntry(0.58, new SimpleModelConfiguration(pulling1Model));
-        pullingDispatch.addEntry(1.0,  new SimpleModelConfiguration(pulling2Model));
+        pullingDispatch.addEntry(1.0, new SimpleModelConfiguration(pulling2Model));
         pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0Model));
 
         ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
@@ -1037,12 +1109,13 @@ public class IAItemsConverter extends ItemConverter {
 
         this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
+
     private void handleTrident3D(ConfigurationSection modelsSection) {
         String normalModel = namespaced(modelsSection.getString("normal"), this.namespace);
         String throwingModel = namespaced(modelsSection.getString("throwing"), this.namespace);
 
         ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
-        usingItemCondition.setOnTrue( new SimpleModelConfiguration(throwingModel));
+        usingItemCondition.setOnTrue(new SimpleModelConfiguration(throwingModel));
         usingItemCondition.setOnFalse(new SimpleModelConfiguration(normalModel));
 
         DisplayContentSelectConfiguration displayContentSelect = new DisplayContentSelectConfiguration();
@@ -1055,31 +1128,32 @@ public class IAItemsConverter extends ItemConverter {
 
         this.craftEngineItemsConfiguration.setModelConfiguration(displayContentSelect);
     }
+
     private void handleShield3D(String defaultModelPath, String blockingModelPath) {
         ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
-        usingItemCondition.setOnTrue( new SimpleModelConfiguration(blockingModelPath));
+        usingItemCondition.setOnTrue(new SimpleModelConfiguration(blockingModelPath));
         usingItemCondition.setOnFalse(new SimpleModelConfiguration(defaultModelPath));
 
         this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     @Override
-    public void convertOther(){
+    public void convertOther() {
         ConfigurationSection behavioursSection = this.iaItemSection.getConfigurationSection("behaviours");
-        if (isNotNull(behavioursSection)){
-            for (String behaviourKey : behavioursSection.getKeys(false)){
-                switch (behaviourKey){
+        if (isNotNull(behavioursSection)) {
+            for (String behaviourKey : behavioursSection.getKeys(false)) {
+                switch (behaviourKey) {
                     case "furniture" -> {
                         ConfigurationSection furnitureSection = behavioursSection.getConfigurationSection("furniture");
-                        if (isNotNull(furnitureSection)){
+                        if (isNotNull(furnitureSection)) {
                             this.convertFurniture(furnitureSection, behavioursSection);
                         }
                     }
-                    case "fuel"->{
+                    case "fuel" -> {
                         ConfigurationSection fuelSection = behavioursSection.getConfigurationSection("fuel");
-                        if (isNotNull(fuelSection)){
+                        if (isNotNull(fuelSection)) {
                             int burnTicks = fuelSection.getInt("burn_ticks", -1);
-                            if (burnTicks > 0){
+                            if (burnTicks > 0) {
                                 this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.FuelTimeSettingConfiguration(burnTicks));
                             }
                             // machines fuel type not supported
@@ -1097,21 +1171,30 @@ public class IAItemsConverter extends ItemConverter {
         IAEntityTypes entityType = IAEntityTypes.ITEM_FRAME;
         try {
             entityType = IAEntityTypes.valueOf(furnitureSection.getString("entity", "ITEM_FRAME").toUpperCase());
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         boolean isBig = furnitureSection.getBoolean("small", true);
 
         Set<FurniturePlacement> placements = new HashSet<>();
         ConfigurationSection placeableSection = furnitureSection.getConfigurationSection("placeable_on");
         if (isNotNull(placeableSection)) {
-            if (placeableSection.getBoolean("floor", true)) placements.add(FurniturePlacement.GROUND);
-            if (placeableSection.getBoolean("ceiling", true)) placements.add(FurniturePlacement.CEILING);
-            if (placeableSection.getBoolean("wall", true)) placements.add(FurniturePlacement.WALL);
+            if (placeableSection.getBoolean("floor", true)) {
+                placements.add(FurniturePlacement.GROUND);
+            }
+            if (placeableSection.getBoolean("ceiling", true)) {
+                placements.add(FurniturePlacement.CEILING);
+            }
+            if (placeableSection.getBoolean("wall", true)) {
+                placements.add(FurniturePlacement.WALL);
+            }
         } else {
             placements.addAll(List.of(FurniturePlacement.values()));
         }
 
-        if (placements.isEmpty()) return;
+        if (placements.isEmpty()) {
+            return;
+        }
 
         FurnitureConfiguration furnitureConfiguration = new FurnitureConfiguration();
 
@@ -1119,7 +1202,9 @@ public class IAItemsConverter extends ItemConverter {
         Billboard transformType = Billboard.FIXED;
         ItemDisplayType displayType = ItemDisplayType.NONE;
         FloatsUtils displayTranslation = new FloatsUtils(3, new float[]{0f, 0.5f, 0f});
-        if (isBig) displayTranslation.addValue(1, 1f);
+        if (isBig) {
+            displayTranslation.addValue(1, 1f);
+        }
         FloatsUtils scale = new FloatsUtils(3, new float[]{1f, 1f, 1f});
 
         ConfigurationSection displayTransformationSection = furnitureSection.getConfigurationSection("display_transformation");
@@ -1134,18 +1219,30 @@ public class IAItemsConverter extends ItemConverter {
                 double x = translationSection.getDouble("x");
                 double y = translationSection.getDouble("y");
                 double z = translationSection.getDouble("z");
-                if (x != 0d) displayTranslation.setValue(0, (float) x);
-                if (y != 0d) displayTranslation.setValue(1, (float) y);
-                if (z != 0d) displayTranslation.setValue(2, (float) z);
+                if (x != 0d) {
+                    displayTranslation.setValue(0, (float) x);
+                }
+                if (y != 0d) {
+                    displayTranslation.setValue(1, (float) y);
+                }
+                if (z != 0d) {
+                    displayTranslation.setValue(2, (float) z);
+                }
             }
             ConfigurationSection scaleSection = displayTransformationSection.getConfigurationSection("scale");
             if (isNotNull(scaleSection)) {
                 double x = scaleSection.getDouble("x", 1.0);
                 double y = scaleSection.getDouble("y", 1.0);
                 double z = scaleSection.getDouble("z", 1.0);
-                if (x != 1.0) scale.setValue(0, (float) x);
-                if (y != 1.0) scale.setValue(1, (float) y);
-                if (z != 1.0) scale.setValue(2, (float) z);
+                if (x != 1.0) {
+                    scale.setValue(0, (float) x);
+                }
+                if (y != 1.0) {
+                    scale.setValue(1, (float) y);
+                }
+                if (z != 1.0) {
+                    scale.setValue(2, (float) z);
+                }
             }
         }
 
@@ -1153,20 +1250,29 @@ public class IAItemsConverter extends ItemConverter {
         ItemElement element;
         if (entityType == IAEntityTypes.ARMOR_STAND) {
             ArmorStandElement armorStand = new ArmorStandElement(this.itemId);
-            if (scale.isUpdated())
+            if (scale.isUpdated()) {
                 armorStand.setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
-            if (!isBig) armorStand.setSmall(true);
+            }
+            if (!isBig) {
+                armorStand.setSmall(true);
+            }
             element = armorStand;
         } else {
             ItemDisplayElement itemDisplay = new ItemDisplayElement(this.itemId);
             int light = furnitureSection.getInt("light_level", -1);
-            if (light >= 0) itemDisplay.display().setBrightness(light, -1);
-            if (displayType != ItemDisplayType.NONE) itemDisplay.setDisplayTransform(displayType);
+            if (light >= 0) {
+                itemDisplay.display().setBrightness(light, -1);
+            }
+            if (displayType != ItemDisplayType.NONE) {
+                itemDisplay.setDisplayTransform(displayType);
+            }
             itemDisplay.display().setBillboard(transformType);
-            if (displayTranslation.isUpdated())
+            if (displayTranslation.isUpdated()) {
                 itemDisplay.display().setTranslation(displayTranslation.getValue(0), displayTranslation.getValue(1), displayTranslation.getValue(2));
-            if (scale.isUpdated())
+            }
+            if (scale.isUpdated()) {
                 itemDisplay.display().setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
+            }
             element = itemDisplay;
         }
 
@@ -1197,7 +1303,9 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private void parseItemsAdderHitboxes(ConfigurationSection iaHitboxesSection, List<Hitbox> hitboxes, double seatPosition) {
-        if (iaHitboxesSection == null) return;
+        if (iaHitboxesSection == null) {
+            return;
+        }
 
         int length = iaHitboxesSection.getInt("length", 1);
         int width = iaHitboxesSection.getInt("width", 1);
@@ -1211,8 +1319,9 @@ public class IAItemsConverter extends ItemConverter {
                 for (int z = 0; z < width; z++) {
                     ShulkerHitbox hitbox = new ShulkerHitbox();
                     hitbox.setPosition(x + lengthOffset, y + heightOffset, z + widthOffset);
-                    if (x == 0 && y == 0 && z == 0)
+                    if (x == 0 && y == 0 && z == 0) {
                         hitbox.addSeat(0, (float) seatPosition, 0, 0);
+                    }
                     hitboxes.add(hitbox);
                 }
             }

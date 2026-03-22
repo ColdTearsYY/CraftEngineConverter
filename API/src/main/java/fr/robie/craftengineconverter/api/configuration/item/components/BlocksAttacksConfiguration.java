@@ -27,42 +27,44 @@ public class BlocksAttacksConfiguration implements ItemConfigurationSerializable
         this.damageReductions = damageReductions;
     }
 
-    public record ItemDamage(double threshold, double base, double factor) {}
+    public record ItemDamage(double threshold, double base, double factor) {
+    }
 
-    public record DamageReduction(double base, double factor, double horizontalBlockingAngle, List<String> types) {}
+    public record DamageReduction(double base, double factor, double horizontalBlockingAngle, List<String> types) {
+    }
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
         ConfigurationSection components = getOrCreateSection(itemSection, "components");
         ConfigurationSection blocksAttacksSection = getOrCreateSection(components, "minecraft:blocks_attacks");
 
-        if (blockDelaySeconds != 0)
-            blocksAttacksSection.set("block_delay_seconds", blockDelaySeconds);
+        if (this.blockDelaySeconds != 0)
+            blocksAttacksSection.set("block_delay_seconds", this.blockDelaySeconds);
 
-        if (disableCooldownScale != 1)
-            blocksAttacksSection.set("disable_cooldown_scale", disableCooldownScale);
+        if (this.disableCooldownScale != 1)
+            blocksAttacksSection.set("disable_cooldown_scale", this.disableCooldownScale);
 
-        if (blockSound != null && !blockSound.isBlank())
-            blocksAttacksSection.set("block_sound", blockSound);
+        if (this.blockSound != null && !this.blockSound.isBlank())
+            blocksAttacksSection.set("block_sound", this.blockSound);
 
-        if (disabledSound != null && !disabledSound.isBlank())
-            blocksAttacksSection.set("disabled_sound", disabledSound);
+        if (this.disabledSound != null && !this.disabledSound.isBlank())
+            blocksAttacksSection.set("disabled_sound", this.disabledSound);
 
-        if (bypassedBy != null && !bypassedBy.isBlank())
-            blocksAttacksSection.set("bypassed_by", bypassedBy);
+        if (this.bypassedBy != null && !this.bypassedBy.isBlank())
+            blocksAttacksSection.set("bypassed_by", this.bypassedBy);
 
-        if (itemDamage != null) {
+        if (this.itemDamage != null) {
             ConfigurationSection itemDamageSection = getOrCreateSection(blocksAttacksSection, "item_damage");
-            if (itemDamage.threshold() != 0)
-                itemDamageSection.set("threshold", itemDamage.threshold());
-            if (itemDamage.base() != 0)
-                itemDamageSection.set("base", itemDamage.base());
-            if (itemDamage.factor() != 1.5)
-                itemDamageSection.set("factor", itemDamage.factor());
+            if (this.itemDamage.threshold() != 0)
+                itemDamageSection.set("threshold", this.itemDamage.threshold());
+            if (this.itemDamage.base() != 0)
+                itemDamageSection.set("base", this.itemDamage.base());
+            if (this.itemDamage.factor() != 1.5)
+                itemDamageSection.set("factor", this.itemDamage.factor());
         }
 
-        if (damageReductions != null && !damageReductions.isEmpty()) {
-            List<Map<String, Object>> serialized = damageReductions.stream().map(dr -> {
+        if (this.damageReductions != null && !this.damageReductions.isEmpty()) {
+            List<Map<String, Object>> serialized = this.damageReductions.stream().map(dr -> {
                 Map<String, Object> map = new java.util.HashMap<>();
                 map.put("base", dr.base());
                 map.put("factor", dr.factor());

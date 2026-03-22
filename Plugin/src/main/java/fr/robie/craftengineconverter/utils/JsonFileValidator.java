@@ -35,7 +35,7 @@ public class JsonFileValidator {
 
     public void validateAllJsonFiles() {
         try {
-            List<FileValidationEntry> queue = collectModelJsonFiles(outputPackFile);
+            List<FileValidationEntry> queue = collectModelJsonFiles(this.outputPackFile);
 
             BukkitProgressBar.Builder builder = new BukkitProgressBar.Builder(queue.size());
             if (this.optionalPlayer.isPresent()) {
@@ -107,7 +107,7 @@ public class JsonFileValidator {
         if (texturesElement == null || !texturesElement.isJsonObject()) return;
 
         JsonObject textures = texturesElement.getAsJsonObject();
-        File assetsFolder = new File(outputPackFile, "assets");
+        File assetsFolder = new File(this.outputPackFile, "assets");
         boolean modified = false;
 
         for (Map.Entry<String, JsonElement> entry : textures.entrySet()) {
@@ -277,5 +277,6 @@ public class JsonFileValidator {
         }
     }
 
-    record FileValidationEntry(File namespaceDir, File jsonFile) {}
+    record FileValidationEntry(File namespaceDir, File jsonFile) {
+    }
 }

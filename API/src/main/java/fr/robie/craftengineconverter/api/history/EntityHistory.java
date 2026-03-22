@@ -22,7 +22,7 @@ public class EntityHistory {
     private final Boolean reverted;
 
 
-    public EntityHistory(@Nullable Long id, @NotNull String location, @NotNull String nbt,@NotNull Boolean reverted) {
+    public EntityHistory(@Nullable Long id, @NotNull String location, @NotNull String nbt, @NotNull Boolean reverted) {
         this.id = id;
         this.location = location;
         this.nbt = nbt;
@@ -30,12 +30,12 @@ public class EntityHistory {
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     @NotNull
     public String getLocationString() {
-        return location;
+        return this.location;
     }
 
     @NotNull
@@ -59,7 +59,8 @@ public class EntityHistory {
 
     private Map<String, Object> deserializeLocation() {
         Gson gson = new Gson();
-        Type type = new TypeToken<Map<String, Object>>(){}.getType();
+        Type type = new TypeToken<Map<String, Object>>() {
+        }.getType();
         return gson.fromJson(this.location, type);
     }
 }

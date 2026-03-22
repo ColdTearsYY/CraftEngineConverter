@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.loottables;
 
-import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.LootCondition;
+import fr.robie.craftengineconverter.api.configuration.conditions.Condition;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.LootEntry;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.LootFunction;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,7 +14,7 @@ import java.util.Objects;
 
 public class LootPool implements LootConfiguration {
     private Object rolls = 1;
-    private final List<LootCondition> conditions = new ArrayList<>();
+    private final List<Condition> conditions = new ArrayList<>();
     private final List<LootEntry> entries = new ArrayList<>();
     private final List<LootFunction> functions = new ArrayList<>();
 
@@ -22,7 +22,7 @@ public class LootPool implements LootConfiguration {
         this.rolls = Objects.requireNonNull(rolls, "rolls cannot be null");
     }
 
-    public void addCondition(@NotNull LootCondition condition) {
+    public void addCondition(@NotNull Condition condition) {
         this.conditions.add(Objects.requireNonNull(condition, "condition cannot be null"));
     }
 
@@ -40,7 +40,7 @@ public class LootPool implements LootConfiguration {
 
         if (!this.conditions.isEmpty()) {
             List<Map<String, Object>> serializedConditions = new ArrayList<>();
-            for (LootCondition condition : this.conditions) {
+            for (Condition condition : this.conditions) {
                 YamlConfiguration temp = new YamlConfiguration();
                 condition.serialize(temp);
                 serializedConditions.add(temp.getValues(true));

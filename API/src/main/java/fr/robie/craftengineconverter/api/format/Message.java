@@ -256,8 +256,7 @@ public enum Message {
     ERROR__CONVERTER__NEXO__IMAGES__SAVE_FAILURE("Failed to save converted image file: §e%file%§c"),
     ERROR__CONVERTER__NEXO__IMAGES__RELATIVE_PATH_FAILURE("Failed to compute relative path for image file: §e%file%§c"),
 
-    WARNING__CONVERTER__NEXO__BREWING_INGREDIENT_NO_MAPPING("§cNo mapping found for brewing ingredient §e%item%§c in recipe §e%recipe%§c")
-    ;
+    WARNING__CONVERTER__NEXO__BREWING_INGREDIENT_NO_MAPPING("§cNo mapping found for brewing ingredient §e%item%§c in recipe §e%recipe%§c");
     private List<String> messages;
     private String message;
     private Map<String, Object> titles = new HashMap<>();
@@ -277,11 +276,11 @@ public enum Message {
     /**
      * Constructs a new Message with the specified title, subtitle, and timings.
      *
-     * @param title     the title string.
-     * @param subTitle  the subtitle string.
-     * @param a         the start time in ticks.
-     * @param b         the display time in ticks.
-     * @param c         the end time in ticks.
+     * @param title    the title string.
+     * @param subTitle the subtitle string.
+     * @param a        the start time in ticks.
+     * @param b        the display time in ticks.
+     * @param c        the end time in ticks.
      */
     Message(String title, String subTitle, int a, int b, int c) {
         this.titles.put("title", title);
@@ -341,7 +340,7 @@ public enum Message {
      * @return the message string.
      */
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
     /**
@@ -350,9 +349,8 @@ public enum Message {
      * @return the message string.
      */
     public String toMsg() {
-        return message;
+        return this.message;
     }
-
 
 
     /**
@@ -361,7 +359,7 @@ public enum Message {
      * @return the message string.
      */
     public String msg() {
-        return message;
+        return this.message;
     }
 
     /**
@@ -370,7 +368,7 @@ public enum Message {
      * @return true if the message is in use, false otherwise.
      */
     public boolean isUse() {
-        return use;
+        return this.use;
     }
 
     /**
@@ -379,7 +377,7 @@ public enum Message {
      * @return the list of messages.
      */
     public List<String> getMessages() {
-        return messages == null ? Collections.singletonList(message) : messages;
+        return this.messages == null ? Collections.singletonList(this.message) : this.messages;
     }
 
     /**
@@ -397,7 +395,7 @@ public enum Message {
      * @return true if the message contains multiple parts, false otherwise.
      */
     public boolean isMessage() {
-        return messages != null && messages.size() > 1;
+        return this.messages != null && this.messages.size() > 1;
     }
 
     /**
@@ -415,7 +413,7 @@ public enum Message {
      * @return the title string.
      */
     public String getTitle() {
-        return (String) titles.get("title");
+        return (String) this.titles.get("title");
     }
 
     /**
@@ -424,7 +422,7 @@ public enum Message {
      * @return the map of titles.
      */
     public Map<String, Object> getTitles() {
-        return titles;
+        return this.titles;
     }
 
     /**
@@ -443,7 +441,7 @@ public enum Message {
      * @return the subtitle string.
      */
     public String getSubTitle() {
-        return (String) titles.get("subtitle");
+        return (String) this.titles.get("subtitle");
     }
 
     /**
@@ -452,7 +450,7 @@ public enum Message {
      * @return true if the message has a title, false otherwise.
      */
     public boolean isTitle() {
-        return titles.containsKey("title");
+        return this.titles.containsKey("title");
     }
 
     /**
@@ -461,7 +459,7 @@ public enum Message {
      * @return the start time in ticks.
      */
     public int getStart() {
-        return ((Number) titles.get("start")).intValue();
+        return ((Number) this.titles.get("start")).intValue();
     }
 
     /**
@@ -470,7 +468,7 @@ public enum Message {
      * @return the end time in ticks.
      */
     public int getEnd() {
-        return ((Number) titles.get("end")).intValue();
+        return ((Number) this.titles.get("end")).intValue();
     }
 
     /**
@@ -479,7 +477,7 @@ public enum Message {
      * @return the display time in ticks.
      */
     public int getTime() {
-        return ((Number) titles.get("time")).intValue();
+        return ((Number) this.titles.get("time")).intValue();
     }
 
     /**
@@ -488,7 +486,7 @@ public enum Message {
      * @return true if the title is in use, false otherwise.
      */
     public boolean isUseTitle() {
-        return (boolean) titles.getOrDefault("isUse", "true");
+        return (boolean) this.titles.getOrDefault("isUse", "true");
     }
 
     /**
@@ -499,7 +497,7 @@ public enum Message {
      * @return the modified message string.
      */
     public String replace(String a, String b) {
-        return message.replace(a, b);
+        return this.message.replace(a, b);
     }
 
     /**
@@ -508,7 +506,7 @@ public enum Message {
      * @return the type of the message.
      */
     public MessageType getType() {
-        return type;
+        return this.type;
     }
 
     /**
@@ -526,7 +524,7 @@ public enum Message {
      * @return the item stack.
      */
     public ItemStack getItemStack() {
-        return itemStack;
+        return this.itemStack;
     }
 
     /**

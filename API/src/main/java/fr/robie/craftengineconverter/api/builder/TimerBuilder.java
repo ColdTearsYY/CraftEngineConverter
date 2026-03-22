@@ -30,17 +30,21 @@ public class TimerBuilder {
             this.pluralFormat = pluralFormat;
         }
 
-        public long getMilliseconds() { return milliseconds; }
+        public long getMilliseconds() {
+            return this.milliseconds;
+        }
 
         @Deprecated
         public long getSeconds() {
-            return milliseconds / 1000L;
+            return this.milliseconds / 1000L;
         }
 
-        public Message getTimeMessage() { return timeMessage; }
+        public Message getTimeMessage() {
+            return this.timeMessage;
+        }
 
         public String getFormat(long value) {
-            return (value <= 1 ? singularFormat : pluralFormat).msg();
+            return (value <= 1 ? this.singularFormat : this.pluralFormat).msg();
         }
     }
 
@@ -202,7 +206,8 @@ public class TimerBuilder {
             case "h", "hour", "hours", "heure", "heures" -> TimeUnit.HOUR;
             case "m", "min", "minute", "minutes" -> TimeUnit.MINUTE;
             case "s", "sec", "second", "seconds", "seconde", "secondes" -> TimeUnit.SECOND;
-            case "ms", "milli", "millis", "millisecond", "milliseconds", "milliseconde", "millisecondes" -> TimeUnit.MILLISECOND;
+            case "ms", "milli", "millis", "millisecond", "milliseconds", "milliseconde", "millisecondes" ->
+                    TimeUnit.MILLISECOND;
             default -> null;
         };
     }
@@ -268,13 +273,20 @@ public class TimerBuilder {
     private static long parseUnitToTicks(String unit, double value) {
         return switch (unit) {
             case "t", "tick", "ticks" -> (long) value;
-            case "ms", "milli", "millis", "millisecond", "milliseconds" -> (long) (value / 50.0);                 // 1 tick = 50ms
-            case "s", "sec", "second", "seconds", "seconde", "secondes" -> (long) (value * 20.0);                 // 1 second = 20 ticks
-            case "m", "min", "minute", "minutes" -> (long) (value * 20.0 * 60.0);                                 // 1 minute = 1200 ticks
-            case "h", "hour", "hours", "heure", "heures" -> (long) (value * 20.0 * 60.0 * 60.0);                  // 1 hour = 72000 ticks
-            case "d", "day", "days", "jour", "jours" -> (long) (value * 20.0 * 60.0 * 60.0 * 24.0);               // 1 day = 1728000 ticks
-            case "w", "week", "weeks", "semaine", "semaines" -> (long) (value * 20.0 * 60.0 * 60.0 * 24.0 * 7.0); // 1 week
-            case "mo", "month", "months", "mois" -> (long) (value * 20.0 * 60.0 * 60.0 * 24.0 * 30.0);            // 1 month (30 days)
+            case "ms", "milli", "millis", "millisecond", "milliseconds" ->
+                    (long) (value / 50.0);                 // 1 tick = 50ms
+            case "s", "sec", "second", "seconds", "seconde", "secondes" ->
+                    (long) (value * 20.0);                 // 1 second = 20 ticks
+            case "m", "min", "minute", "minutes" ->
+                    (long) (value * 20.0 * 60.0);                                 // 1 minute = 1200 ticks
+            case "h", "hour", "hours", "heure", "heures" ->
+                    (long) (value * 20.0 * 60.0 * 60.0);                  // 1 hour = 72000 ticks
+            case "d", "day", "days", "jour", "jours" ->
+                    (long) (value * 20.0 * 60.0 * 60.0 * 24.0);               // 1 day = 1728000 ticks
+            case "w", "week", "weeks", "semaine", "semaines" ->
+                    (long) (value * 20.0 * 60.0 * 60.0 * 24.0 * 7.0); // 1 week
+            case "mo", "month", "months", "mois" ->
+                    (long) (value * 20.0 * 60.0 * 60.0 * 24.0 * 30.0);            // 1 month (30 days)
             default -> 0L;
         };
     }
@@ -293,7 +305,7 @@ public class TimerBuilder {
         }
 
         public long parse() {
-            return parseTime(timeString, defaultUnit);
+            return parseTime(this.timeString, this.defaultUnit);
         }
     }
 
@@ -326,11 +338,11 @@ public class TimerBuilder {
         }
 
         public String build() {
-            if (autoSelect) {
-                return formatTimeAuto(milliseconds);
+            if (this.autoSelect) {
+                return formatTimeAuto(this.milliseconds);
             } else {
-                String result = formatTime(milliseconds, maxUnit);
-                return hideZeroValues ? format(result) : result;
+                String result = formatTime(this.milliseconds, this.maxUnit);
+                return this.hideZeroValues ? format(result) : result;
             }
         }
     }

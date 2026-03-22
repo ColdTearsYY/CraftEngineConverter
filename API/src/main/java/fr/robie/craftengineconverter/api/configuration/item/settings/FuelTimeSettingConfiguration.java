@@ -14,7 +14,7 @@ public class FuelTimeSettingConfiguration implements ItemConfigurationSerializab
 
     @Override
     public void serialize(@NotNull YamlConfiguration yamlConfiguration, @NotNull String path, @NotNull ConfigurationSection itemSection, @NotNull String itemId) {
-        if (fuelTime <= 0) return;
+        if (this.fuelTime <= 0) return;
 
         ConfigurationSection settings = getOrCreateSection(itemSection, "settings");
         settings.set("fuel-time", this.fuelTime);

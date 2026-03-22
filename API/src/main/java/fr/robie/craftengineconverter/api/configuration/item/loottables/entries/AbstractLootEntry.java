@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.api.configuration.item.loottables.entries;
 
-import fr.robie.craftengineconverter.api.configuration.item.loottables.conditions.LootCondition;
+import fr.robie.craftengineconverter.api.configuration.conditions.Condition;
 import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.LootFunction;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -13,7 +13,7 @@ import java.util.Objects;
 
 public abstract class AbstractLootEntry implements LootEntry {
     private final String type;
-    private final List<LootCondition> conditions = new ArrayList<>();
+    private final List<Condition> conditions = new ArrayList<>();
     private final List<LootFunction> functions = new ArrayList<>();
     private Integer weight;
 
@@ -22,12 +22,12 @@ public abstract class AbstractLootEntry implements LootEntry {
     }
 
     @Override
-    public void addCondition(LootCondition condition) {
+    public void addCondition(Condition condition) {
         this.conditions.add(Objects.requireNonNull(condition, "condition cannot be null"));
     }
 
     @Override
-    public List<LootCondition> getConditions() {
+    public List<Condition> getConditions() {
         return this.conditions;
     }
 
@@ -54,7 +54,7 @@ public abstract class AbstractLootEntry implements LootEntry {
 
         if (!this.conditions.isEmpty()) {
             List<Map<String, Object>> serializedConditions = new ArrayList<>();
-            for (LootCondition condition : this.conditions) {
+            for (Condition condition : this.conditions) {
                 YamlConfiguration temp = new YamlConfiguration();
                 condition.serialize(temp);
                 serializedConditions.add(temp.getValues(true));

@@ -97,6 +97,6 @@ public enum ComponentFlag {
     }
 
     public String getKey() {
-        return key;
+        return this.key;
     }
 }

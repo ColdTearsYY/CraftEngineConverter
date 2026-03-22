@@ -43,7 +43,7 @@ public class ToolConfiguration implements ItemConfigurationSerializable {
         if (this.rules != null && !this.rules.isEmpty()) {
             List<Map<String, Object>> ceRulesList = new ArrayList<>();
 
-            for (Rule rule : rules) {
+            for (Rule rule : this.rules) {
                 Map<String, Object> ceRule = new HashMap<>();
 
                 if (rule.speed() != 0f) {

@@ -1,10 +1,10 @@
 package fr.robie.craftengineconverter.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
+import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.api.configuration.Configuration;
 import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.progress.BukkitProgressBar;
-import fr.robie.craftengineconverter.api.builder.TimerBuilder;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import fr.robie.craftengineconverter.listener.WorldConverterManager;
 import fr.robie.craftengineconverter.utils.command.CommandType;
@@ -33,12 +33,12 @@ public class CraftEngineConverterCommandWorldConverterStart extends VCommand {
         boolean forceConversion = this.containFlag("--force");
 
         if (this.currentConversion != null && !this.currentConversion.isDone() && !forceConversion) {
-            message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__ALREADY_RUNNING);
+            message(plugin, this.sender, Message.COMMAND__WORLD_CONVERTER__ALREADY_RUNNING);
             return CommandType.SUCCESS;
         }
 
         if (forceConversion && this.currentConversion != null && !this.currentConversion.isDone()) {
-            message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__FORCE_STOPPING);
+            message(plugin, this.sender, Message.COMMAND__WORLD_CONVERTER__FORCE_STOPPING);
             worldConverterManager.cancelAllConversions();
             this.currentConversion.cancel(true);
         }
@@ -63,7 +63,7 @@ public class CraftEngineConverterCommandWorldConverterStart extends VCommand {
         }
         BukkitProgressBar progressBar = builder.build(this.plugin);
 
-        message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__START, "chunks", totalChunks);
+        message(plugin, this.sender, Message.COMMAND__WORLD_CONVERTER__START, "chunks", totalChunks);
 
         int oldConvertedBlocks = worldConverterManager.getPlacementTracker().getBlocksConverted();
         int oldConvertedFurniture = worldConverterManager.getPlacementTracker().getFurnitureConverted();
@@ -83,7 +83,7 @@ public class CraftEngineConverterCommandWorldConverterStart extends VCommand {
             int convertedBlocks = worldConverterManager.getPlacementTracker().getBlocksConverted();
             int convertedFurniture = worldConverterManager.getPlacementTracker().getFurnitureConverted();
 
-            message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__COMPLETE,
+            message(plugin, this.sender, Message.COMMAND__WORLD_CONVERTER__COMPLETE,
                     "chunks", processedChunks,
                     "blocks", convertedBlocks - oldConvertedBlocks,
                     "furniture", convertedFurniture - oldConvertedFurniture,

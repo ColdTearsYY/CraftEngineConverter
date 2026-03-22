@@ -101,7 +101,7 @@ public enum BukkitFlagToComponentFlag {
     }
 
     public ComponentFlag getComponentFlag() {
-        return componentFlag;
+        return this.componentFlag;
     }
 
     public static ComponentFlag fromBukkitItemFlag(ItemFlag itemFlag) {

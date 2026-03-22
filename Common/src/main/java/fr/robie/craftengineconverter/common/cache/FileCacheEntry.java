@@ -14,7 +14,7 @@ public class FileCacheEntry<T> {
     }
 
     public boolean isUpToDate() {
-        return file.exists() && file.lastModified() == lastModified;
+        return this.file.exists() && this.file.lastModified() == this.lastModified;
     }
 
     public File getFile() {
@@ -26,6 +26,6 @@ public class FileCacheEntry<T> {
     }
 
     public long getLastModified() {
-        return lastModified;
+        return this.lastModified;
     }
 }

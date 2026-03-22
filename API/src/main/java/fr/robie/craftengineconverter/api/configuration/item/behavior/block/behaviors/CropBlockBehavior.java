@@ -26,7 +26,7 @@ public class CropBlockBehavior implements BlockBehavior {
     }
 
     public CropBlockBehavior setBoneMealTarget(boolean boneMealTarget) {
-        isBoneMealTarget = boneMealTarget;
+        this.isBoneMealTarget = boneMealTarget;
         return this;
     }
 

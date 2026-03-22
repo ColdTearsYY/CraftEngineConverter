@@ -133,7 +133,9 @@ public class BlockStateMappingScanner {
             this.check = check;
         }
 
-        public CraftEngineBlockState getState() { return state; }
+        public CraftEngineBlockState getState() {
+            return this.state;
+        }
     }
 
     @FunctionalInterface

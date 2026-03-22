@@ -7,8 +7,8 @@ import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.logger.LogType;
 import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.api.progress.BukkitProgressBar;
-import fr.robie.craftengineconverter.api.progress.ProgressBarUtils;
 import fr.robie.craftengineconverter.api.progress.ProgressBarOption;
+import fr.robie.craftengineconverter.api.progress.ProgressBarUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -27,10 +27,10 @@ public class Configuration {
     private Configuration() {
     }
 
-    public static Configuration getInstance(){
-        if (instance == null){
-            synchronized (Configuration.class){
-                if (instance == null){
+    public static Configuration getInstance() {
+        if (instance == null) {
+            synchronized (Configuration.class) {
+                if (instance == null) {
                     instance = new Configuration();
                 }
             }
@@ -77,14 +77,14 @@ public class Configuration {
      * - Wildcard: "minecraft:textures/*" matches everything under minecraft:textures/
      * - Without namespace: "textures/*" matches "namespace:textures/*" for any namespace
      *
-     * @param path The path to check
+     * @param path    The path to check
      * @param pattern The pattern to match against
      * @return true if the path matches the pattern
      */
     private static boolean matchesPattern(String path, String pattern) {
         if (pattern.contains("*")) {
             String regex = pattern.replace(".", "\\.")
-                                  .replace("*", ".*");
+                    .replace("*", ".*");
 
             if (path.matches(regex)) {
                 return true;
@@ -93,7 +93,7 @@ public class Configuration {
             if (!pattern.contains(":") && path.contains(":")) {
                 String pathWithoutNamespace = path.substring(path.indexOf(":") + 1);
                 String patternRegex = pattern.replace(".", "\\.")
-                                            .replace("*", ".*");
+                        .replace("*", ".*");
                 return pathWithoutNamespace.matches(patternRegex);
             }
         } else {
@@ -156,10 +156,10 @@ public class Configuration {
                 Logger.debug("Invalid start limit for " + blockStateLimit.name() + " in configuration.", LogType.WARNING);
             }
         }
-        if (isUpdated){
+        if (this.isUpdated) {
             try {
                 config.save(file);
-                isUpdated = false;
+                this.isUpdated = false;
             } catch (Exception e) {
                 Logger.info("Could not save the configuration file: " + e.getMessage(), LogType.ERROR);
             }
@@ -178,26 +178,26 @@ public class Configuration {
         try {
             options.setProgressColor(BukkitProgressBar.ProgressColor.valueOf(progressColor.toUpperCase()));
         } catch (Exception e) {
-            Logger.debug("Invalid progress color for " + options + " in configuration, valid values are: "+ String.join(",", getAvailableColors()), LogType.WARNING);
+            Logger.debug("Invalid progress color for " + options + " in configuration, valid values are: " + String.join(",", getAvailableColors()), LogType.WARNING);
         }
         try {
             options.setEmptyColor(BukkitProgressBar.ProgressColor.valueOf(emptyColor.toUpperCase()));
         } catch (Exception e) {
-            Logger.debug("Invalid empty color for " + options + " in configuration, valid values are: "+ String.join(",",getAvailableColors()), LogType.WARNING);
+            Logger.debug("Invalid empty color for " + options + " in configuration, valid values are: " + String.join(",", getAvailableColors()), LogType.WARNING);
         }
         try {
             options.setPercentColor(BukkitProgressBar.ProgressColor.valueOf(percentColor.toUpperCase()));
         } catch (Exception e) {
-            Logger.debug("Invalid percent color for " + options + " in configuration, valid values are: "+ String.join(",",getAvailableColors()), LogType.WARNING);
+            Logger.debug("Invalid percent color for " + options + " in configuration, valid values are: " + String.join(",", getAvailableColors()), LogType.WARNING);
         }
         options.setProgressChar(progressChar);
         options.setEmptyChar(emptyChar);
         options.setBarWidth(barWidth);
     }
 
-    private List<String> getAvailableColors(){
+    private List<String> getAvailableColors() {
         List<String> colors = new ArrayList<>();
-        for (BukkitProgressBar.ProgressColor color : BukkitProgressBar.ProgressColor.values()){
+        for (BukkitProgressBar.ProgressColor color : BukkitProgressBar.ProgressColor.values()) {
             colors.add(color.name());
         }
         return colors;
@@ -211,6 +211,7 @@ public class Configuration {
         }
         return config.getInt(path);
     }
+
     private String getOrAddString(YamlConfiguration config, String path, String defaultValue) {
         if (!config.contains(path)) {
             config.set(path, defaultValue);

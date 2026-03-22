@@ -1,8 +1,8 @@
 package fr.robie.craftengineconverter.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.api.builder.TimerBuilder;
+import fr.robie.craftengineconverter.api.format.Message;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import fr.robie.craftengineconverter.listener.WorldConverterManager;
 import fr.robie.craftengineconverter.utils.command.CommandType;
@@ -26,7 +26,7 @@ public class CraftEngineConverterCommandWorldConverterClearCachedChunks extends 
 
         long endTime = System.currentTimeMillis();
 
-        message(plugin, sender, Message.COMMAND__WORLD_CONVERTER__CLEAR_CACHED_CHUNKS__COMPLETE,
+        message(plugin, this.sender, Message.COMMAND__WORLD_CONVERTER__CLEAR_CACHED_CHUNKS__COMPLETE,
                 "chunks", clearedChunks,
                 "time", TimerBuilder.formatTimeAuto(endTime - startTime));
 
