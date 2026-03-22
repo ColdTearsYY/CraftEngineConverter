@@ -14,16 +14,23 @@ import fr.robie.craftengineconverter.common.utils.SnakeUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class MessageLoader extends ObjectUtils implements Manageable {
     private static final String TRANSLATIONS_PATH = "translations/";
     private static final String MESSAGES_FILE = "/messages.yml";
+    private static final String BACKUP_FOLDER = "translations/backup/";
     private static final String VERSION_KEY = "version";
+    private static final DateTimeFormatter BACKUP_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
     private final CraftEngineConverterPlugin plugin;
-    private final int version = 1;
+    private final int version = 2;
 
     public MessageLoader(CraftEngineConverterPlugin plugin) {
         this.plugin = plugin;
@@ -55,12 +62,91 @@ public class MessageLoader extends ObjectUtils implements Manageable {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
         Object fileVersion = config.get(VERSION_KEY);
 
+        boolean needsSave = removeObsoleteKeys(config, file, lang);
+
         if (!(fileVersion instanceof Integer intVersion) || intVersion < this.version) {
             config.set(VERSION_KEY, this.version);
             if (updateMissingKeys(config, path, lang)) {
-                config.save(file);
-                Logger.info("Language file updated for language: " + lang.name(), LogType.INFO);
+                needsSave = true;
             }
+        }
+
+        if (needsSave) {
+            config.save(file);
+        }
+    }
+
+    private boolean removeObsoleteKeys(YamlConfiguration config, File file, Languages lang) {
+        Set<String> validKeys = buildValidKeySet();
+
+        List<String> obsoleteKeys = new ArrayList<>();
+        for (String key : config.getKeys(true)) {
+            if (VERSION_KEY.equals(key)) continue;
+            if (config.isConfigurationSection(key)) continue;
+            String rootKey = resolveRootKey(key, validKeys);
+            if (rootKey == null) {
+                obsoleteKeys.add(key);
+            }
+        }
+
+        if (obsoleteKeys.isEmpty()) {
+            return false;
+        }
+
+        backupFile(file, lang);
+
+        for (String key : obsoleteKeys) {
+            config.set(key, null);
+        }
+
+        Logger.info(
+                "Removed " + obsoleteKeys.size() + " obsolete key(s) from language file '" + lang.name() + "': " + obsoleteKeys,
+                LogType.WARNING
+        );
+        return true;
+    }
+
+    private Set<String> buildValidKeySet() {
+        Set<String> keys = new HashSet<>();
+        keys.add(VERSION_KEY);
+        for (Message message : Message.values()) {
+            keys.add(enumNameToKey(message.name()));
+        }
+        return keys;
+    }
+
+    private String resolveRootKey(String key, Set<String> validKeys) {
+        if (validKeys.contains(key)) {
+            return key;
+        }
+
+        int lastDot = key.lastIndexOf('.');
+        while (lastDot > 0) {
+            String parent = key.substring(0, lastDot);
+            if (validKeys.contains(parent)) {
+                return parent;
+            }
+            lastDot = parent.lastIndexOf('.');
+        }
+        return null;
+    }
+
+    private void backupFile(File file, Languages lang) {
+        File backupDir = new File(this.plugin.getDataFolder(), BACKUP_FOLDER);
+        if (!backupDir.exists() && !backupDir.mkdirs()) {
+            Logger.info("Failed to create backup directory: " + backupDir.getPath(), LogType.WARNING);
+            return;
+        }
+
+        String timestamp = LocalDateTime.now().format(BACKUP_DATE_FORMAT);
+        String backupName = lang.name().toLowerCase() + "_messages_" + timestamp + ".yml";
+        File backupFile = new File(backupDir, backupName);
+
+        try {
+            Files.copy(file.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Logger.info("Backed up language file '" + lang.name() + "' to: " + backupFile.getPath(), LogType.INFO);
+        } catch (IOException e) {
+            Logger.showException("Failed to back up language file: " + file.getPath(), e);
         }
     }
 
@@ -69,7 +155,7 @@ public class MessageLoader extends ObjectUtils implements Manageable {
         try (InputStream inputStream = this.plugin.getResource(path)) {
             if (inputStream == null) {
                 Logger.info("Language file not found in resources: " + path);
-                return updated;
+                return false;
             }
 
             try (SnakeUtils reader = new SnakeUtils(inputStream)) {
@@ -78,12 +164,16 @@ public class MessageLoader extends ObjectUtils implements Manageable {
 
                     if (!config.contains(key)) {
                         if (reader.contains(key)) {
-                            config.set(key,reader.getObject(key));
+                            config.set(key, reader.getObject(key));
                         } else {
-                            Logger.info("Missing message key for language " + lang.name() + ": " + key+ ". Please report this. Using default message.",LogType.WARNING);
+                            Logger.info(
+                                    "Missing message key for language " + lang.name() + ": " + key
+                                            + ". Please report this. Using default message.",
+                                    LogType.WARNING
+                            );
                             MessageType type = message.getType();
                             if (type != MessageType.TCHAT) config.set(key + ".type", type.name());
-                            if (type == MessageType.TITLE){
+                            if (type == MessageType.TITLE) {
                                 config.set(key + ".title", message.getTitle());
                                 config.set(key + ".subtitle", message.getSubTitle());
                                 config.set(key + ".fade-in", message.getStart());
@@ -91,9 +181,15 @@ public class MessageLoader extends ObjectUtils implements Manageable {
                                 config.set(key + ".fade-out", message.getEnd());
                             } else {
                                 if (message.isMessage()) {
-                                    config.set(key + (type != MessageType.TCHAT ? ".messages" : ""), message.getMessages());
+                                    config.set(
+                                            key + (type != MessageType.TCHAT ? ".messages" : ""),
+                                            message.getMessages()
+                                    );
                                 } else {
-                                    config.set(key + (type != MessageType.TCHAT ? ".message" : ""), message.getMessage());
+                                    config.set(
+                                            key + (type != MessageType.TCHAT ? ".message" : ""),
+                                            message.getMessage()
+                                    );
                                 }
                             }
                         }

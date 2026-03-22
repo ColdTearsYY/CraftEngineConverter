@@ -194,7 +194,7 @@ public enum Message {
     ERROR__CONVERTER__NEXO__SOUND__INVALID_DURATION_FORMAT("§cInvalid duration format §e%duration%§c for sound §e%sound%§c."),
     ERROR__CONVERTER__NEXO__LANGUAGE__FAILED_CONVERT_LANGUAGE("Failed to convert language §e%lang%§c in file §e%file%§c."),
     ERROR__CONVERTER__NEXO__LANGUAGE__FAILED_CONVERT_TRANSLATION("Failed to convert translation key §e%key%§c for language §e%lang%§c."),
-    ERROR__CONVERTER__NEXO__GLYPh__FAILED_CONVERT("Failed to convert glyph §e%glyph%§c in file §e%file%§c."),
+    ERROR__CONVERTER__NEXO__GLYPH__FAILED_CONVERT("Failed to convert glyph §e%glyph%§c in file §e%file%§c."),
 
     ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR("[%converter%] §c'%color%' is not a valid glow drop color for item §e%item%§c. Allowed colors: §e%valid_colors%§c"),
 

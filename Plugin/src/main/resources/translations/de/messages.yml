@@ -240,6 +240,8 @@ error:
         convert-failure: "Nexo Sprachdatei konnte nicht konvertiert werden: §e%file%§c"
       pack:
         zip-extract-failure: "Fehler beim Extrahieren des ZIP-Archives: §e%file%§c"
+      glyph:
+        failed-convert: "Glyphe §e%glyph%§c in Datei §e%file%§c konnte nicht konvertiert werden."
     ia:
       contents-folder-not-found: "ItemsAdder 'contents' Ordner fehlt unter: §e%path%§c"
       output-folder-creation-failed: "Konnte den Output-Ordner nicht erstellen: §e%path%§c"

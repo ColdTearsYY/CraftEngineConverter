@@ -244,6 +244,8 @@ error:
         convert-failure: "Échec de la conversion du fichier de langues Nexo : §e%file%§c"
       pack:
         zip-extract-failure: "Échec de l'extraction des assets depuis le ZIP : §e%file%§c"
+      glyph:
+        failed-convert: "Échec de la conversion du glyphe §e%glyph%§c dans le fichier §e%file%§c."
     ia:
       contents-folder-not-found: "Dossier de contenu ItemsAdder non trouvé : §e%path%§c"
       output-folder-creation-failed: "Échec de la création du dossier de sortie : §e%path%§c"

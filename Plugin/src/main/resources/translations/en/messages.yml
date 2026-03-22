@@ -241,6 +241,8 @@ error:
         convert-failure: "Failed to convert Nexo languages file: §e%file%§c"
       pack:
         zip-extract-failure: "Failed to extract and copy assets from ZIP: §e%file%§c"
+      glyph:
+        failed-convert: "Failed to convert glyph §e%glyph%§c in file §e%file%§c."
     ia:
       contents-folder-not-found: "ItemsAdder contents folder not found: §e%path%§c"
       output-folder-creation-failed: "Failed to create output folder: §e%path%§c"

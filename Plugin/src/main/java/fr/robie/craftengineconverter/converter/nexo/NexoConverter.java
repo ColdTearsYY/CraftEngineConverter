@@ -978,7 +978,7 @@ public class NexoConverter extends Converter {
                 CraftEngineImageUtils.register(key, new ImageConversion(finalKey, rows, cols));
                 convertedCount++;
             } catch (Exception e) {
-                this.logDebug(Message.ERROR__CONVERTER__NEXO__GLYPh__FAILED_CONVERT, LogType.ERROR, "glyph", key, "file", fileName);
+                this.logDebug(Message.ERROR__CONVERTER__NEXO__GLYPH__FAILED_CONVERT, LogType.ERROR, "glyph", key, "file", fileName);
             }
 
             progress.increment();
