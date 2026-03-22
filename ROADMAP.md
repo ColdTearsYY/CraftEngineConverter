@@ -93,6 +93,8 @@
 
 ## ✅ Recently Completed
 
+- **MessageLoader edition**: Now automatically delete obsolete keys from the file (they create a backup first) + improved logging of missing keys inside the file.
+- **Reworked Nexo parent model conversion**: Added support for all parent model types.
 - **Custom Tag API**: Implementation of a public API to allow other plugins to register their own tag processors.
 - **Auto-convert on startup**: Configurable selected types and options for automated migration on plugin enable.
 - **Chunk load conversion**: Automated conversion of Nexo and ItemsAdder blocks/furniture when chunks are loaded.
