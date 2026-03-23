@@ -1,26 +1,78 @@
 package fr.robie.craftengineconverter.converter.nexo;
 
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.enums.ArmorConverter;
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.builder.TimerBuilder;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
+import fr.robie.craftengineconverter.api.configuration.item.AbstractEffectsConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.FallingBlockBehavior;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.StrippableBlockBehavior;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.defaults.PillarBlockState;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.*;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ItemDisplayElement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.HappyGhastHitbox;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.Hitbox;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.InteractionHitbox;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.ShulkerHitbox;
+import fr.robie.craftengineconverter.api.configuration.item.components.ConsumableConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.components.HideTooltipDisplayConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.components.WeaponConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.data.*;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootPool;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootTable;
+import fr.robie.craftengineconverter.api.configuration.conditions.EnchantmentCondition;
+import fr.robie.craftengineconverter.api.configuration.conditions.InvertedCondition;
+import fr.robie.craftengineconverter.api.configuration.conditions.RandomCondition;
+import fr.robie.craftengineconverter.api.configuration.conditions.SurvivesExplosionCondition;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.FurnitureItemEntry;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.ItemEntry;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.formulas.OreDropsFormula;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.ApplyBonusFunction;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.ExplosionDecayFunction;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.functions.LimitCountFunction;
+import fr.robie.craftengineconverter.api.configuration.item.models.ModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.condition.ConditionModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatch.UseDurationRangeDispatchConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.settings.ProjectileSettingConfiguration;
+import fr.robie.craftengineconverter.api.enums.*;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
+import fr.robie.craftengineconverter.api.utils.FloatsUtils;
+import fr.robie.craftengineconverter.common.BlockStatesMapper;
+import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
+import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoBestTool;
+import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoDirectionBlock;
+import fr.robie.craftengineconverter.common.utils.enums.nexo.NexoMinimalType;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
-import fr.robie.craftengineconverter.utils.FloatsUtils;
 import fr.robie.craftengineconverter.utils.Position;
 import fr.robie.craftengineconverter.utils.Tuple;
-import fr.robie.craftengineconverter.utils.enums.*;
-import fr.robie.craftengineconverter.utils.enums.nexo.NexoBestTool;
-import fr.robie.craftengineconverter.utils.enums.nexo.NexoMinimalType;
 import fr.robie.craftengineconverter.utils.loots.CraftEngineItemLoot;
 import fr.robie.craftengineconverter.utils.loots.ItemLoot;
 import fr.robie.craftengineconverter.utils.loots.MinecraftItemLoot;
-import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
+import net.momirealms.craftengine.core.entity.EquipmentSlot;
+import net.momirealms.craftengine.core.entity.display.Billboard;
+import net.momirealms.craftengine.core.item.setting.AnvilRepairItem;
+import net.momirealms.craftengine.core.util.Direction;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.MultipleFacing;
+import org.bukkit.block.data.type.Tripwire;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.inventory.ItemFlag;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,34 +80,51 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class NexoItemConverter extends ItemConverter {
     private final ConfigurationSection nexoItemSection;
 
-    public NexoItemConverter(Converter converter, ConfigurationSection nexoItemSection, String itemId, ConfigurationSection craftEngineItemSection, YamlConfiguration convertedConfig) {
-        super(itemId, craftEngineItemSection,converter,convertedConfig);
+    public NexoItemConverter(Converter converter, ConfigurationSection nexoItemSection, String itemId, YamlConfiguration convertedConfig) {
+        super(itemId, converter, convertedConfig);
         this.nexoItemSection = nexoItemSection;
     }
 
     @Override
-    public void convertMaterial() {
-        Material material;
-        try {
-            material = Material.valueOf(this.nexoItemSection.getString("material", Configuration.defaultMaterial.name()).toUpperCase());
-        } catch (IllegalArgumentException e) {
-            material = Configuration.defaultMaterial;
+    public List<String> getDependencies() {
+        List<String> dependencies = new ArrayList<>();
+
+        ConfigurationSection customBlockSection = this.nexoItemSection.getConfigurationSection("Mechanics.custom_block");
+        if (isNotNull(customBlockSection)) {
+            ConfigurationSection directionalSection = customBlockSection.getConfigurationSection("directional");
+            if (isNotNull(directionalSection)) {
+                for (String key : List.of("y_block", "x_block", "z_block", "north_block", "east_block", "south_block", "west_block", "up_block", "down_block")) {
+                    String depRawId = directionalSection.getString(key);
+                    if (isValidString(depRawId)) {
+                        dependencies.add(depRawId);
+                    }
+                }
+            }
+            ConfigurationSection logStripSection = customBlockSection.getConfigurationSection("log_strip");
+            if (isNotNull(logStripSection)) {
+                String strippedLog = logStripSection.getString("stripped_log");
+                if (isValidString(strippedLog)) {
+                    dependencies.add(strippedLog);
+                }
+            }
         }
-        this.craftEngineItemUtils.setMaterial(material);
+
+        return dependencies;
     }
 
-    private void copyComponentSection(String nexoKey, String ceKey) {
-        ConfigurationSection section = this.nexoItemSection.getConfigurationSection("Components." + nexoKey);
-        if (section != null) {
-            this.craftEngineItemUtils.getComponentsSection().set(ceKey, section.getValues(true));
+    @Override
+    public void convertMaterial() {
+        try {
+            this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(this.nexoItemSection.getString("material", "").toUpperCase()));
+        } catch (Exception ignored) {
         }
     }
 
     @Override
     public void convertItemName() {
         String itemName = this.nexoItemSection.getString("itemname");
-        if (isValidString(itemName)){
-            this.craftEngineItemUtils.setItemName(itemName);
+        if (isValidString(itemName)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName, Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC)));
         }
     }
 
@@ -63,85 +132,160 @@ public class NexoItemConverter extends ItemConverter {
     public void convertLore() {
         List<String> lore = this.nexoItemSection.getStringList("lore");
         if (!lore.isEmpty()) {
-            this.craftEngineItemUtils.setLore(lore);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new LoreConfiguration(lore, Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC)));
         }
     }
 
     @Override
-    public void convertExcludeFromInventory(){
+    public void convertExcludeFromInventory() {
         this.excludeFromInventory = this.nexoItemSection.getBoolean("excludeFromInventory", false);
     }
 
     @Override
     public void convertDyedColor() {
-        setIfNotNull(this.craftEngineItemUtils.getDataSection(), "dyed-color",
-                this.nexoItemSection.get("color"));
+        Object color = this.nexoItemSection.get("color");
+        if (isNotNull(color)) {
+            try {
+                this.craftEngineItemsConfiguration.addItemConfiguration(DyedColorConfiguration.parse(color));
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     @Override
     public void convertUnbreakable() {
-        setIfTrue(this.craftEngineItemUtils.getDataSection(), "unbreakable",
-                this.nexoItemSection.getBoolean("unbreakable", false));
+        boolean unbreakable = this.nexoItemSection.getBoolean("unbreakable", false);
+        if (unbreakable) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new UnbreakableConfiguration(true));
+        }
     }
 
     @Override
     public void convertItemFlags() {
-        List<?> itemFlags = this.nexoItemSection.getList("ItemFlags");
-        if (itemFlags != null && !itemFlags.isEmpty()) {
-            this.craftEngineItemUtils.getDataSection().set("hide-tooltip", itemFlags);
+        List<String> itemFlags = this.nexoItemSection.getStringList("ItemFlags");
+        if (!itemFlags.isEmpty()) {
+            List<ComponentFlag> convertedFlags = new ArrayList<>();
+            for (String flag : itemFlags) {
+                try {
+                    ItemFlag bukkitFlag = ItemFlag.valueOf(flag.toUpperCase());
+                    ComponentFlag componentFlag = BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag);
+                    if (componentFlag != null) {
+                        convertedFlags.add(componentFlag);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.HideTooltipConfiguration(convertedFlags));
         }
     }
 
     @Override
     public void convertAttributeModifiers() {
         List<Map<?, ?>> mapList = this.nexoItemSection.getMapList("AttributeModifiers");
-        if (mapList.isEmpty()) return;
-
-        List<Map<String, Object>> ceAttributeModifiers = new ArrayList<>();
-        for (Map<?, ?> attributeModifier : mapList) {
-            Object attribute = attributeModifier.get("attribute");
-            if (attribute == null) continue;
-
-            Object amount = attributeModifier.get("amount");
-            if (amount == null) continue;
-
-            Object operation = attributeModifier.get("operation");
-            if (!(operation instanceof Integer opInt)) continue;
-
-            Object slot = attributeModifier.get("slot");
-            if (slot == null) continue;
-
-            Map<String, Object> attributeModifierMap = new HashMap<>();
-            attributeModifierMap.put("type", attribute.toString().toLowerCase());
-            attributeModifierMap.put("amount", amount);
-            attributeModifierMap.put("operation", switch (opInt) {
-                case 1 -> "add_multiplied_base";
-                case 2 -> "add_multiplied_total";
-                default -> "add_value";
-            });
-            attributeModifierMap.put("slot", slot.toString());
-            ceAttributeModifiers.add(attributeModifierMap);
+        if (mapList.isEmpty()) {
+            return;
         }
 
-        if (!ceAttributeModifiers.isEmpty()) {
-            this.craftEngineItemUtils.getDataSection().set("attribute-modifiers", ceAttributeModifiers);
+        List<AttributeModifier> attributeModifiers = new ArrayList<>();
+        for (Map<?, ?> attributeModifier : mapList) {
+            Object attribute = attributeModifier.get("attribute");
+            if (!(attribute instanceof String stringAttribute)) {
+                continue;
+            }
+
+            Object rawAmount = attributeModifier.get("amount");
+            if (!(rawAmount instanceof Double amount)) {
+                continue;
+            }
+
+            Object rawOperation = attributeModifier.get("operation");
+            net.momirealms.craftengine.core.attribute.AttributeModifier.Operation operation;
+            if (rawOperation instanceof String strOperation) {
+                try {
+                    operation = net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.valueOf(strOperation.toUpperCase());
+                } catch (Exception e) {
+                    if (strOperation.equalsIgnoreCase("ADD_NUMBER")) {
+                        operation = net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE;
+                    } else if (strOperation.equalsIgnoreCase("ADD_SCALAR")) {
+                        operation = net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                    } else if (strOperation.equalsIgnoreCase("MULTIPLY_SCALAR_1")) {
+                        operation = net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
+                    } else {
+                        continue;
+                    }
+                }
+            } else if (rawOperation instanceof Integer intOperation) {
+                try {
+                    operation = switch (intOperation) {
+                        case 0 -> net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE;
+                        case 1 ->
+                                net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                        case 2 ->
+                                net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
+                        default -> throw new IllegalArgumentException("Invalid operation id: " + intOperation);
+                    };
+                } catch (Exception e) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            net.momirealms.craftengine.core.attribute.AttributeModifier.Slot attributeSlot = null;
+            Object rawSlot = attributeModifier.get("slot");
+            if (!(rawSlot instanceof String strSlot)) {
+                continue;
+            }
+            try {
+                attributeSlot = net.momirealms.craftengine.core.attribute.AttributeModifier.Slot.valueOf(strSlot.toUpperCase());
+            } catch (Exception ignored) {
+            }
+            if (attributeSlot == null) {
+                continue;
+            }
+            AttributeModifier.Display display = null;
+            Object rawDisplay = attributeModifier.get("display");
+            if (rawDisplay instanceof Map<?, ?> displayMap) {
+                Object typeObj = displayMap.get("type");
+                Object textObj = displayMap.get("text");
+                if (typeObj instanceof String typeStr && textObj instanceof String textStr) {
+                    net.momirealms.craftengine.core.attribute.AttributeModifier.Display.Type displayType;
+                    try {
+                        displayType = net.momirealms.craftengine.core.attribute.AttributeModifier.Display.Type.valueOf(typeStr.toUpperCase());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    display = new AttributeModifier.Display(displayType, textStr);
+                }
+            }
+
+            attributeModifiers.add(new AttributeModifier(stringAttribute.toLowerCase(), attributeSlot, null, amount, operation, display));
+        }
+
+        if (!attributeModifiers.isEmpty()) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(attributeModifiers));
         }
     }
 
     @Override
     public void convertEnchantments() {
         ConfigurationSection configurationSection = this.nexoItemSection.getConfigurationSection("Enchantments");
-        if (configurationSection == null) return;
-
+        if (configurationSection == null) {
+            return;
+        }
+        fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration();
         for (String enchantmentKey : configurationSection.getKeys(false)) {
             int level = configurationSection.getInt(enchantmentKey, 1);
             String enchantmentName;
             try {
-                enchantmentName = Enchantment.getByName(enchantmentKey.toUpperCase()).key().toString();
+                enchantmentName = Enchantment.getByName(enchantmentKey).key().toString();
             } catch (Exception e) {
                 enchantmentName = enchantmentKey;
             }
-            this.craftEngineItemUtils.getDataSection().set("enchantment\n" + enchantmentName.toLowerCase(), level);
+            enchantmentConfiguration.addEnchantment(enchantmentName.toLowerCase(), level);
+        }
+        if (enchantmentConfiguration.hasEnchantments()) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
         }
     }
 
@@ -149,96 +293,102 @@ public class NexoItemConverter extends ItemConverter {
     public void convertCustomModelData() {
         int customModelData = this.nexoItemSection.getInt("Pack.custom_model_data", 0);
         if (customModelData != 0) {
-            this.craftEngineItemUtils.getGeneralSection().set("custom-model-data", customModelData);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.CustomModelDataConfiguration(customModelData));
         }
     }
 
     @Override
     public void convertItemModel() {
-        setIfNotEmpty(this.craftEngineItemUtils.getDataSection(), "item-model",
-                this.nexoItemSection.getString("Components.item_model"));
+        String itemModel = this.nexoItemSection.getString("Components.item_model");
+        if (isValidString(itemModel)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.ItemModelConfiguration(itemModel));
+        }
     }
 
     @Override
     public void convertMaxStackSize() {
         int maxStackSize = this.nexoItemSection.getInt("Components.max_stack_size", 0);
-        if (maxStackSize > 0 && maxStackSize < 99) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:max_stack_size", maxStackSize);
+        if (maxStackSize > 0 && maxStackSize <= 99) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.MaxStackSizeConfiguration(maxStackSize));
         }
     }
 
     @Override
     public void convertEnchantmentGlintOverride() {
         if (this.nexoItemSection.getBoolean("Components.enchantment_glint_override", false)) {
-            this.craftEngineItemUtils.enableEnchantmentGlint();
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.EnchantmentGlintOverrideConfiguration(true));
         }
     }
 
     @Override
     public void convertFireResistance() {
-        if (!this.nexoItemSection.getBoolean("Components.fire_resistant", false)) return;
-
-        List<String> invulnerable = this.craftEngineItemUtils.getSettingsSection().getStringList("invulnerable");
-        for (String invulnerableName : new String[]{"fire_tick", "lava"}) {
-            if (!invulnerable.contains(invulnerableName)) {
-                invulnerable.add(invulnerableName);
-            }
+        if (!this.nexoItemSection.getBoolean("Components.fire_resistant", false)) {
+            return;
         }
-        this.craftEngineItemUtils.getSettingsSection().set("invulnerable", invulnerable);
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration(Set.of(fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration.InvulnerableType.FIRE, fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration.InvulnerableType.FIRE_TICK, fr.robie.craftengineconverter.api.configuration.item.settings.InvulnerableSettingConfiguration.InvulnerableType.LAVA), true));
     }
 
     @Override
     public void convertMaxDamage() {
         int maxDamage = this.nexoItemSection.getInt("Components.max_damage", 0);
         if (maxDamage > 0) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:max_damage", maxDamage);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.MaxDamageConfiguration(maxDamage));
         }
     }
 
     @Override
     public void convertHideTooltip() {
-        if (!this.nexoItemSection.getBoolean("Components.hide_tooltip", false)) return;
+        if (!this.nexoItemSection.getBoolean("Components.hide_tooltip", false)) {
+            return;
+        }
 
-        ConfigurationSection tooltipDisplaySection = getOrCreateSection(
-                this.craftEngineItemUtils.getComponentsSection(), "minecraft:tooltip_display");
-        tooltipDisplaySection.set("hide_tooltip", true);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipDisplayConfiguration(true));
     }
 
     @Override
     public void convertFood() {
-        copyComponentSection("food", "minecraft:food");
+        ConfigurationSection foodSection = this.nexoItemSection.getConfigurationSection("Components.food");
+        if (foodSection != null) {
+            int nutrition = foodSection.getInt("nutrition", -1);
+            float saturation = (float) foodSection.getDouble("saturation", -1);
+            boolean canAlwaysEat = foodSection.getBoolean("can_always_eat", false);
+            if (nutrition >= 0 && saturation >= 0) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.FoodConfiguration(nutrition, saturation, canAlwaysEat));
+            }
+        }
     }
 
     @Override
     public void convertTool() {
         ConfigurationSection nexoToolSection = this.nexoItemSection.getConfigurationSection("Components.tool");
         if (isNotNull(nexoToolSection)) {
-            double defaultMiningSpeed = nexoToolSection.getDouble("default_mining_speed", 1);
-            ConfigurationSection ceToolSection = this.craftEngineItemUtils.getComponentsSection().createSection("minecraft:tool");
-            if (defaultMiningSpeed != 1.0){
-                ceToolSection.set("default_mining_speed",defaultMiningSpeed);
-            }
+            float defaultMiningSpeed = (float) nexoToolSection.getDouble("default_mining_speed", 1.0);
             int damagePerBlock = nexoToolSection.getInt("damage_per_block", 1);
-            if (damagePerBlock != 1){
-                ceToolSection.set("damage_per_block",damagePerBlock);
-            }
-            // can_destroy_blocks_in_creative not supported in Nexo
+            // can_destroy_blocks_in_creative not supported in Nexo, defaults to false
+            boolean canDestroyBlocksInCreative = false;
+
+            List<fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration.Rule> ceRulesList = new ArrayList<>();
             var rulesList = nexoToolSection.getMapList("rules");
+
             if (!rulesList.isEmpty()) {
+                //noinspection unchecked
                 List<Map<String, Object>> nexoRulesList = (List<Map<String, Object>>) (Object) rulesList;
-                List<Map<String, Object>> ceRulesList = new ArrayList<>();
-                for (var nexoRule : nexoRulesList){
-                    Double speed = null;
+
+                for (var nexoRule : nexoRulesList) {
+                    float speed = 0f;
                     Object speedObj = nexoRule.get("speed");
-                    if (isNotNull(speedObj) && speedObj instanceof Double speedDouble) {
-                        speed = speedDouble;
+                    if (isNotNull(speedObj) && speedObj instanceof Number speedNum) {
+                        speed = speedNum.floatValue();
                     }
-                    Boolean correctForDrops = null;
+
+                    boolean correctForDrops = false;
                     Object correctForDropsObj = nexoRule.get("correct_for_drops");
                     if (isNotNull(correctForDropsObj) && correctForDropsObj instanceof Boolean correctForDropsBool) {
                         correctForDrops = correctForDropsBool;
                     }
 
+                    // --- Blocks (material / materials) ---
                     List<String> materialBlocks = new ArrayList<>();
                     Object material = nexoRule.get("material");
                     if (isNotNull(material) && material instanceof String materialStr && !materialStr.isEmpty()) {
@@ -249,7 +399,8 @@ public class NexoItemConverter extends ItemConverter {
                         materialBlocks.add(normalized);
                     }
                     Object materials = nexoRule.get("materials");
-                    if (isNotNull(materials) && materials instanceof @NotNull List<?> materialsList && !materialsList.isEmpty()) {
+                    if (isNotNull(materials) && materials instanceof List<?> materialsList && !materialsList.isEmpty()) {
+                        //noinspection unchecked
                         for (String mat : (List<String>) materialsList) {
                             String normalized = mat.toLowerCase(Locale.ROOT);
                             if (!normalized.contains(":")) {
@@ -260,20 +411,17 @@ public class NexoItemConverter extends ItemConverter {
                     }
 
                     if (!materialBlocks.isEmpty()) {
-                        Map<String, Object> ceRule = new HashMap<>();
-                        if (isNotNull(speed)) ceRule.put("speed", speed);
-                        if (isNotNull(correctForDrops)) ceRule.put("correct_for_drops", correctForDrops);
-                        ceRule.put("blocks", materialBlocks);
-                        ceRulesList.add(ceRule);
+                        ceRulesList.add(new fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration.Rule(speed, correctForDrops, materialBlocks));
                     }
 
+                    // --- Tags (tag / tags) ---
                     List<String> tagsList = new ArrayList<>();
                     Object tag = nexoRule.get("tag");
                     if (isNotNull(tag) && tag instanceof String tagStr && !tagStr.isEmpty()) {
                         tagsList.add(tagStr);
                     }
                     Object tags = nexoRule.get("tags");
-                    if (isNotNull(tags) && tags instanceof @NotNull List<?> tagsListObj && !tagsListObj.isEmpty()) {
+                    if (isNotNull(tags) && tags instanceof List<?> tagsListObj && !tagsListObj.isEmpty()) {
                         tagsList.addAll((List<String>) tagsListObj);
                     }
 
@@ -285,168 +433,169 @@ public class NexoItemConverter extends ItemConverter {
                         if (!normalized.contains(":")) {
                             normalized = normalized.replace("#", "#minecraft:");
                         }
-
-                        Map<String, Object> ceRule = new HashMap<>();
-                        if (isNotNull(speed)) ceRule.put("speed", speed);
-                        if (isNotNull(correctForDrops)) ceRule.put("correct_for_drops", correctForDrops);
-                        ceRule.put("blocks", normalized);
-                        ceRulesList.add(ceRule);
+                        ceRulesList.add(new fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration.Rule(speed, correctForDrops, normalized));
                     }
                 }
-                if (!ceRulesList.isEmpty()) {
-                    ceToolSection.set("rules", ceRulesList);
-                } else {
-                    Logger.info("No valid blocks found for tool rules in item '" + this.itemId + "'. Skipping tool rules conversion.", LogType.WARNING);
+
+                if (ceRulesList.isEmpty()) {
+                    Logger.info(Message.WARNING__CONVERTER__NEXO__TOOL__NO_BLOCKS_FOUND, "item", this.itemId);
                 }
             }
+
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.ToolConfiguration(defaultMiningSpeed, damagePerBlock, canDestroyBlocksInCreative, ceRulesList));
         }
     }
 
     @Override
     public void convertCustomData() {
-        copyComponentSection("custom_data", "minecraft:custom_data");
+        ConfigurationSection customDataSection = this.nexoItemSection.getConfigurationSection("Components.custom_data");
+        if (customDataSection != null) {
+            List<fr.robie.craftengineconverter.api.configuration.item.components.CustomDataConfiguration.CustomDataEntry> customDataEntries = new ArrayList<>();
+            for (String key : customDataSection.getKeys(false)) {
+                Object value = customDataSection.get(key);
+                if (isNotNull(value)) {
+                    customDataEntries.add(new fr.robie.craftengineconverter.api.configuration.item.components.CustomDataConfiguration.CustomDataEntry(key, value));
+                }
+            }
+            if (!customDataEntries.isEmpty()) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.CustomDataConfiguration(customDataEntries));
+            }
+        }
     }
 
     @Override
     public void convertJukeboxPlayable() {
         String song = this.nexoItemSection.getString("Components.jukebox_playable.song_key");
-        this.craftEngineItemUtils.setJukeboxPlayable(song);
+        if (isValidString(song)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.JukeboxPlayableConfiguration(song));
+        }
     }
 
     @Override
     public void convertConsumable() {
         ConfigurationSection consumableSection = this.nexoItemSection.getConfigurationSection("Components.consumable");
-        if (consumableSection == null) return;
+        if (consumableSection == null) {
+            return;
+        }
 
-        ConfigurationSection ceConsumableSection = this.craftEngineItemUtils.getComponentsSection()
-                .createSection("minecraft:consumable");
-        setConsumableBasicProperties(consumableSection, ceConsumableSection);
+        String sound = consumableSection.getString("sound", "entity.generic.eat");
+        boolean hasConsumeParticles = consumableSection.getBoolean("consume_particles", true);
+        double consumeSeconds = consumableSection.getDouble("consume_seconds", 1.6);
 
-        ConfigurationSection effectsSection = this.nexoItemSection.getConfigurationSection("effects");
-        if (effectsSection == null) return;
+        ConsumableConfiguration.Animation animation;
+        try {
+            animation = ConsumableConfiguration.Animation.valueOf(
+                    consumableSection.getString("animation", "eat").toUpperCase()
+            );
+        } catch (IllegalArgumentException e) {
+            animation = ConsumableConfiguration.Animation.EAT;
+        }
 
-        List<Map<String, Object>> consumeEffects = new ArrayList<>();
-        addApplyEffects(effectsSection, consumeEffects);
-        addRemoveEffects(effectsSection, consumeEffects);
-        addClearAllEffects(effectsSection, consumeEffects);
-        addTeleportEffect(consumableSection, consumeEffects);
-        addPlaySoundEffect(consumableSection, consumeEffects);
+        List<AbstractEffectsConfiguration.ConsumeEffect> consumeEffects = new ArrayList<>();
+
+        ConfigurationSection effectsSection = consumableSection.getConfigurationSection("effects");
+        if (effectsSection != null) {
+            ConfigurationSection applyEffectsSection = effectsSection.getConfigurationSection("APPLY_EFFECTS");
+            if (applyEffectsSection != null) {
+                List<ConsumableConfiguration.ApplyEffectsConsumeEffect.ApplyEffect> effects = new ArrayList<>();
+                for (String effectKey : applyEffectsSection.getKeys(false)) {
+                    effects.add(new ConsumableConfiguration.ApplyEffectsConsumeEffect.ApplyEffect(
+                            effectKey,
+                            applyEffectsSection.getInt(effectKey + ".amplifier", 0),
+                            applyEffectsSection.getInt(effectKey + ".duration", 1),
+                            applyEffectsSection.getBoolean(effectKey + ".ambient", false),
+                            applyEffectsSection.getBoolean(effectKey + ".show_particles", false),
+                            applyEffectsSection.getBoolean(effectKey + ".show_icon", false),
+                            applyEffectsSection.getDouble(effectKey + ".probability", 1.0)
+                    ));
+                }
+                consumeEffects.add(new ConsumableConfiguration.ApplyEffectsConsumeEffect(effects));
+            }
+
+            List<String> removeEffects = effectsSection.getStringList("REMOVE_EFFECTS");
+            if (!removeEffects.isEmpty()) {
+                consumeEffects.add(new ConsumableConfiguration.RemoveEffectsConsumeEffect(removeEffects));
+            }
+
+            if (effectsSection.get("CLEAR_ALL_EFFECTS") != null) {
+                consumeEffects.add(new ConsumableConfiguration.ClearAllEffectsConsumeEffect());
+            }
+
+            double diameter = effectsSection.getDouble("TELEPORT_RANDOMLY.diameter", -1.0);
+            if (diameter > 0) {
+                consumeEffects.add(new ConsumableConfiguration.TeleportRandomlyConsumeEffect(diameter));
+            }
+
+            ConfigurationSection playSoundSection = effectsSection.getConfigurationSection("PLAY_SOUND");
+            if (playSoundSection != null) {
+                consumeEffects.add(new ConsumableConfiguration.PlaySoundConsumeEffect(
+                        playSoundSection.getString("sound", "entity.player.levelup"),
+                        playSoundSection.getDouble("range", 16.0)
+                ));
+            }
+        }
 
         if (!consumeEffects.isEmpty()) {
-            ceConsumableSection.set("on_consume_effects", consumeEffects);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ConsumableConfiguration(sound, hasConsumeParticles, consumeSeconds, animation, consumeEffects));
         }
-    }
-
-    private void setConsumableBasicProperties(ConfigurationSection source, ConfigurationSection target) {
-        target.set("sound", source.getString("sound", "entity.generic.eat"));
-        target.set("has_consume_particles", source.getBoolean("consume_particles", true));
-        target.set("consume_seconds", source.getDouble("consume_seconds", 1.6));
-        target.set("animation", source.getString("animation", "eat").toLowerCase());
-    }
-
-    private void addApplyEffects(ConfigurationSection effectsSection, List<Map<String, Object>> consumeEffects) {
-        ConfigurationSection applyEffectsSection = effectsSection.getConfigurationSection("APPLY_EFFECTS");
-        if (applyEffectsSection == null) return;
-
-        List<Map<String, Object>> effects = new ArrayList<>();
-        for (String effectKey : applyEffectsSection.getKeys(false)) {
-            effects.add(Map.of(
-                    "id", effectKey,
-                    "amplifier", applyEffectsSection.getInt(effectKey + ".amplifier", 0),
-                    "duration", applyEffectsSection.getInt(effectKey + ".duration", 1),
-                    "ambient", applyEffectsSection.getBoolean(effectKey + ".ambient", false),
-                    "show_particles", applyEffectsSection.getBoolean(effectKey + ".show_particles", false),
-                    "show_icon", applyEffectsSection.getBoolean(effectKey + ".show_icon", false),
-                    "probability", applyEffectsSection.getDouble(effectKey + ".probability", 1.0)
-            ));
-        }
-
-        consumeEffects.add(Map.of("type", "apply_effects", "effects", effects));
-    }
-
-    private void addRemoveEffects(ConfigurationSection effectsSection, List<Map<String, Object>> consumeEffects) {
-        List<String> removeEffects = effectsSection.getStringList("REMOVE_EFFECTS");
-        if (!removeEffects.isEmpty()) {
-            consumeEffects.add(Map.of("type", "remove_effects", "effects", removeEffects));
-        }
-    }
-
-    private void addClearAllEffects(ConfigurationSection effectsSection, List<Map<String, Object>> consumeEffects) {
-        if (effectsSection.get("CLEAR_ALL_EFFECTS") != null) {
-            consumeEffects.add(Map.of("type", "clear_all_effects"));
-        }
-    }
-
-    private void addTeleportEffect(ConfigurationSection consumableSection, List<Map<String, Object>> consumeEffects) {
-        double diameter = consumableSection.getDouble("TELEPORT_RANDOMLY.diameter", -1.0);
-        if (diameter > 0) {
-            consumeEffects.add(Map.of("type", "teleport_randomly", "diameter", diameter));
-        }
-    }
-
-    private void addPlaySoundEffect(ConfigurationSection consumableSection, List<Map<String, Object>> consumeEffects) {
-        ConfigurationSection soundSection = consumableSection.getConfigurationSection("PLAY_SOUND");
-        if (soundSection == null) return;
-
-        consumeEffects.add(Map.of(
-                "type", "play_sound",
-                "sound", Map.of(
-                        "sound_id", soundSection.getString("sound", "entity.player.levelup"),
-                        "range", soundSection.getDouble("range", 16.0)
-                )
-        ));
     }
 
     @Override
-    public void convertEquipable() {
+    public void convertEquippable() {
         ConfigurationSection equipableSection = this.nexoItemSection.getConfigurationSection("Components.equippable");
-        if (equipableSection == null) return;
+        if (equipableSection == null) {
+            return;
+        }
 
         String assetId = equipableSection.getString("asset_id");
-        ConfigurationSection ceEquipableSection = isValidString(assetId) ? getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable") : getOrCreateSection(this.craftEngineItemUtils.getDataSection(),"equippable");
         String slot = equipableSection.getString("slot");
-        if (isValidString(slot)) {
-            ceEquipableSection.set("slot", slot.toLowerCase());
-        }
-        if (isValidString(assetId)) {
-            if (this.craftEngineItemUtils.getMaterial() == Material.ELYTRA){
-                if (assetId.contains(":")) {
-                    assetId = assetId.split(":",2)[1];
-                }
-                for (String keyToCheck : new String[]{"_elytra"}){
-                    if (assetId.endsWith(keyToCheck)){
-                        assetId = assetId.substring(0,assetId.length()-keyToCheck.length());
-                    }
-                }
-            }
-            ceEquipableSection.set("asset-id", assetId);
-            this.setAssetId(assetId);
-        }
-        setIfNotEmpty(ceEquipableSection, "camera-overlay", equipableSection.getString("camera_overlay"));
+        String equipSound = equipableSection.getString("equip_sound", "item.armor.equip_generic");
+        String cameraOverlay = equipableSection.getString("camera_overlay");
         boolean dispensable = equipableSection.getBoolean("dispensable", true);
-        if (!dispensable) {
-            ceEquipableSection.set("dispensable", false);
+        boolean swappable = equipableSection.getBoolean("swappable", true);
+        boolean damageOnHurt = equipableSection.getBoolean("damage_on_hurt", true);
+        boolean equipOnInteract = equipableSection.getBoolean("equip_on_interact", false);
+        boolean canBeSheared = equipableSection.getBoolean("can_be_sheared", false);
+        String shearingSound = equipableSection.getString("shearing_sound", "item.shears.snip");
+
+        Object allowedEntities = null;
+        List<String> allowedEntityTypes = equipableSection.getStringList("allowed_entity_types");
+        if (!allowedEntityTypes.isEmpty()) {
+            allowedEntities = allowedEntityTypes.size() == 1 ? allowedEntityTypes.getFirst() : allowedEntityTypes;
         }
 
-        boolean swappable = equipableSection.getBoolean("swappable", true);
-        if (!swappable) {
-            ceEquipableSection.set("swappable", false);
+        if (isValidString(assetId) && this.craftEngineItemsConfiguration.getMaterial() == Material.ELYTRA) {
+            for (String keyToCheck : new String[]{"_elytra"}) {
+                if (assetId.endsWith(keyToCheck)) {
+                    assetId = assetId.substring(0, assetId.length() - keyToCheck.length());
+                }
+            }
+            if (!isValidString(slot)) {
+                slot = "chest";
+            }
         }
-        boolean damageOnHurt = equipableSection.getBoolean("damage_on_hurt", false);
-        if (damageOnHurt) {
-            ceEquipableSection.set("damage-on-hurt", true);
+
+        EquipmentSlot equipmentSlot = null;
+        if (isValidString(slot)) {
+            try {
+                equipmentSlot = EquipmentSlot.valueOf(slot.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                Logger.debug(Message.WARNING__CONVERTER__NEXO__EQUIPPABLE__UNKNOWN_SLOT, LogType.WARNING, "slot", slot, "item", this.itemId);
+            }
         }
+
+        if (isValidString(assetId)) {
+            this.setAssetId(assetId);
+        }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(equipmentSlot, equipSound, assetId, allowedEntities, dispensable, swappable, damageOnHurt, equipOnInteract, cameraOverlay, canBeSheared, shearingSound, null));
     }
 
     @Override
     public void convertDamageResistance() {
         String damageResistance = this.nexoItemSection.getString("Components.damage_resistant");
         if (isValidString(damageResistance)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:damage_resistant", damageResistance);
-        }
-        List<String> damageResistances = this.nexoItemSection.getStringList("Components.damage_resistant");
-        if (!damageResistances.isEmpty()) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:damage_resistant", damageResistances);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DamageResistantConfiguration(damageResistance));
         }
     }
 
@@ -454,14 +603,14 @@ public class NexoItemConverter extends ItemConverter {
     public void convertEnchantableComponent() {
         int maxEnchantableLevel = this.nexoItemSection.getInt("Components.enchantable", -1);
         if (maxEnchantableLevel >= 0) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:enchantable", maxEnchantableLevel);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.EnchantableConfiguration(maxEnchantableLevel));
         }
     }
 
     @Override
     public void convertGliderComponent() {
         if (this.nexoItemSection.getBoolean("Components.glider", false)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:glider", true);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.GliderConfiguration(true));
         }
     }
 
@@ -469,121 +618,141 @@ public class NexoItemConverter extends ItemConverter {
     public void convertToolTipStyle() {
         String toolTipStyle = this.nexoItemSection.getString("Components.tooltip_style");
         if (isValidString(toolTipStyle)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:tooltip_style", toolTipStyle);
+            try {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.TooltipStyleConfiguration(NamespacedKey.fromString(toolTipStyle)));
+            } catch (IllegalArgumentException e) {
+                Logger.debug(Message.WARNING__CONVERTER__NEXO__TOOLTIP_STYLE__UNKNOWN_STYLE, LogType.WARNING, "style", toolTipStyle, "item", this.itemId);
+            }
         }
     }
 
     @Override
     public void convertUseCooldown() {
         ConfigurationSection useCooldownSection = this.nexoItemSection.getConfigurationSection("Components.use_cooldown");
-        if (useCooldownSection == null) return;
+        if (useCooldownSection == null) {
+            return;
+        }
 
-        ConfigurationSection ceUseCooldownSection = this.craftEngineItemUtils.getComponentsSection()
-                .createSection("minecraft:use_cooldown");
-        ceUseCooldownSection.set("seconds", useCooldownSection.getDouble("seconds", 1.0));
-        ceUseCooldownSection.set("cooldown_group", useCooldownSection.getString("group", "default"));
+        if (!useCooldownSection.contains("seconds")) {
+            return;
+        }
+        float seconds = (float) useCooldownSection.getDouble("seconds", 1.0);
+        if (seconds <= 0) {
+            seconds = 1.0f;
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__USE_COOLDOWN__INVALID_SECONDS, LogType.WARNING, "seconds", seconds, "item", this.itemId);
+        }
+        String cooldownGroup = useCooldownSection.getString("group");
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.UseCooldownConfiguration(seconds, cooldownGroup));
     }
 
     @Override
     public void convertUseRemainderComponent() {
         ConfigurationSection useRemainderSection = this.nexoItemSection.getConfigurationSection("Components.use_remainder");
-        if (useRemainderSection == null) return;
+        if (useRemainderSection == null) {
+            return;
+        }
 
-        for (String keyToCheck : new String[]{"minecraft_type", "crucible_item", "mmoitems_id", "mmoitems_type", "nexo_item"}) {
-            String value = useRemainderSection.getString(keyToCheck);
-            if (value == null || value.isEmpty()) continue;
-
-            switch (keyToCheck) {
-                case "minecraft_type" -> this.craftEngineItemUtils.getSettingsSection()
-                        .set("consume-replacement", "minecraft:" + value.toLowerCase());
-                case "nexo_item" -> this.craftEngineItemUtils.getSettingsSection()
-                        .set("consume-replacement", value);
-                default -> Logger.debug("Found unsupported use_remainder key '" + keyToCheck + "' with value '" + value + "', skipping conversion.", LogType.WARNING);
+        String minecraftType = useRemainderSection.getString("minecraft_type");
+        if (minecraftType != null) {
+            if (!minecraftType.contains(":")) {
+                minecraftType = "minecraft:" + minecraftType;
             }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.UseRemainderConfiguration(minecraftType.toLowerCase(), 1));
         }
     }
 
     @Override
     public void convertAnvilRepairable() {
         ConfigurationSection componentsSection = this.nexoItemSection.getConfigurationSection("Components");
-        if (componentsSection == null) return;
-
-        List<Map<String, Object>> ceRepairItems = new ArrayList<>();
-
-        String singleRepairItem = componentsSection.getString("anvil_repairable.repairable");
-        if (isValidString(singleRepairItem)) {
-            Logger.debug("Nexo doesn't support amount for anvil_repairable, defaulting to 1.", LogType.WARNING);
-            ceRepairItems.add(Map.of("target", singleRepairItem, "amount", 1));
+        if (componentsSection == null) {
+            return;
         }
 
-        List<String> multipleRepairItems = componentsSection.getStringList("anvil_repairable.repairable");
-        for (String item : multipleRepairItems) {
-            Logger.debug("Nexo doesn't support amount for anvil_repairable, defaulting to 1.", LogType.WARNING);
-            ceRepairItems.add(Map.of("target", item, "amount", 1));
+        List<AnvilRepairItem> anvilRepairItems = new ArrayList<>();
+        Object singleRepairItem = componentsSection.get("anvil_repairable.repairable");
+        if (singleRepairItem instanceof String singleRepairItemStr && isValidString(singleRepairItemStr)) {
+            anvilRepairItems.add(new AnvilRepairItem(List.of(singleRepairItemStr), 1, 1.0));
+        } else if (singleRepairItem instanceof List<?> singleRepairItemList) {
+            for (Object item : singleRepairItemList) {
+                if (item instanceof String itemStr && isValidString(itemStr)) {
+                    anvilRepairItems.add(new AnvilRepairItem(List.of(itemStr), 1, 1.0));
+                }
+            }
         }
-
-        if (!ceRepairItems.isEmpty()) {
-            this.craftEngineItemUtils.getSettingsSection().set("anvil-repair-item", ceRepairItems);
+        if (!anvilRepairItems.isEmpty()) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.AnvilRepairItemConfiguration(anvilRepairItems));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.RepairableSettingConfiguration(false, true, false));
         }
     }
 
     @Override
     public void convertDeathProtection() {
-        ConfigurationSection nexoDeathprotectionSection = nexoItemSection.getConfigurationSection("Components.death_protection");
-        if (isNull(nexoDeathprotectionSection)) return;
-        ConfigurationSection deathEffects = nexoDeathprotectionSection.getConfigurationSection("death_effects");
-        ConfigurationSection ceDeathprotectionSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(),"minecraft:death_protection");
-        if (isNull(deathEffects)){
-            ceDeathprotectionSection.set("death_effects", new ArrayList<>());
+        ConfigurationSection nexoDeathProtectionSection = this.nexoItemSection.getConfigurationSection("Components.death_protection");
+        if (isNull(nexoDeathProtectionSection)) {
             return;
         }
-        List<Map<String,Object>> ceDeathEffects = new ArrayList<>();
-        ConfigurationSection nexoApplyEffectsSection = deathEffects.getConfigurationSection("APPLY_EFFECTS");
-        if (isNotNull(nexoApplyEffectsSection)) {
-            for (String key : nexoApplyEffectsSection.getKeys(false)) {
-                Map<String,Object> consumeEffect = new HashMap<>();
-                consumeEffect.put("type","apply_effects");
-                List<Map<String,Object>> effectList = new ArrayList<>();
-                effectList.add(getEffectMap(key, nexoApplyEffectsSection.getDouble(key+".amplifier",0),nexoApplyEffectsSection.getInt(key+".duration",1),nexoApplyEffectsSection.getBoolean(key+".ambient",false),
-                        nexoApplyEffectsSection.getBoolean(key+".show_particles",true),nexoApplyEffectsSection.getBoolean("key+.show_icon",true)));
-                consumeEffect.put("effects",effectList);
-                consumeEffect.put("probability",nexoItemSection.getDouble(key+".probability",1.0));
-                ceDeathEffects.add(consumeEffect);
+
+        ConfigurationSection deathEffectsSection = nexoDeathProtectionSection.getConfigurationSection("death_effects");
+
+        if (isNull(deathEffectsSection)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DeathProtectionConfiguration(null));
+            return;
+        }
+
+        List<AbstractEffectsConfiguration.ConsumeEffect> deathEffects = new ArrayList<>();
+
+        ConfigurationSection applyEffectsSection = deathEffectsSection.getConfigurationSection("APPLY_EFFECTS");
+        if (isNotNull(applyEffectsSection)) {
+            List<AbstractEffectsConfiguration.ApplyEffectsConsumeEffect.ApplyEffect> effects = new ArrayList<>();
+            for (String key : applyEffectsSection.getKeys(false)) {
+                effects.add(new AbstractEffectsConfiguration.ApplyEffectsConsumeEffect.ApplyEffect(
+                        key,
+                        applyEffectsSection.getInt(key + ".amplifier", 0),
+                        applyEffectsSection.getInt(key + ".duration", 1),
+                        applyEffectsSection.getBoolean(key + ".ambient", false),
+                        applyEffectsSection.getBoolean(key + ".show_particles", true),
+                        applyEffectsSection.getBoolean(key + ".show_icon", true),
+                        applyEffectsSection.getDouble(key + ".probability", 1.0)
+                ));
             }
+            deathEffects.add(new AbstractEffectsConfiguration.ApplyEffectsConsumeEffect(effects));
         }
-        List<String> nexoRemoveEffects = deathEffects.getStringList("REMOVE_EFFECTS");
-        if (!nexoRemoveEffects.isEmpty()) {
-            Map<String,Object> removeEffects = new HashMap<>();
-            removeEffects.put("type","remove_effects");
-            removeEffects.put("effects",nexoRemoveEffects);
-            ceDeathEffects.add(removeEffects);
+
+        List<String> removeEffects = deathEffectsSection.getStringList("REMOVE_EFFECTS");
+        if (!removeEffects.isEmpty()) {
+            deathEffects.add(new AbstractEffectsConfiguration.RemoveEffectsConsumeEffect(removeEffects));
         }
-        boolean clearAllEffects = deathEffects.isConfigurationSection("CLEAR_ALL_EFFECTS");
-        if (clearAllEffects){
-            ceDeathEffects.add(Map.of("type","clear_all_effects"));
+
+        if (deathEffectsSection.get("CLEAR_ALL_EFFECTS") != null) {
+            deathEffects.add(new AbstractEffectsConfiguration.ClearAllEffectsConsumeEffect());
         }
-        ConfigurationSection teleportRandomlySection = deathEffects.getConfigurationSection("TELEPORT_RANDOMLY");
-        if (isNotNull(teleportRandomlySection)) {
-            double diameter = teleportRandomlySection.getDouble("diameter",16.0);
-            ceDeathEffects.add(Map.of("type","teleport_randomly","diameter",diameter));
+
+        double diameter = deathEffectsSection.getDouble("TELEPORT_RANDOMLY.diameter", -1.0);
+        if (diameter > 0) {
+            deathEffects.add(new AbstractEffectsConfiguration.TeleportRandomlyConsumeEffect(diameter));
         }
-        ConfigurationSection playSoundSection = deathEffects.getConfigurationSection("PLAY_SOUND");
+
+        ConfigurationSection playSoundSection = deathEffectsSection.getConfigurationSection("PLAY_SOUND");
         if (isNotNull(playSoundSection)) {
             String sound = playSoundSection.getString("sound");
             if (isValidString(sound)) {
-                ceDeathEffects.add(Map.of("type","play_sound","sound", sound));
+                deathEffects.add(new AbstractEffectsConfiguration.PlaySoundConsumeEffect(
+                        sound,
+                        playSoundSection.getDouble("range", 16.0)
+                ));
             }
         }
-        ceDeathprotectionSection.set("death_effects", ceDeathEffects);
+
+        if (!deathEffects.isEmpty()) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DeathProtectionConfiguration(deathEffects));
+        }
     }
 
     @Override
     public void convertToolTipDisplay() {
         List<String> tooltipDisplay = this.nexoItemSection.getStringList("Components.tooltip_display");
         if (!tooltipDisplay.isEmpty()) {
-            this.craftEngineItemUtils.getComponentsSection()
-                    .createSection("minecraft:tooltip_display")
-                    .set("hidden_components", tooltipDisplay);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.TooltipDisplayConfiguration(tooltipDisplay));
         }
     }
 
@@ -591,87 +760,67 @@ public class NexoItemConverter extends ItemConverter {
     public void convertBreakSound() {
         String breakSound = this.nexoItemSection.getString("Components.break_sound");
         if (isValidString(breakSound)) {
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:break_sound",
-                    Map.of("sound_id", breakSound, "range", 16.0));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.BreakSoundConfiguration(breakSound, 16.0f));
         }
     }
 
     @Override
     public void convertWeaponComponent() {
         ConfigurationSection weaponSection = this.nexoItemSection.getConfigurationSection("Components.weapon");
-        if (weaponSection == null) return;
+        if (weaponSection == null) {
+            return;
+        }
 
-        ConfigurationSection ceWeaponSection = this.craftEngineItemUtils.getComponentsSection()
-                .createSection("minecraft:weapon");
-        ceWeaponSection.set("item_damage_per_attack", weaponSection.getDouble("damage_per_attack", 1.0));
-        ceWeaponSection.set("disable_blocking_for_seconds", weaponSection.getDouble("disable_blocking", 0.0));
+        int damagePerAttack = weaponSection.getInt("item_damage_per_attack", 1);
+        float disableBlocking = (float) weaponSection.getDouble("disable_blocking", 0);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new WeaponConfiguration(damagePerAttack, disableBlocking));
     }
 
     @Override
     public void convertBlocksAttackComponent() {
         ConfigurationSection nexoBlocksAttacksSection = this.nexoItemSection.getConfigurationSection("Components.blocks_attacks");
-        if (isNull(nexoBlocksAttacksSection)) return;
-        ConfigurationSection ceBlocksAttacksSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(), "minecraft:blocks_attacks");
-        double blockDelay = nexoBlocksAttacksSection.getDouble("block_delay", 0);
-        if (blockDelay != 0) {
-            ceBlocksAttacksSection.set("block_delay_seconds",blockDelay);
-        }
-        double disableCooldownScale = nexoBlocksAttacksSection.getDouble("disable_cooldown_scale", 1);
-        if (disableCooldownScale != 0) {
-            ceBlocksAttacksSection.set("disable_cooldown_scale",disableCooldownScale);
-        }
-        String blockSound = nexoBlocksAttacksSection.getString("block_sound");
-        if (isValidString(blockSound)) {
-            ceBlocksAttacksSection.set("block_sound",blockSound);
-        }
-        String disabledSound = nexoBlocksAttacksSection.getString("disabled_sound");
-        if (isValidString(disabledSound)) {
-            ceBlocksAttacksSection.set("disabled_sound",disabledSound);
-        }
-        String bypassedBy = nexoBlocksAttacksSection.getString("bypassed_by");
-        if (isValidString(bypassedBy)) {
-            ceBlocksAttacksSection.set("bypassed_by",bypassedBy);
-        }
-        ConfigurationSection ceItemDamageSection = ceBlocksAttacksSection.createSection("item_damage");
-        ceItemDamageSection.set("threshold",nexoBlocksAttacksSection.getDouble("item_damage.threshold",0));
-        ceItemDamageSection.set("base",nexoBlocksAttacksSection.getDouble("item_damage.base",0));
-        ceItemDamageSection.set("factor",nexoBlocksAttacksSection.getDouble("item_damage.factor",0));
-        var damageReductionsArray = nexoBlocksAttacksSection.getMapList("damage_reductions");
-        if (!damageReductionsArray.isEmpty()) {
-            List<Map<String,Object>> ceDamageReductionArray = new ArrayList<>();
-            for (var damageReductionMap : damageReductionsArray){
-                Map<String,Object> ceDamageReductionMap = new HashMap<>();
-                Object base = damageReductionMap.get("base");
-                if (isNotNull(base) && base instanceof Double baseDouble){
-                    ceDamageReductionMap.put("base",baseDouble);
-                }
-                Object factor = damageReductionMap.get("factor");
-                if (isNotNull(factor) && factor instanceof Double factorDouble){
-                    ceDamageReductionMap.put("factor",factorDouble);
-                }
-                Object horizontalBlockingAngle = damageReductionMap.get("horizontal_blocking");
-                if (isNotNull(horizontalBlockingAngle) && horizontalBlockingAngle instanceof Double horizontalBlockingAngleDouble){
-                    ceDamageReductionMap.put("horizontal_blocking_angle",horizontalBlockingAngleDouble);
-                } else {
-                    ceDamageReductionMap.put("horizontal_blocking_angle",90);
-                }
-                List<String> ceTypes = new ArrayList<>();
-                Object objects = damageReductionMap.get("types");
-                if (isNotNull(objects)) {
-                    if (objects instanceof List<?> nexoTypesString){
-                        ceTypes.addAll((List<String>) nexoTypesString);
-                    } else if (objects instanceof String nexoTypeString){
-                        ceTypes.add(nexoTypeString);
-                    }
-                }
-                if (!ceTypes.isEmpty()){
-                    ceDamageReductionMap.put("type",ceTypes);
-                    ceDamageReductionArray.add(ceDamageReductionMap);
-                }
-            }
-            ceItemDamageSection.set("damage_reductions",ceDamageReductionArray);
+        if (isNull(nexoBlocksAttacksSection)) {
+            return;
         }
 
+        double blockDelay = nexoBlocksAttacksSection.getDouble("block_delay", 0);
+        double disableCooldownScale = nexoBlocksAttacksSection.getDouble("disable_cooldown_scale", 1);
+        String blockSound = nexoBlocksAttacksSection.getString("block_sound");
+        String disabledSound = nexoBlocksAttacksSection.getString("disabled_sound");
+        String bypassedBy = nexoBlocksAttacksSection.getString("bypassed_by");
+
+        fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.ItemDamage itemDamage = new fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.ItemDamage(
+                nexoBlocksAttacksSection.getDouble("item_damage.threshold", 0),
+                nexoBlocksAttacksSection.getDouble("item_damage.base", 0),
+                nexoBlocksAttacksSection.getDouble("item_damage.factor", 1.5)
+        );
+
+        List<fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.DamageReduction> damageReductions = new ArrayList<>();
+        for (var dr : nexoBlocksAttacksSection.getMapList("damage_reductions")) {
+            Object baseObj = dr.get("base");
+            Object factorObj = dr.get("factor");
+            if (!(baseObj instanceof Double base) || !(factorObj instanceof Double factor)) {
+                continue;
+            }
+
+            double horizontalBlockingAngle = 90;
+            Object angleObj = dr.get("horizontal_blocking");
+            if (angleObj instanceof Double angleDouble) {
+                horizontalBlockingAngle = angleDouble;
+            }
+
+            List<String> types = new ArrayList<>();
+            Object typesObj = dr.get("types");
+            if (typesObj instanceof List<?> list) {
+                types.addAll((List<String>) list);
+            } else if (typesObj instanceof String str) {
+                types.add(str);
+            }
+
+            damageReductions.add(new fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration.DamageReduction(base, factor, horizontalBlockingAngle, types));
+        }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.BlocksAttacksConfiguration(blockDelay, disableCooldownScale, blockSound, disabledSound, bypassedBy, itemDamage, damageReductions));
     }
 
     @Override
@@ -686,10 +835,10 @@ public class NexoItemConverter extends ItemConverter {
 
     private void convertBlockPredicateComponent(String componentName) {
         ConfigurationSection nexoSection = this.nexoItemSection.getConfigurationSection("Components." + componentName);
-        if (isNull(nexoSection)) return;
+        if (isNull(nexoSection)) {
+            return;
+        }
 
-
-        List<Map<String,Object>> predicateItems = new ArrayList<>();
         List<String> blockArray = new ArrayList<>();
         List<String> tagsArray = new ArrayList<>();
 
@@ -698,28 +847,30 @@ public class NexoItemConverter extends ItemConverter {
             processBlockOrTag(block, blockArray, tagsArray);
         }
 
-        List<String> blocks = nexoSection.getStringList("blocks");
-        for (String blockItem : blocks) {
-            if (!isValidString(blockItem)) continue;
-            processBlockOrTag(blockItem, blockArray, tagsArray);
+        for (String blockItem : nexoSection.getStringList("blocks")) {
+            if (isValidString(blockItem)) {
+                processBlockOrTag(blockItem, blockArray, tagsArray);
+            }
         }
+
+        List<fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.BlockPredicate> predicates = new ArrayList<>();
 
         if (!blockArray.isEmpty()) {
-            Map<String, Object> blocksMap = new HashMap<>();
-            blocksMap.put("blocks", blockArray);
-            predicateItems.add(blocksMap);
+            predicates.add(new fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.BlockPredicate(blockArray));
         }
 
-        for (String tag : tagsArray) {
-            Map<String, Object> tagMap = new HashMap<>();
-            tagMap.put("blocks", tag);
-            predicateItems.add(tagMap);
+        for (String tag : tagsArray)
+            predicates.add(new fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.BlockPredicate(tag));
+
+        if (predicates.isEmpty()) {
+            return;
         }
 
-        if (!predicateItems.isEmpty()) {
-            ConfigurationSection predicate = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(), "minecraft:" + componentName);
-            predicate.set("predicates", predicateItems);
-        }
+        fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.Type type = componentName.equals("can_place_on")
+                ? fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.Type.CAN_PLACE_ON
+                : fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration.Type.CAN_BREAK;
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.utils.BlockPredicateConfiguration(type, predicates));
     }
 
     private void processBlockOrTag(String input, List<String> blockArray, List<String> tagsArray) {
@@ -742,18 +893,210 @@ public class NexoItemConverter extends ItemConverter {
         }
     }
 
-
     @Override
     public void convertOversizedInGui() {
         if (this.nexoItemSection.getBoolean("Pack.oversized_in_gui", false)) {
-            this.craftEngineItemUtils.setOversizedInGui(true);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.OversizedInGuiConfiguration(true));
         }
+    }
+
+    @Override
+    public void convertPaintingVariant() {
+        String paintingVariant = this.nexoItemSection.getString("Components.painting_variant");
+        if (isValidString(paintingVariant)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.PaintingVariantConfiguration(paintingVariant));
+        }
+    }
+
+    @Override
+    public void convertKineticComponent() {
+        ConfigurationSection kineticSection = this.nexoItemSection.getConfigurationSection("Components.kinetic_weapon");
+        if (isNull(kineticSection)) {
+            return;
+        }
+
+        long delayTicks = TimerBuilder.parseTimeToTicks(kineticSection.getString("delay", "0t"));
+        double damageMultiplier = kineticSection.getDouble("damage_multiplier", 1.0);
+        double forwardMovement = kineticSection.getDouble("forward_movement", 0.0);
+        String sound = kineticSection.getString("sound");
+        String hitSound = kineticSection.getString("hit_sound");
+
+        fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions dismountConditions = parseKineticConditions(kineticSection.getConfigurationSection("dismount_conditions"));
+        fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions knockbackConditions = parseKineticConditions(kineticSection.getConfigurationSection("knockback_conditions"));
+        fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions damageConditions = parseKineticConditions(kineticSection.getConfigurationSection("damage_conditions"));
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration(delayTicks, damageMultiplier, forwardMovement, sound, hitSound, dismountConditions, knockbackConditions, damageConditions));
+    }
+
+    private fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions parseKineticConditions(ConfigurationSection section) {
+        if (section == null) {
+            return null;
+        }
+        return new fr.robie.craftengineconverter.api.configuration.item.components.KineticWeaponConfiguration.KineticConditions(
+                TimerBuilder.parseTimeToTicks(section.getString("max_duration", "0t")),
+                section.getDouble("min_speed", 0.0),
+                section.getDouble("min_relative_speed", 0.0)
+        );
+    }
+
+    @Override
+    public void convertPiercingWeaponComponent() {
+        ConfigurationSection piercingSection = this.nexoItemSection.getConfigurationSection("Components.piercing_weapon");
+        if (isNull(piercingSection)) {
+            return;
+        }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.PiercingWeaponConfiguration(
+                piercingSection.getBoolean("deals_knockback", true),
+                piercingSection.getBoolean("dismounts", false),
+                piercingSection.getString("sound"),
+                piercingSection.getString("hit_sound")
+        ));
+    }
+
+    @Override
+    public void convertAttackRangeComponent() {
+        ConfigurationSection attackRangeSection = this.nexoItemSection.getConfigurationSection("Components.attack_range");
+        if (isNull(attackRangeSection)) {
+            return;
+        }
+
+        double minReach = 0.0;
+        double maxReach = 3.0;
+
+        String reach = attackRangeSection.getString("reach");
+        if (isValidString(reach)) {
+            if (reach.contains("..")) {
+                String[] parts = reach.split("\\.\\.");
+                if (parts.length == 2) {
+                    try {
+                        minReach = Double.parseDouble(parts[0].trim());
+                        maxReach = Double.parseDouble(parts[1].trim());
+                    } catch (NumberFormatException e) {
+                        Logger.debug(Message.WARNING__CONVERTER__NEXO__ATTACK_RANGE__INVALID_REACH_FORMAT, LogType.WARNING, "reach", reach, "item", this.itemId);
+                    }
+                }
+            } else {
+                try {
+                    maxReach = Double.parseDouble(reach.trim());
+                } catch (NumberFormatException e) {
+                    Logger.debug(Message.WARNING__CONVERTER__NEXO__ATTACK_RANGE__INVALID_REACH_VALUE, LogType.WARNING, "reach", reach, "item", this.itemId);
+                }
+            }
+        }
+
+        if (attackRangeSection.contains("min_reach")) {
+            minReach = attackRangeSection.getDouble("min_reach", 0.0);
+        }
+        if (attackRangeSection.contains("max_reach")) {
+            maxReach = attackRangeSection.getDouble("max_reach", 3.0);
+        }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.AttackRangeConfiguration(
+                minReach,
+                maxReach,
+                attackRangeSection.getDouble("min_creative_reach", 0.0),
+                attackRangeSection.getDouble("max_creative_reach", 5.0),
+                attackRangeSection.getDouble("hitbox_margin", 0.3),
+                attackRangeSection.getDouble("mob_factor", 1.0)
+        ));
+    }
+
+    @Override
+    public void convertSwingAnimationComponent() {
+        ConfigurationSection swingAnimationSection = this.nexoItemSection.getConfigurationSection("Components.swing_animation");
+        if (isNull(swingAnimationSection)) {
+            return;
+        }
+
+        fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration.AnimationType type;
+        try {
+            type = fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration.AnimationType.valueOf(
+                    swingAnimationSection.getString("type", "whack").toUpperCase()
+            );
+        } catch (IllegalArgumentException e) {
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__SWING_ANIMATION__INVALID_TYPE, LogType.WARNING, "item", this.itemId);
+            type = fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration.AnimationType.WHACK;
+        }
+
+        long durationTicks = TimerBuilder.parseTimeToTicks(swingAnimationSection.getString("duration", "6t"));
+        if (durationTicks <= 0) {
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__SWING_ANIMATION__INVALID_DURATION, LogType.WARNING, "duration", durationTicks, "item", this.itemId);
+            durationTicks = 6;
+        }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.SwingAnimationConfiguration(type, (int) durationTicks));
+    }
+
+    @Override
+    public void convertUseEffectsComponent() {
+        ConfigurationSection useEffectsSection = this.nexoItemSection.getConfigurationSection("Components.use_effects");
+        if (isNull(useEffectsSection)) {
+            return;
+        }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.UseEffectsConfiguration(
+                useEffectsSection.getBoolean("can_sprint", false),
+                useEffectsSection.getDouble("speed_multiplier", 0.2),
+                useEffectsSection.getBoolean("interact_vibrations", true)
+        ));
+    }
+
+    @Override
+    public void convertDamageTypeComponent() {
+        String damageType = this.nexoItemSection.getString("Components.damage_type");
+        if (isValidString(damageType)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.DamageTypeConfiguration(damageType));
+        }
+    }
+
+    @Override
+    public void convertMinimumAttackChargeComponent() {
+        double minAttackCharge = this.nexoItemSection.getDouble("Components.minimum_attack_charge", -1f);
+        if (minAttackCharge >= 0f) {
+            minAttackCharge = Math.max(0.0, Math.min(1.0, minAttackCharge));
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.MinimumAttackChargeConfiguration((float) minAttackCharge));
+        }
+    }
+
+    @Override
+    public void convertProfileComponent() {
+        ConfigurationSection profileSection = this.nexoItemSection.getConfigurationSection("Components.profile");
+        if (isNull(profileSection)) {
+            return;
+        }
+
+        String name = profileSection.getString("name");
+        String uuid = profileSection.getString("uuid");
+
+        List<fr.robie.craftengineconverter.api.configuration.item.components.PlayerProfileConfiguration.Property> properties = new ArrayList<>();
+        ConfigurationSection propertiesSection = profileSection.getConfigurationSection("properties");
+        if (propertiesSection != null) {
+            String propName = propertiesSection.getString("name");
+            String propValue = propertiesSection.getString("value");
+            String propSignature = propertiesSection.getString("signature");
+            if (isValidString(propName) && isValidString(propValue)) {
+                properties.add(new fr.robie.craftengineconverter.api.configuration.item.components.PlayerProfileConfiguration.Property(propName, propValue, propSignature));
+            }
+        }
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.PlayerProfileConfiguration(
+                name,
+                uuid,
+                properties,
+                profileSection.getString("texture"),
+                profileSection.getString("cape"),
+                profileSection.getString("elytra"),
+                profileSection.getString("model")
+        ));
     }
 
     @Override
     public void convertItemTexture() {
         ConfigurationSection packSection = this.nexoItemSection.getConfigurationSection("Pack");
-        if (packSection == null) return;
+        if (packSection == null) {
+            return;
+        }
 
         String parentModel = packSection.getString("parent_model");
 
@@ -767,21 +1110,23 @@ public class NexoItemConverter extends ItemConverter {
     private void convertModelWithoutParent(ConfigurationSection packSection) {
         String modelPath = packSection.getString("model");
         if (!isValidString(modelPath)) {
-            if (this.craftEngineItemUtils.getMaterial() == Material.ELYTRA){
+            if (this.craftEngineItemsConfiguration.getMaterial() == Material.ELYTRA) {
                 buildElytraModel(packSection);
             }
-            if (packSection.isConfigurationSection("CustomArmor")){
+            if (packSection.isConfigurationSection("CustomArmor")) {
                 ConfigurationSection customArmorSection = packSection.getConfigurationSection("CustomArmor");
                 ConfigurationSection fileEquipementsSection = getEquipmentsSection();
 
-                String assetId = determineAssetId(packSection, List.of("_wolf_armor","_llama_armor","_horse_armor","_nautilus_armor"));
+                String assetId = determineAssetId(packSection, List.of("_wolf_armor", "_llama_armor", "_horse_armor", "_nautilus_armor"));
 
-                if (isNotNull(customArmorSection) && isNotNull(assetId)){
+                if (isNotNull(customArmorSection) && isNotNull(assetId)) {
                     Set<String> keys = customArmorSection.getKeys(false);
                     Map<String, Set<Tuple<String>>> equipmentLayers = new HashMap<>();
 
                     for (String key : keys) {
-                        if (key.equals("harness")) continue;
+                        if (key.equals("harness")) {
+                            continue;
+                        }
                         String val = switch (key) {
                             case "wolf_armor" -> "wolf-body";
                             case "llama_armor" -> "llama-body";
@@ -794,8 +1139,8 @@ public class NexoItemConverter extends ItemConverter {
                         equipmentLayers.computeIfAbsent(val, k -> new HashSet<>()).add(new Tuple<>(key, val));
                     }
 
-                    if (!equipmentLayers.isEmpty()){
-                        List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
+                    if (!equipmentLayers.isEmpty()) {
+                        List<ArmorConverter> convertersToProcess = Configuration.<ArmorConverter>get(ConfigurationKey.ARMOR_CONVERTER_TYPE).getComposition();
                         Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(fileEquipementsSection, assetId);
 
                         for (var layerTypeTuple : equipmentLayers.entrySet()) {
@@ -811,7 +1156,7 @@ public class NexoItemConverter extends ItemConverter {
                                     String[] split = namespacedTexture.split(":", 2);
                                     String namespace = split[0];
                                     String path = split[1];
-                                    String equipmentFolder = layer.getSecond().replace("-","_");
+                                    String equipmentFolder = layer.getSecond().replace("-", "_");
 
                                     // For layer1 and layer2 (humanoid/humanoid-leggings)
                                     if (originalKey.equals("layer1") || originalKey.equals("layer2")) {
@@ -822,7 +1167,7 @@ public class NexoItemConverter extends ItemConverter {
                                         getConverter().addPackMapping(namespace, "textures/" + path + ".png", namespace, targetPath);
 
                                         for (ArmorConverter converter : convertersToProcess) {
-                                            String convertedPath = converter.getTexturePath(namespace, equipmentFolder,fileName);
+                                            String convertedPath = converter.getTexturePath(namespace, equipmentFolder, fileName);
                                             converterTextures.computeIfAbsent(converter, k -> new HashSet<>()).add(convertedPath);
                                         }
                                     } else {
@@ -841,7 +1186,7 @@ public class NexoItemConverter extends ItemConverter {
                                         }
                                     }
 
-                                    getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
+                                    this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId, (EquipmentSlot) null));
                                 }
                             }
 
@@ -854,10 +1199,9 @@ public class NexoItemConverter extends ItemConverter {
                         }
 
                         String texturePath = packSection.getString("texture");
-                        if (isValidString(texturePath)){
+                        if (isValidString(texturePath)) {
                             String namespacedTexturePath = namespaced(texturePath);
-                            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
-                            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+                            this.craftEngineItemsConfiguration.setModelConfiguration(buildSimpleModel("minecraft:item/generated", namespacedTexturePath));
                         }
                         return;
                     }
@@ -866,18 +1210,18 @@ public class NexoItemConverter extends ItemConverter {
             if (this.itemId.endsWith("_helmet") || this.itemId.endsWith("_chestplate") || this.itemId.endsWith("_leggings") || this.itemId.endsWith("_boots")) {
                 String texturePath = packSection.getString("texture");
                 String modelTexturePath = packSection.getString("model");
-                if (isValidString(texturePath) && isNull(modelTexturePath) && !packSection.isConfigurationSection("CustomArmor")){
+                if (isValidString(texturePath) && isNull(modelTexturePath) && !packSection.isConfigurationSection("CustomArmor")) {
                     String namespacedTexturePath = namespaced(texturePath);
                     ConfigurationSection fileEquipementsSection = getEquipmentsSection();
 
-                    String assetId = determineAssetId(packSection, List.of("_helmet","_chestplate","_leggings","_boots"));
+                    String assetId = determineAssetId(packSection, List.of("_helmet", "_chestplate", "_leggings", "_boots"));
 
-                    if (isValidString(assetId)){
-                        List<ArmorConverter> convertersToProcess = Configuration.armorConverterType.getComposition();
+                    if (isValidString(assetId)) {
+                        List<ArmorConverter> convertersToProcess = Configuration.<ArmorConverter>get(ConfigurationKey.ARMOR_CONVERTER_TYPE).getComposition();
                         Map<ArmorConverter, ConfigurationSection> converterSections = ArmorConverter.createArmorConverterSections(fileEquipementsSection, assetId);
 
                         String armorName = assetId.split(":", 2)[1];
-                        String[] split = namespacedTexturePath.split(":",2);
+                        String[] split = namespacedTexturePath.split(":", 2);
                         String namespace = split[0];
 
                         String textureBasePath = namespacedTexturePath.split(":", 2)[1];
@@ -900,71 +1244,159 @@ public class NexoItemConverter extends ItemConverter {
                         for (ArmorConverter converter : convertersToProcess) {
                             ConfigurationSection section = converterSections.get(converter);
                             if (isNotNull(section)) {
-                                String layer1Texture = converter.getTexturePath(namespace, "humanoid",layer1FileName);
-                                String layer2Texture = converter.getTexturePath(namespace, "humanoid_leggings",layer2FileName);
+                                String layer1Texture = converter.getTexturePath(namespace, "humanoid", layer1FileName);
+                                String layer2Texture = converter.getTexturePath(namespace, "humanoid_leggings", layer2FileName);
 
                                 ArmorConverter.addEquipmentTextures(section, "humanoid", Set.of(layer1Texture));
                                 ArmorConverter.addEquipmentTextures(section, "humanoid-leggings", Set.of(layer2Texture));
                             }
                         }
 
-                        getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equipment").set("asset-id",assetId);
-                        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_GENERATED, "%model_path%", namespacedTexturePath, "%texture_path%", namespacedTexturePath);
-                        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+                        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId, (EquipmentSlot) null));
+                        this.craftEngineItemsConfiguration.setModelConfiguration(buildSimpleModel("minecraft:item/generated", namespacedTexturePath));
                     }
                 }
             }
+            tryBuild2dShieldModel(packSection);
+            tryBuild2dFishingRodModel(packSection);
             return;
         }
 
         modelPath = cleanPath(modelPath);
         if (isNull(modelPath)) {
-            Logger.debug("Failed to process model path for item '" + this.itemId + "'. Skipping texture conversion.", LogType.WARNING);
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__PROCESS_FAILURE, LogType.WARNING, "item", this.itemId);
             return;
         }
 
-        if (tryBuildTridentModel(packSection, modelPath)) return;
-        if (tryBuildShieldModel(packSection, modelPath)) return;
-        if (tryBuildPullingModel(packSection)) return;
-        if (tryBuildFishingRodModel(packSection, modelPath)) return;
+        if (tryBuildTridentModel(packSection, modelPath)) {
+            return;
+        }
+        if (tryBuildShieldModel(packSection, modelPath)) {
+            return;
+        }
+        if (tryBuildPullingModel(packSection)) {
+            return;
+        }
+        if (tryBuildFishingRodModel(packSection, modelPath)) {
+            return;
+        }
 
         String namespacedPath = namespaced(modelPath);
         if (isNull(namespacedPath)) {
-            Logger.debug("Failed to namespace model path for item '" + this.itemId + "'. Skipping texture conversion.", LogType.WARNING);
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__NAMESPACE_FAILURE, LogType.WARNING, "item", this.itemId);
             return;
         }
-        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_DEFAULT, "%model_path%", namespacedPath);
-        setSavedModelTemplates(parsedTemplate);
-        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+        this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(namespacedPath));
+    }
+
+    private void tryBuild2dFishingRodModel(ConfigurationSection packSection) {
+        if (!packSection.contains("cast_texture") || !packSection.contains("texture")) {
+            return;
+        }
+
+        String castTexture = packSection.getString("cast_texture");
+        String texture = packSection.getString("texture");
+        if (isValidString(castTexture) && isValidString(texture)) {
+            String namespacedCast = namespaced(castTexture);
+            String namespacedTexture = namespaced(texture);
+            if (isValidString(namespacedCast) && isValidString(namespacedTexture)) {
+                ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+
+                SimpleModelConfiguration onTrue = new SimpleModelConfiguration(namespacedCast);
+                GenerationConfiguration castGeneration = new GenerationConfiguration("minecraft:item/fishing_rod");
+                castGeneration.addTexture("layer0", namespacedCast);
+                onTrue.setGeneration(castGeneration);
+                castCondition.setOnTrue(onTrue);
+
+                SimpleModelConfiguration onFalse = new SimpleModelConfiguration(namespacedTexture);
+                GenerationConfiguration normalGeneration = new GenerationConfiguration("minecraft:item/fishing_rod");
+                normalGeneration.addTexture("layer0", namespacedTexture);
+                onFalse.setGeneration(normalGeneration);
+                castCondition.setOnFalse(onFalse);
+
+                this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
+            }
+        }
+    }
+
+    private void tryBuild2dShieldModel(ConfigurationSection packSection) {
+        if (!packSection.contains("blocking_texture") || !packSection.contains("texture")) {
+            return;
+        }
+
+        String blockingTexture = packSection.getString("blocking_texture");
+        String texture = packSection.getString("texture");
+        if (isValidString(blockingTexture) && isValidString(texture)) {
+            String namespacedBlocking = namespaced(blockingTexture);
+            String namespacedTexture = namespaced(texture);
+            if (isValidString(namespacedBlocking) && isValidString(namespacedTexture)) {
+                ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+
+                SimpleModelConfiguration onTrue = new SimpleModelConfiguration(namespacedBlocking);
+                GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/shield");
+                generation.addTexture("base", namespacedBlocking);
+                onTrue.setGeneration(generation);
+                usingItemCondition.setOnTrue(onTrue);
+
+                SimpleModelConfiguration onFalse = new SimpleModelConfiguration(namespacedTexture);
+                generation = new GenerationConfiguration("minecraft:item/shield");
+                generation.addTexture("base", namespacedTexture);
+                onFalse.setGeneration(generation);
+                usingItemCondition.setOnFalse(onFalse);
+
+                this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
+            }
+        }
     }
 
     private void buildElytraModel(ConfigurationSection packSection) {
         String elytraModel = cleanPath(packSection.getString("texture"));
         if (isValidString(elytraModel)) {
             String namespacedElytra = namespaced(elytraModel);
-            Map<String, Object> parseTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_ELYTRA, "%model_path%", namespacedElytra, "%texture_path%", namespacedElytra, "%broken_model_path%", namespacedElytra, "%broken_texture_path%", namespacedElytra);
-            this.craftEngineItemUtils.getGeneralSection().createSection("model", parseTemplate);
+
+            ConditionModelConfiguration brokenCondition = new ConditionModelConfiguration("minecraft:broken");
+            brokenCondition.setOnFalse(buildSimpleModel("minecraft:item/generated", namespacedElytra));
+            brokenCondition.setOnTrue(buildSimpleModel("minecraft:item/generated", namespacedElytra));
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(brokenCondition);
             String[] split = namespacedElytra.split(":", 2);
             String itemIdPartTwo = this.itemId.split(":")[1];
-            getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable").set("wings", split[0]+":"+itemIdPartTwo);
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(this.assetId, split[0] + ":" + itemIdPartTwo));
             String string = split[1];
             int lastIndexOf = string.lastIndexOf("/");
             if (lastIndexOf != -1) {
-                string = string.substring(0, lastIndexOf)+"/"+itemIdPartTwo;
+                string = string.substring(0, lastIndexOf) + "/" + itemIdPartTwo;
             }
             String originalPath = "textures/" + string + ".png";
             getConverter().addPackMapping(split[0], originalPath, split[0], "textures/entity/equipment/wings/");
         }
     }
 
-    private boolean tryBuildTridentModel(ConfigurationSection packSection, String modelPath){
-        if (this.craftEngineItemUtils.getMaterial() != Material.TRIDENT) return false;
+    private boolean tryBuildTridentModel(ConfigurationSection packSection, String modelPath) {
+        if (this.craftEngineItemsConfiguration.getMaterial() != Material.TRIDENT) {
+            return false;
+        }
         String namespacedModel = namespaced(modelPath);
-        if (isNull(namespacedModel)) return false;
-        String throwingModel = packSection.getString("throwing_model", namespacedModel+"_throwing");
+        if (isNull(namespacedModel)) {
+            return false;
+        }
+        String throwingModel = packSection.getString("throwing_model", namespacedModel + "_throwing");
         String namespacedThrowingModel = namespaced(throwingModel);
-        this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_TRIDENT, "%model_path%",namespacedModel,"%throwing_model_path%",namespacedThrowingModel));
-        this.craftEngineItemUtils.getSettingsSection().set("projectile",InternalTemplateManager.parseTemplate(Template.SETTINGS_PROJECTILE, "%item_id%", this.itemId));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(namespacedModel));
+        usingItemCondition.setOnTrue(new SimpleModelConfiguration(namespacedThrowingModel));
+
+        DisplayContentSelectConfiguration displayContentSelect = new DisplayContentSelectConfiguration();
+        displayContentSelect.addCase(new SimpleModelConfiguration(namespacedModel),
+                DisplayContentSelectConfiguration.DisplayContent.GUI,
+                DisplayContentSelectConfiguration.DisplayContent.GROUND,
+                DisplayContentSelectConfiguration.DisplayContent.FIXED
+        );
+        displayContentSelect.setFallback(usingItemCondition);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(displayContentSelect);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new ProjectileSettingConfiguration(this.itemId));
         return true;
     }
 
@@ -976,7 +1408,11 @@ public class NexoItemConverter extends ItemConverter {
                 String namespacedBlocking = namespaced(shieldBlockingModel);
                 String namespacedModel = namespaced(modelPath);
                 if (isValidString(namespacedModel)) {
-                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_SHIELD, "%blocking_model_path%",namespacedBlocking,"%default_model_path%",namespacedModel));
+                    ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+                    usingItemCondition.setOnTrue(new SimpleModelConfiguration(namespacedBlocking));
+                    usingItemCondition.setOnFalse(new SimpleModelConfiguration(namespacedModel));
+
+                    this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
                     return true;
                 }
             }
@@ -986,12 +1422,14 @@ public class NexoItemConverter extends ItemConverter {
 
     private boolean tryBuildPullingModel(ConfigurationSection packSection) {
         List<String> pullingModels = packSection.getStringList("pulling_models");
-        if (pullingModels.isEmpty()) return false;
+        if (pullingModels.isEmpty()) {
+            return false;
+        }
 
-        if (this.craftEngineItemUtils.getMaterial() == Material.CROSSBOW) {
+        if (this.craftEngineItemsConfiguration.getMaterial() == Material.CROSSBOW) {
             buildCrossbowModel(packSection);
             return true;
-        } else if (this.craftEngineItemUtils.getMaterial() == Material.BOW) {
+        } else if (this.craftEngineItemsConfiguration.getMaterial() == Material.BOW) {
             buildBowModel(packSection);
             return true;
         }
@@ -1006,7 +1444,11 @@ public class NexoItemConverter extends ItemConverter {
                 String namespacedCast = namespaced(castModel);
                 String namespacedModel = namespaced(modelPath);
                 if (isNotNull(namespacedModel)) {
-                    this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_FISHING_ROD, "%casting_model_path%", namespacedCast, "%default_model_path%", namespacedModel));
+                    ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+                    castCondition.setOnTrue(new SimpleModelConfiguration(namespacedCast));
+                    castCondition.setOnFalse(new SimpleModelConfiguration(namespacedModel));
+
+                    this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
                     return true;
                 }
             }
@@ -1016,87 +1458,399 @@ public class NexoItemConverter extends ItemConverter {
 
     private void convertModelWithParent(ConfigurationSection packSection, String parentModel) {
         switch (parentModel) {
-            case "item/generated" -> buildGeneratedModel(packSection, "minecraft:item/generated", Template.MODEL_ITEM_GENERATED);
-            case "block/cube_all" -> buildGeneratedModel(packSection, "minecraft:block/cube_all", Template.MODEL_CUBE_ALL);
-            case "block/cube_top" -> buildCubeTopModel(packSection);
+            // Blocks
+            case "block/block" ->
+                    buildModel(packSection, "minecraft:block/block", "all", "amethyst", "base", "beacon", "body", "bottom", "calibrated_side", "dirt", "down", "east", "end_rod", "flower", "flowerpot", "front", "glass", "inner_top", "inside", "leg", "log", "north", "obsidian", "overlay", "particle", "pivot", "plant", "propagule", "round", "saw", "side", "sides", "south", "stem", "tendrils", "texture", "tip", "top", "up", "west");
+            case "block/button" -> buildModel(packSection, "minecraft:block/button", "texture");
+            case "block/button_inventory" -> buildModel(packSection, "minecraft:block/button_inventory", "texture");
+            case "block/button_pressed" -> buildModel(packSection, "minecraft:block/button_pressed", "texture");
+            case "block/calibrated_sculk_sensor" ->
+                    buildModel(packSection, "minecraft:block/calibrated_sculk_sensor", "tendrils");
+            case "block/carpet" -> buildModel(packSection, "minecraft:block/carpet", "wool");
+            case "block/coral_fan" -> buildModel(packSection, "minecraft:block/coral_fan", "fan");
+            case "block/coral_wall_fan" -> buildModel(packSection, "minecraft:block/coral_wall_fan", "fan");
+            case "block/crafter" -> buildModel(packSection, "minecraft:block/crafter", "east", "south", "top", "west");
+            case "block/crafter_triggered" ->
+                    buildModel(packSection, "minecraft:block/crafter_triggered", "east", "north", "top", "west");
+            case "block/crop" -> buildModel(packSection, "minecraft:block/crop", "crop");
+            case "block/cross" -> buildModel(packSection, "minecraft:block/cross", "cross");
+            case "block/cross_emissive" ->
+                    buildModel(packSection, "minecraft:block/cross_emissive", "cross", "cross_emissive");
+            case "block/cube" ->
+                    buildModel(packSection, "minecraft:block/cube", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_all" -> buildModel(packSection, "minecraft:block/cube_all", "all");
+            case "block/cube_all_inner_faces" -> buildModel(packSection, "minecraft:block/cube_all_inner_faces", "all");
+            case "block/cube_bottom_top" ->
+                    buildModel(packSection, "minecraft:block/cube_bottom_top", "bottom", "particle", "side", "top");
+            case "block/cube_bottom_top_inner_faces" ->
+                    buildModel(packSection, "minecraft:block/cube_bottom_top_inner_faces", "bottom", "side", "top");
+            case "block/cube_column" -> buildModel(packSection, "minecraft:block/cube_column", "end", "side");
+            case "block/cube_column_horizontal" ->
+                    buildModel(packSection, "minecraft:block/cube_column_horizontal", "end", "side");
+            case "block/cube_column_mirrored" ->
+                    buildModel(packSection, "minecraft:block/cube_column_mirrored", "end", "side");
+            case "block/cube_column_uv_locked_x" ->
+                    buildModel(packSection, "minecraft:block/cube_column_uv_locked_x", "end", "side");
+            case "block/cube_column_uv_locked_y" ->
+                    buildModel(packSection, "minecraft:block/cube_column_uv_locked_y", "end", "side");
+            case "block/cube_column_uv_locked_z" ->
+                    buildModel(packSection, "minecraft:block/cube_column_uv_locked_z", "end", "side");
+            case "block/cube_directional" ->
+                    buildModel(packSection, "minecraft:block/cube_directional", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_mirrored" ->
+                    buildModel(packSection, "minecraft:block/cube_mirrored", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_mirrored_all" -> buildModel(packSection, "minecraft:block/cube_mirrored_all", "all");
+            case "block/cube_north_west_mirrored" ->
+                    buildModel(packSection, "minecraft:block/cube_north_west_mirrored", "down", "east", "north", "particle", "south", "up", "west");
+            case "block/cube_north_west_mirrored_all" ->
+                    buildModel(packSection, "minecraft:block/cube_north_west_mirrored_all", "all");
+            case "block/cube_top" -> buildModel(packSection, "minecraft:block/cube_top", "side", "top");
+            case "block/custom_fence_inventory" ->
+                    buildModel(packSection, "minecraft:block/custom_fence_inventory", "texture");
+            case "block/custom_fence_post" ->
+                    buildModel(packSection, "minecraft:block/custom_fence_post", "particle", "texture");
+            case "block/custom_fence_side_east" ->
+                    buildModel(packSection, "minecraft:block/custom_fence_side_east", "texture");
+            case "block/custom_fence_side_north" ->
+                    buildModel(packSection, "minecraft:block/custom_fence_side_north", "texture");
+            case "block/custom_fence_side_south" ->
+                    buildModel(packSection, "minecraft:block/custom_fence_side_south", "texture");
+            case "block/custom_fence_side_west" ->
+                    buildModel(packSection, "minecraft:block/custom_fence_side_west", "texture");
+            case "block/door_bottom_left" ->
+                    buildModel(packSection, "minecraft:block/door_bottom_left", "bottom", "top");
+            case "block/door_bottom_left_open" ->
+                    buildModel(packSection, "minecraft:block/door_bottom_left_open", "bottom", "top");
+            case "block/door_bottom_right" ->
+                    buildModel(packSection, "minecraft:block/door_bottom_right", "bottom", "top");
+            case "block/door_bottom_right_open" ->
+                    buildModel(packSection, "minecraft:block/door_bottom_right_open", "bottom", "top");
+            case "block/door_top_left" -> buildModel(packSection, "minecraft:block/door_top_left", "bottom", "top");
+            case "block/door_top_left_open" ->
+                    buildModel(packSection, "minecraft:block/door_top_left_open", "bottom", "top");
+            case "block/door_top_right" -> buildModel(packSection, "minecraft:block/door_top_right", "bottom", "top");
+            case "block/door_top_right_open" ->
+                    buildModel(packSection, "minecraft:block/door_top_right_open", "bottom", "top");
+            case "block/dried_ghast" ->
+                    buildModel(packSection, "minecraft:block/dried_ghast", "bottom", "east", "north", "particle", "south", "tentacles", "top", "west");
+            case "block/fence_inventory" -> buildModel(packSection, "minecraft:block/fence_inventory", "texture");
+            case "block/fence_post" -> buildModel(packSection, "minecraft:block/fence_post", "texture");
+            case "block/fence_side" -> buildModel(packSection, "minecraft:block/fence_side", "texture");
+            case "block/flower_pot_cross" -> buildModel(packSection, "minecraft:block/flower_pot_cross", "plant");
+            case "block/flower_pot_cross_emissive" ->
+                    buildModel(packSection, "minecraft:block/flower_pot_cross_emissive", "cross_emissive", "plant");
+            case "block/flowerbed_1" -> buildModel(packSection, "minecraft:block/flowerbed_1", "flowerbed", "stem");
+            case "block/flowerbed_2" -> buildModel(packSection, "minecraft:block/flowerbed_2", "flowerbed", "stem");
+            case "block/flowerbed_3" -> buildModel(packSection, "minecraft:block/flowerbed_3", "flowerbed", "stem");
+            case "block/flowerbed_4" -> buildModel(packSection, "minecraft:block/flowerbed_4", "flowerbed", "stem");
+            case "block/inner_stairs" ->
+                    buildModel(packSection, "minecraft:block/inner_stairs", "bottom", "side", "top");
+            case "block/leaves" -> buildModel(packSection, "minecraft:block/leaves", "all");
+            case "block/mossy_carpet_side" -> buildModel(packSection, "minecraft:block/mossy_carpet_side", "side");
+            case "block/observer" -> buildModel(packSection, "minecraft:block/observer", "bottom");
+            case "block/orientable" -> buildModel(packSection, "minecraft:block/orientable", "front", "side", "top");
+            case "block/orientable_vertical" ->
+                    buildModel(packSection, "minecraft:block/orientable_vertical", "front", "side");
+            case "block/orientable_with_bottom" ->
+                    buildModel(packSection, "minecraft:block/orientable_with_bottom", "bottom", "front", "particle", "side", "top");
+            case "block/outer_stairs" ->
+                    buildModel(packSection, "minecraft:block/outer_stairs", "bottom", "side", "top");
+            case "block/piston_extended" ->
+                    buildModel(packSection, "minecraft:block/piston_extended", "bottom", "inside", "side");
+            case "block/pointed_dripstone" -> buildModel(packSection, "minecraft:block/pointed_dripstone", "cross");
+            case "block/pressure_plate_down" ->
+                    buildModel(packSection, "minecraft:block/pressure_plate_down", "texture");
+            case "block/pressure_plate_up" -> buildModel(packSection, "minecraft:block/pressure_plate_up", "texture");
+            case "block/rail_curved" -> buildModel(packSection, "minecraft:block/rail_curved", "rail");
+            case "block/rail_flat" -> buildModel(packSection, "minecraft:block/rail_flat", "rail");
+            case "block/redstone_dust_side" -> buildModel(packSection, "minecraft:block/redstone_dust_side", "line");
+            case "block/redstone_dust_side_alt" ->
+                    buildModel(packSection, "minecraft:block/redstone_dust_side_alt", "line");
+            case "block/sculk_sensor" -> buildModel(packSection, "minecraft:block/sculk_sensor", "tendrils");
+            case "block/slab" -> buildModel(packSection, "minecraft:block/slab", "bottom", "side", "top");
+            case "block/slab_top" -> buildModel(packSection, "minecraft:block/slab_top", "bottom", "side", "top");
+            case "block/sniffer_egg" ->
+                    buildModel(packSection, "minecraft:block/sniffer_egg", "bottom", "east", "north", "south", "top", "west");
+            case "block/stairs" -> buildModel(packSection, "minecraft:block/stairs", "bottom", "side", "top");
+            case "block/stem_fruit" -> buildModel(packSection, "minecraft:block/stem_fruit", "stem", "upperstem");
+            case "block/stem_growth0" -> buildModel(packSection, "minecraft:block/stem_growth0", "stem");
+            case "block/stem_growth1" -> buildModel(packSection, "minecraft:block/stem_growth1", "stem");
+            case "block/stem_growth2" -> buildModel(packSection, "minecraft:block/stem_growth2", "stem");
+            case "block/stem_growth3" -> buildModel(packSection, "minecraft:block/stem_growth3", "stem");
+            case "block/stem_growth4" -> buildModel(packSection, "minecraft:block/stem_growth4", "stem");
+            case "block/stem_growth5" -> buildModel(packSection, "minecraft:block/stem_growth5", "stem");
+            case "block/stem_growth6" -> buildModel(packSection, "minecraft:block/stem_growth6", "stem");
+            case "block/stem_growth7" -> buildModel(packSection, "minecraft:block/stem_growth7", "stem");
+            case "block/template_anvil" -> buildModel(packSection, "minecraft:block/template_anvil", "top");
+            case "block/template_azalea" -> buildModel(packSection, "minecraft:block/template_azalea", "side", "top");
+            case "block/template_bars_cap" ->
+                    buildModel(packSection, "minecraft:block/template_bars_cap", "bars", "edge");
+            case "block/template_bars_cap_alt" ->
+                    buildModel(packSection, "minecraft:block/template_bars_cap_alt", "bars", "edge");
+            case "block/template_bars_post" ->
+                    buildModel(packSection, "minecraft:block/template_bars_post", "bars", "edge");
+            case "block/template_bars_post_ends" ->
+                    buildModel(packSection, "minecraft:block/template_bars_post_ends", "bars", "edge");
+            case "block/template_bars_side" ->
+                    buildModel(packSection, "minecraft:block/template_bars_side", "bars", "edge");
+            case "block/template_bars_side_alt" ->
+                    buildModel(packSection, "minecraft:block/template_bars_side_alt", "bars", "edge");
+            case "block/template_cake_with_candle" ->
+                    buildModel(packSection, "minecraft:block/template_cake_with_candle", "bottom", "candle", "particle", "side", "top");
+            case "block/template_campfire" ->
+                    buildModel(packSection, "minecraft:block/template_campfire", "fire", "lit_log");
+            case "block/template_candle" ->
+                    buildModel(packSection, "minecraft:block/template_candle", "all", "particle");
+            case "block/template_cauldron_full" ->
+                    buildModel(packSection, "minecraft:block/template_cauldron_full", "bottom", "content", "inside", "particle", "side", "top");
+            case "block/template_cauldron_level1" ->
+                    buildModel(packSection, "minecraft:block/template_cauldron_level1", "bottom", "content", "inside", "particle", "side", "top");
+            case "block/template_cauldron_level2" ->
+                    buildModel(packSection, "minecraft:block/template_cauldron_level2", "bottom", "content", "inside", "particle", "side", "top");
+            case "block/template_chain" -> buildModel(packSection, "minecraft:block/template_chain", "texture");
+            case "block/template_chiseled_bookshelf_slot_bottom_left" ->
+                    buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_bottom_left", "texture");
+            case "block/template_chiseled_bookshelf_slot_bottom_mid" ->
+                    buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_bottom_mid", "texture");
+            case "block/template_chiseled_bookshelf_slot_bottom_right" ->
+                    buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_bottom_right", "texture");
+            case "block/template_chiseled_bookshelf_slot_top_left" ->
+                    buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_top_left", "texture");
+            case "block/template_chiseled_bookshelf_slot_top_mid" ->
+                    buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_top_mid", "texture");
+            case "block/template_chiseled_bookshelf_slot_top_right" ->
+                    buildModel(packSection, "minecraft:block/template_chiseled_bookshelf_slot_top_right", "texture");
+            case "block/template_chorus_flower" ->
+                    buildModel(packSection, "minecraft:block/template_chorus_flower", "texture");
+            case "block/template_command_block" ->
+                    buildModel(packSection, "minecraft:block/template_command_block", "back", "front", "side");
+            case "block/template_custom_fence_gate" ->
+                    buildModel(packSection, "minecraft:block/template_custom_fence_gate", "particle", "texture");
+            case "block/template_custom_fence_gate_open" ->
+                    buildModel(packSection, "minecraft:block/template_custom_fence_gate_open", "particle", "texture");
+            case "block/template_custom_fence_gate_wall" ->
+                    buildModel(packSection, "minecraft:block/template_custom_fence_gate_wall", "particle", "texture");
+            case "block/template_custom_fence_gate_wall_open" ->
+                    buildModel(packSection, "minecraft:block/template_custom_fence_gate_wall_open", "particle", "texture");
+            case "block/template_daylight_detector" ->
+                    buildModel(packSection, "minecraft:block/template_daylight_detector", "side", "top");
+            case "block/template_farmland" ->
+                    buildModel(packSection, "minecraft:block/template_farmland", "dirt", "top");
+            case "block/template_fence_gate" ->
+                    buildModel(packSection, "minecraft:block/template_fence_gate", "texture");
+            case "block/template_fence_gate_open" ->
+                    buildModel(packSection, "minecraft:block/template_fence_gate_open", "texture");
+            case "block/template_fence_gate_wall" ->
+                    buildModel(packSection, "minecraft:block/template_fence_gate_wall", "texture");
+            case "block/template_fence_gate_wall_open" ->
+                    buildModel(packSection, "minecraft:block/template_fence_gate_wall_open", "texture");
+            case "block/template_fire_floor" -> buildModel(packSection, "minecraft:block/template_fire_floor", "fire");
+            case "block/template_fire_side" -> buildModel(packSection, "minecraft:block/template_fire_side", "fire");
+            case "block/template_fire_side_alt" ->
+                    buildModel(packSection, "minecraft:block/template_fire_side_alt", "fire");
+            case "block/template_fire_up" -> buildModel(packSection, "minecraft:block/template_fire_up", "fire");
+            case "block/template_fire_up_alt" ->
+                    buildModel(packSection, "minecraft:block/template_fire_up_alt", "fire");
+            case "block/template_four_candles" ->
+                    buildModel(packSection, "minecraft:block/template_four_candles", "all", "particle");
+            case "block/template_four_turtle_eggs" ->
+                    buildModel(packSection, "minecraft:block/template_four_turtle_eggs", "all");
+            case "block/template_glass_pane_noside" ->
+                    buildModel(packSection, "minecraft:block/template_glass_pane_noside", "pane");
+            case "block/template_glass_pane_noside_alt" ->
+                    buildModel(packSection, "minecraft:block/template_glass_pane_noside_alt", "pane");
+            case "block/template_glass_pane_post" ->
+                    buildModel(packSection, "minecraft:block/template_glass_pane_post", "edge", "pane");
+            case "block/template_glass_pane_side" ->
+                    buildModel(packSection, "minecraft:block/template_glass_pane_side", "edge", "pane");
+            case "block/template_glass_pane_side_alt" ->
+                    buildModel(packSection, "minecraft:block/template_glass_pane_side_alt", "edge", "pane");
+            case "block/template_glazed_terracotta" ->
+                    buildModel(packSection, "minecraft:block/template_glazed_terracotta", "pattern");
+            case "block/template_hanging_lantern" ->
+                    buildModel(packSection, "minecraft:block/template_hanging_lantern", "lantern");
+            case "block/template_item_frame" ->
+                    buildModel(packSection, "minecraft:block/template_item_frame", "back", "particle", "wood");
+            case "block/template_item_frame_map" ->
+                    buildModel(packSection, "minecraft:block/template_item_frame_map", "back", "particle", "wood");
+            case "block/template_lantern" -> buildModel(packSection, "minecraft:block/template_lantern", "lantern");
+            case "block/template_leaf_litter_1" ->
+                    buildModel(packSection, "minecraft:block/template_leaf_litter_1", "texture");
+            case "block/template_leaf_litter_2" ->
+                    buildModel(packSection, "minecraft:block/template_leaf_litter_2", "texture");
+            case "block/template_leaf_litter_3" ->
+                    buildModel(packSection, "minecraft:block/template_leaf_litter_3", "texture");
+            case "block/template_leaf_litter_4" ->
+                    buildModel(packSection, "minecraft:block/template_leaf_litter_4", "texture");
+            case "block/template_lightning_rod" ->
+                    buildModel(packSection, "minecraft:block/template_lightning_rod", "texture");
+            case "block/template_orientable_trapdoor_bottom" ->
+                    buildModel(packSection, "minecraft:block/template_orientable_trapdoor_bottom", "texture");
+            case "block/template_orientable_trapdoor_open" ->
+                    buildModel(packSection, "minecraft:block/template_orientable_trapdoor_open", "texture");
+            case "block/template_orientable_trapdoor_top" ->
+                    buildModel(packSection, "minecraft:block/template_orientable_trapdoor_top", "texture");
+            case "block/template_piston" ->
+                    buildModel(packSection, "minecraft:block/template_piston", "bottom", "platform", "side");
+            case "block/template_piston_head" ->
+                    buildModel(packSection, "minecraft:block/template_piston_head", "platform", "side", "unsticky");
+            case "block/template_piston_head_short" ->
+                    buildModel(packSection, "minecraft:block/template_piston_head_short", "platform", "side", "unsticky");
+            case "block/template_potted_azalea_bush" ->
+                    buildModel(packSection, "minecraft:block/template_potted_azalea_bush", "plant", "side", "top");
+            case "block/template_rail_raised_ne" ->
+                    buildModel(packSection, "minecraft:block/template_rail_raised_ne", "rail");
+            case "block/template_rail_raised_sw" ->
+                    buildModel(packSection, "minecraft:block/template_rail_raised_sw", "rail");
+            case "block/template_redstone_torch" ->
+                    buildModel(packSection, "minecraft:block/template_redstone_torch", "torch");
+            case "block/template_redstone_torch_wall" ->
+                    buildModel(packSection, "minecraft:block/template_redstone_torch_wall", "torch");
+            case "block/template_sculk_shrieker" ->
+                    buildModel(packSection, "minecraft:block/template_sculk_shrieker", "bottom", "inner_top", "particle", "side", "top");
+            case "block/template_seagrass" -> buildModel(packSection, "minecraft:block/template_seagrass", "texture");
+            case "block/template_shelf_body" ->
+                    buildModel(packSection, "minecraft:block/template_shelf_body", "all", "particle");
+            case "block/template_shelf_center" ->
+                    buildModel(packSection, "minecraft:block/template_shelf_center", "all", "particle");
+            case "block/template_shelf_inventory" ->
+                    buildModel(packSection, "minecraft:block/template_shelf_inventory", "all", "particle");
+            case "block/template_shelf_left" ->
+                    buildModel(packSection, "minecraft:block/template_shelf_left", "all", "particle");
+            case "block/template_shelf_right" ->
+                    buildModel(packSection, "minecraft:block/template_shelf_right", "all", "particle");
+            case "block/template_shelf_unconnected" ->
+                    buildModel(packSection, "minecraft:block/template_shelf_unconnected", "all", "particle");
+            case "block/template_shelf_unpowered" ->
+                    buildModel(packSection, "minecraft:block/template_shelf_unpowered", "all", "particle");
+            case "block/template_single_face" ->
+                    buildModel(packSection, "minecraft:block/template_single_face", "texture");
+            case "block/template_three_candles" ->
+                    buildModel(packSection, "minecraft:block/template_three_candles", "all", "particle");
+            case "block/template_three_turtle_eggs" ->
+                    buildModel(packSection, "minecraft:block/template_three_turtle_eggs", "all");
+            case "block/template_torch" -> buildModel(packSection, "minecraft:block/template_torch", "torch");
+            case "block/template_torch_unlit" ->
+                    buildModel(packSection, "minecraft:block/template_torch_unlit", "torch");
+            case "block/template_torch_wall" -> buildModel(packSection, "minecraft:block/template_torch_wall", "torch");
+            case "block/template_torch_wall_unlit" ->
+                    buildModel(packSection, "minecraft:block/template_torch_wall_unlit", "torch");
+            case "block/template_trapdoor_bottom" ->
+                    buildModel(packSection, "minecraft:block/template_trapdoor_bottom", "texture");
+            case "block/template_trapdoor_open" ->
+                    buildModel(packSection, "minecraft:block/template_trapdoor_open", "texture");
+            case "block/template_trapdoor_top" ->
+                    buildModel(packSection, "minecraft:block/template_trapdoor_top", "texture");
+            case "block/template_turtle_egg" -> buildModel(packSection, "minecraft:block/template_turtle_egg", "all");
+            case "block/template_two_candles" ->
+                    buildModel(packSection, "minecraft:block/template_two_candles", "all", "particle");
+            case "block/template_two_turtle_eggs" ->
+                    buildModel(packSection, "minecraft:block/template_two_turtle_eggs", "all");
+            case "block/template_vault" ->
+                    buildModel(packSection, "minecraft:block/template_vault", "bottom", "front", "side", "top");
+            case "block/template_wall_post" -> buildModel(packSection, "minecraft:block/template_wall_post", "wall");
+            case "block/template_wall_side" -> buildModel(packSection, "minecraft:block/template_wall_side", "wall");
+            case "block/template_wall_side_tall" ->
+                    buildModel(packSection, "minecraft:block/template_wall_side_tall", "wall");
+            case "block/thin_block" -> buildModel(packSection, "minecraft:block/thin_block", "particle", "texture");
+            case "block/tinted_cross" -> buildModel(packSection, "minecraft:block/tinted_cross", "cross");
+            case "block/tinted_flower_pot_cross" ->
+                    buildModel(packSection, "minecraft:block/tinted_flower_pot_cross", "plant");
+            case "block/wall_inventory" -> buildModel(packSection, "minecraft:block/wall_inventory", "wall");
+
+            // Items
+            case "item/amethyst_bud" -> buildModel(packSection, "minecraft:item/amethyst_bud", "layer0");
+            case "item/bow" -> buildModel(packSection, "minecraft:item/bow", "layer0");
+            case "item/crossbow" -> buildModel(packSection, "minecraft:item/crossbow", "layer0");
+            case "item/generated" -> buildModel(packSection, "minecraft:item/generated", "layer0");
+            case "item/handheld" -> buildModel(packSection, "minecraft:item/handheld", "layer0");
+            case "item/handheld_mace" -> buildModel(packSection, "minecraft:item/handheld_mace", "layer0");
+            case "item/handheld_rod" -> buildModel(packSection, "minecraft:item/handheld_rod", "layer0");
+            case "item/spear_in_hand" -> buildModel(packSection, "minecraft:item/spear_in_hand", "layer0");
+            case "item/template_bed" -> buildModel(packSection, "minecraft:item/template_bed", "particle");
+            case "item/template_bundle_open_back" ->
+                    buildModel(packSection, "minecraft:item/template_bundle_open_back", "layer0");
+            case "item/template_bundle_open_front" ->
+                    buildModel(packSection, "minecraft:item/template_bundle_open_front", "layer0");
+            case "item/template_chest" -> buildModel(packSection, "minecraft:item/template_chest", "particle");
+            case "item/template_music_disc" -> buildModel(packSection, "minecraft:item/template_music_disc", "layer0");
+            case "item/template_shulker_box" ->
+                    buildModel(packSection, "minecraft:item/template_shulker_box", "particle");
+
+            default ->
+                    Logger.info(Message.WARNING__CONVERTER__NEXO__MODEL__PARENT_NOT_SUPPORTED, LogType.WARNING, "parent", parentModel, "item", this.itemId);
         }
     }
 
-    private void buildGeneratedModel(ConfigurationSection packSection, String parent, Template template) {
-        String texturePath = getTexturePath(packSection);
-        if (isValidString(texturePath)) {
-            String finalTexturePath = namespaced(texturePath);
-            String finalModelPath = finalTexturePath;
-            if (template.getType() == TemplateType.BLOCK) {
-                finalModelPath = filterModelPath(finalTexturePath);
+    private void buildModel(ConfigurationSection packSection, String parent, String... textureKeys) {
+        ConfigurationSection texturesSection = packSection.getConfigurationSection("textures");
+        if (texturesSection == null) {
+            texturesSection = packSection.getConfigurationSection("texture");
+        }
+
+        String singleTexture = null;
+        if (texturesSection == null && textureKeys.length == 1) {
+            singleTexture = packSection.getString("texture");
+            if (singleTexture == null) {
+                singleTexture = packSection.getString("textures");
             }
-            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(template, "%model_path%", finalModelPath, "%texture_path%", finalTexturePath);
-            ConfigurationSection generalSection = this.craftEngineItemUtils.getGeneralSection();
-            if (template.getType() == TemplateType.BLOCK) {
-                setSavedModelTemplates(parsedTemplate);
-                ConfigurationSection ceModelSection = generalSection.createSection("model");
-                ceModelSection.set("path", finalModelPath);
+        }
+
+        if (texturesSection == null && singleTexture == null) {
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE, LogType.WARNING, "item", this.itemId, "parent", parent);
+            return;
+        }
+
+        GenerationConfiguration generation = new GenerationConfiguration(parent);
+        String modelPath = null;
+
+        for (String textureKey : textureKeys) {
+            String texturePath;
+
+            if (texturesSection != null) {
+                texturePath = texturesSection.getString(textureKey);
             } else {
-                parsedTemplate.put("type", "minecraft:model");
-                generalSection.createSection("model", parsedTemplate);
+                texturePath = singleTexture;
             }
-        } else {
-            Logger.debug("No texture path found for item '" + this.itemId + "' despite parent_model being '" + parent + "'. Skipping texture conversion.", LogType.WARNING);
-        }
 
-    }
-
-    private void buildCubeTopModel(ConfigurationSection packSection) {
-        String sideTexture = packSection.getString("textures.side");
-        String topTexture = packSection.getString("textures.top");
-
-        if (isValidString(sideTexture) && isValidString(topTexture)) {
-            String finalSideTexture = namespaced(sideTexture);
-            String finalTopTexture = namespaced(topTexture);
-
-            if (isNotNull(finalSideTexture) && isNotNull(finalTopTexture)) {
-                String modelPath = finalSideTexture;
-                modelPath = filterModelPath(modelPath);
-                Map<String, Object> parseTemplate = InternalTemplateManager.parseTemplate(Template.MODEL_CUBE_TOP, "%model_path%", modelPath, "%texture_side_path%", finalSideTexture, "%texture_top_path%", finalTopTexture);
-                setSavedModelTemplates(parseTemplate);
-                ConfigurationSection ceModelSection = this.craftEngineItemUtils.getGeneralSection().createSection("model");
-                ceModelSection.set("path", modelPath);
+            if (isValidString(texturePath)) {
+                String finalTexturePath = namespaced(texturePath);
+                generation.addTexture(textureKey, finalTexturePath);
+                if (modelPath == null) {
+                    modelPath = finalTexturePath;
+                }
             } else {
-                Logger.debug("Failed to process textures for item '" + this.itemId + "'. Skipping texture conversion.", LogType.WARNING);
+                Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__GENERATED__MISSING_TEXTURE_KEY, LogType.WARNING, "item", this.itemId, "parent", parent, "key", textureKey);
+                return;
             }
-        } else {
-            Logger.debug("Missing side or top texture for item '" + this.itemId + "' despite parent_model being 'block/cube_top'. Skipping texture conversion.", LogType.WARNING);
         }
-    }
 
-    private static @NotNull String filterModelPath(String modelPath) {
-        for (String key : new String[]{"side","top"}){
-            if (modelPath.endsWith("_"+key)){
-                modelPath = modelPath.substring(0, modelPath.length() - ("_"+key).length());
-            }
+        if (modelPath != null) {
+            SimpleModelConfiguration model = new SimpleModelConfiguration(modelPath + "_" + UUID.randomUUID());
+            model.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(model);
         }
-        return modelPath;
     }
 
     /**
      * Determines the asset-id from the itemId or texture
      *
-     * @param packSection Nexo configuration section
+     * @param packSection      Nexo configuration section
      * @param suffixesToRemove List of suffixes to remove from the itemId
      * @return The asset-id or null if invalid
      */
     private String determineAssetId(ConfigurationSection packSection, List<String> suffixesToRemove) {
-        if (isValidString(this.assetId)){
+        if (isValidString(this.assetId)) {
             return this.assetId;
         }
 
         String texturePath = packSection.getString("texture");
-        if (isValidString(texturePath)){
+        if (isValidString(texturePath)) {
             String namespacedTexturePath = namespaced(texturePath);
-            if (isValidString(namespacedTexturePath)){
+            if (isValidString(namespacedTexturePath)) {
                 String[] split = this.itemId.split(":", 2);
                 String secondPart = removeEndWith(split[1], suffixesToRemove, null);
-                if (isValidString(secondPart)){
+                if (isValidString(secondPart)) {
                     return namespacedTexturePath.split(":", 2)[0] + ":" + secondPart;
                 }
             }
@@ -1113,9 +1867,19 @@ public class NexoItemConverter extends ItemConverter {
         String pulling2 = namespaced(notEmptyOrNull(pullingModels, 2) ? pullingModels.get(2) : packSection.getString("pulling_2_model"));
 
         if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)) {
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_BOW, "%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
+            UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+            pullingDispatch.setScale(0.05);
+            pullingDispatch.addEntry(0.65, new SimpleModelConfiguration(pulling1));
+            pullingDispatch.addEntry(0.90, new SimpleModelConfiguration(pulling2));
+            pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0));
+
+            ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+            usingItemCondition.setOnFalse(new SimpleModelConfiguration(baseModel));
+            usingItemCondition.setOnTrue(pullingDispatch);
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
         } else {
-            Logger.debug("Failed to process bow model paths for item '" + this.itemId + "'. Skipping bow model conversion.", LogType.WARNING);
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__BOW__PROCESS_FAILURE, LogType.WARNING, "item", this.itemId);
         }
     }
 
@@ -1129,20 +1893,36 @@ public class NexoItemConverter extends ItemConverter {
         String pulling1 = namespaced(notEmptyOrNull(pullingModels, 1) ? pullingModels.get(1) : packSection.getString("pulling_1_model"));
         String pulling2 = namespaced(notEmptyOrNull(pullingModels, 2) ? pullingModels.get(2) : packSection.getString("pulling_2_model"));
 
-        if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)){
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",InternalTemplateManager.parseTemplate(Template.MODEL_3D_CROSSBOW,"%charged_arrow_model_path%",arrowModel==null?pulling2:arrowModel,"%charged_rocket_model_path%",fireworkModel==null?pulling2:fireworkModel,"%default_model_path%",baseModel,"%pulling_0_model_path%",pulling0,"%pulling_1_model_path%",pulling1,"%pulling_2_model_path%",pulling2));
+        if (isNotNull(baseModel) && isNotNull(pulling0) && isNotNull(pulling1) && isNotNull(pulling2)) {
+            ChargeTypeSelectConfiguration chargeTypeSelect = new ChargeTypeSelectConfiguration();
+            chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ARROW, new SimpleModelConfiguration(arrowModel != null ? arrowModel : pulling2));
+            chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ROCKET, new SimpleModelConfiguration(fireworkModel != null ? fireworkModel : pulling2));
+            chargeTypeSelect.setFallback(new SimpleModelConfiguration(baseModel));
+
+            UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+            pullingDispatch.addEntry(0.58, new SimpleModelConfiguration(pulling1));
+            pullingDispatch.addEntry(1.0, new SimpleModelConfiguration(pulling2));
+            pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0));
+
+            ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+            usingItemCondition.setOnFalse(chargeTypeSelect);
+            usingItemCondition.setOnTrue(pullingDispatch);
+
+            this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
         } else {
-            Logger.debug("Failed to process crossbow model paths for item '" + this.itemId + "'. Skipping crossbow model conversion.", LogType.WARNING);
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__MODEL__CROSSBOW__PROCESS_FAILURE, LogType.WARNING, "item", this.itemId);
         }
     }
 
     @Override
-    public void convertOther(){
+    public void convertOther() {
         ConfigurationSection mechanicsSection = this.nexoItemSection.getConfigurationSection("Mechanics");
-        if (mechanicsSection == null) return;
+        if (mechanicsSection == null) {
+            return;
+        }
         Set<String> mechanicsKeys = mechanicsSection.getKeys(false);
         for (String mechanicsKey : mechanicsKeys) {
-            switch(mechanicsKey){
+            switch (mechanicsKey) {
                 case "furniture" -> {
                     ConfigurationSection nexoFurnitureSection = mechanicsSection.getConfigurationSection(mechanicsKey);
                     convertFurnitureMechanic(nexoFurnitureSection);
@@ -1151,336 +1931,638 @@ public class NexoItemConverter extends ItemConverter {
                     ConfigurationSection nexoCustomBlockSection = mechanicsSection.getConfigurationSection(mechanicsKey);
                     convertCustomBlockMechanic(nexoCustomBlockSection);
                 }
-                default -> {}
+                //TODO: convert energyblast mechanic
+                default -> {
+                }
             }
         }
     }
 
     private void convertCustomBlockMechanic(ConfigurationSection nexoCustomBlockSection) {
-        Map<String, Object> savedModel = getSavedModelTemplates();
-        if (savedModel.isEmpty()) return;
-        ConfigurationSection ceBehaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        ceBehaviorSection.set("type", "block_item");
-        String nexoCustomBlockType = nexoCustomBlockSection.getString("type","NOTEBLOCK");
-        ConfigurationSection ceBlockSection = getOrCreateSection(ceBehaviorSection, "block");
-        ConfigurationSection ceStateSection = getOrCreateSection(ceBlockSection, "state");
-        String state;
-        if (nexoCustomBlockType.equals("CHORUSBLOCK")){
-            state = "leaves";
-        } else if (nexoCustomBlockType.equals("TRIPWIRE")){
-            state = "tripwire";
-        } else {
-            state = "solid";
+        ModelConfiguration modelConfiguration = this.craftEngineItemsConfiguration.getModelConfiguration();
+        if (modelConfiguration == null) {
+            return;
         }
-        ceStateSection.set("auto-state",state);
-        ceStateSection.createSection("model", savedModel);
-        ConfigurationSection sounds = nexoCustomBlockSection.getConfigurationSection("block_sounds");
-        if (sounds != null) {
-            ConfigurationSection settings = getOrCreateSection(ceBlockSection, "settings");
-            for (String soundKey : new String[]{"place_sound","break_sound","hit_sound","step_sound","fall_sound"}) {
-                String soundValue = sounds.getString(soundKey);
-                if (isValidString(soundValue)) {
-                    ConfigurationSection ceSoundsSection = getOrCreateSection(settings, "sounds");
-                    String ceSoundKey = soundKey.replace("_sound", "");
-                    ceSoundsSection.set(ceSoundKey, soundValue);
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
+        ConfigurationSection logStripSection = nexoCustomBlockSection.getConfigurationSection("log_strip");
+        if (isNotNull(logStripSection)) {
+            String strippedBlock = logStripSection.getString("stripped_log");
+            if (isValidString(strippedBlock)) {
+                ItemConverter resolvedDependency = this.getResolvedDependency(strippedBlock);
+                if (isNotNull(resolvedDependency)) {
+                    blockConfiguration.addBehavior(new StrippableBlockBehavior().setStripped(resolvedDependency.getItemId()));
+                }
+            }
+            String drop = logStripSection.getString("drop");
+            if (isValidString(drop)) {
+                Logger.info("Custom block " + this.itemId + " has a log_strip configuration with a drop defined. This is not supported and will be ignored.", LogType.INFO);
+            }
+        }
+        String nexoCustomBlockType = nexoCustomBlockSection.getString("type", "NOTEBLOCK");
+        int customVariation = nexoCustomBlockSection.getInt("custom_variation", -1);
+        CraftEngineBlockState state;
+        if (nexoCustomBlockType.equalsIgnoreCase("CHORUSBLOCK")) {
+            state = CraftEngineBlockState.LEAVES;
+            if (customVariation >= 0) {
+                BlockData blockData = Bukkit.createBlockData(Material.CHORUS_PLANT);
+                if (blockData instanceof MultipleFacing multipleFacing) {
+
+                    multipleFacing.setFace(BlockFace.NORTH, (customVariation & 0b000001) != 0);
+                    multipleFacing.setFace(BlockFace.SOUTH, (customVariation & 0b000010) != 0);
+                    multipleFacing.setFace(BlockFace.EAST, (customVariation & 0b000100) != 0);
+                    multipleFacing.setFace(BlockFace.WEST, (customVariation & 0b001000) != 0);
+                    multipleFacing.setFace(BlockFace.UP, (customVariation & 0b010000) != 0);
+                    multipleFacing.setFace(BlockFace.DOWN, (customVariation & 0b100000) != 0);
+
+                    BlockStatesMapper.getInstance().storeMapping(
+                            this.getConverter().getPluginType(),
+                            blockData,
+                            this.itemId
+                    );
+                }
+            }
+        } else if (nexoCustomBlockType.equalsIgnoreCase("TRIPWIRE")) {
+            state = CraftEngineBlockState.TRIPWIRE;
+            if (customVariation >= 0) {
+                BlockData blockData = Bukkit.createBlockData(Material.TRIPWIRE);
+                if (blockData instanceof Tripwire tripwire) {
+
+                    tripwire.setFace(BlockFace.NORTH, (customVariation & 0b0000001) != 0);
+                    tripwire.setFace(BlockFace.SOUTH, (customVariation & 0b0000010) != 0);
+                    tripwire.setFace(BlockFace.EAST, (customVariation & 0b0000100) != 0);
+                    tripwire.setFace(BlockFace.WEST, (customVariation & 0b0001000) != 0);
+
+                    tripwire.setAttached((customVariation & 0b0010000) != 0);
+
+                    tripwire.setDisarmed((customVariation & 0b0100000) != 0);
+
+                    tripwire.setPowered((customVariation & 0b1000000) != 0);
+
+                    BlockStatesMapper.getInstance().storeMapping(
+                            this.getConverter().getPluginType(),
+                            blockData,
+                            this.itemId
+                    );
+                }
+            }
+        } else {
+            state = CraftEngineBlockState.SOLID;
+            if (customVariation >= 0 && nexoCustomBlockType.equalsIgnoreCase("NOTEBLOCK")) {
+                try {
+                    BlockStatesMapper.getInstance().convertNoteBlockState(this.getConverter().getPluginType(), this.itemId, customVariation);
+                } catch (IllegalArgumentException e) {
+                    Logger.debug(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__BLOCK_DATA_FAILURE, LogType.WARNING, "variation", customVariation, "item", this.itemId);
+                    e.printStackTrace();
                 }
             }
         }
-        double hardness = nexoCustomBlockSection.getDouble("hardness",2.0);
-        if (hardness >= 0 && hardness != 2.0){
-            ConfigurationSection settings = this.craftEngineItemUtils.getSettingsSection();
-            settings.set("hardness", hardness);
+        ConfigurationSection directionalSection = nexoCustomBlockSection.getConfigurationSection("directional");
+        if (isNotNull(directionalSection)) {
+            try {
+                NexoDirectionBlock directionBlock = NexoDirectionBlock.valueOf(directionalSection.getString("type", "").toUpperCase());
+                switch (directionBlock) {
+                    case LOG -> {
+                        String xBlock = directionalSection.getString("x_block", "");
+                        String yBlock = directionalSection.getString("y_block", "");
+                        String zBlock = directionalSection.getString("z_block", "");
+                        if (isValidString(yBlock) && isValidString(xBlock) && isValidString(zBlock)) {
+                            ItemConverter xResolvedDependency = this.getResolvedDependency(xBlock);
+                            ItemConverter yResolvedDependency = this.getResolvedDependency(yBlock);
+                            ItemConverter zResolvedDependency = this.getResolvedDependency(zBlock);
+                            if (isNotNull(yResolvedDependency) && isNotNull(xResolvedDependency) && isNotNull(zResolvedDependency)) {
+                                xResolvedDependency.markAsInternalOnly();
+                                yResolvedDependency.markAsInternalOnly();
+                                zResolvedDependency.markAsInternalOnly();
+
+                                ModelConfiguration xModelConfiguration = xResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
+                                ModelConfiguration yModelConfiguration = yResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
+                                ModelConfiguration zModelConfiguration = zResolvedDependency.getCraftEngineItemsConfiguration().getModelConfiguration();
+                                if (isNotNull(xModelConfiguration) && isNotNull(yModelConfiguration) && isNotNull(zModelConfiguration)) {
+                                    blockConfiguration.setStateBlock(
+                                            new PillarBlockState(
+                                                    Plugins.NEXO,
+                                                    this.itemId,
+                                                    state, yModelConfiguration,
+                                                    state, xModelConfiguration,
+                                                    state, zModelConfiguration
+                                            )
+                                    );
+                                } else {
+                                    Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to missing model configuration in axis blocks", LogType.INFO);
+                                }
+                            } else {
+                                if (!isNotNull(xResolvedDependency)) {
+                                    Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to unknown x_block dependency " + xBlock, LogType.INFO);
+                                }
+                                if (!isNotNull(yResolvedDependency)) {
+                                    Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to unknown y_block dependency " + yBlock, LogType.INFO);
+                                }
+                                if (!isNotNull(zResolvedDependency)) {
+                                    Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to unknown z_block dependency " + zBlock, LogType.INFO);
+                                }
+                            }
+                        } else {
+                            if (!isValidString(xBlock)) {
+                                Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to missing x_block", LogType.INFO);
+                            }
+                            if (!isValidString(yBlock)) {
+                                Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to missing y_block", LogType.INFO);
+                            }
+                            if (!isValidString(zBlock)) {
+                                Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to missing z_block", LogType.INFO);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Logger.info("Ignoring directional configuration for custom block " + this.itemId + " due to unknown type " + directionalSection.getString("type"), LogType.INFO);
+            }
+        } else {
+            blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.NEXO, state, this.itemId, modelConfiguration));
         }
-        boolean canBeBeaconBaseBlock = nexoCustomBlockSection.getBoolean("beacon_base_block",false);
-        if (canBeBeaconBaseBlock){
-            ConfigurationSection settings = this.craftEngineItemUtils.getSettingsSection();
-            List<String> blockTags = settings.getStringList("tags");
-            if (!blockTags.contains("minecraft:beacon_base_blocks")){
-                blockTags.add("minecraft:beacon_base_blocks");
-                settings.set("tags",blockTags);
+        ConfigurationSection sounds = nexoCustomBlockSection.getConfigurationSection("block_sounds");
+        BlockSettings blockSettings = blockConfiguration.getBlockSettings();
+        if (sounds != null) {
+            String placeSound = sounds.getString("place_sound");
+            if (isValidString(placeSound)) {
+                blockSettings.setPlaceSound(placeSound);
+            }
+            String breakSound = sounds.getString("break_sound");
+            if (isValidString(breakSound)) {
+                blockSettings.setBreakSound(breakSound);
+            }
+            String hitSound = sounds.getString("hit_sound");
+            if (isValidString(hitSound)) {
+                blockSettings.setHitSound(hitSound);
+            }
+            String stepSound = sounds.getString("step_sound");
+            if (isValidString(stepSound)) {
+                blockSettings.setStepSound(stepSound);
+            }
+            String fallSound = sounds.getString("fall_sound");
+            if (isValidString(fallSound)) {
+                blockSettings.setFallSound(fallSound);
             }
         }
-        boolean isFallingBlock = nexoCustomBlockSection.getBoolean("is_falling",false);
-        if (isFallingBlock){
-            ConfigurationSection ceBlockBehaviorSection = getOrCreateSection(ceBlockSection, "behavior");
-            ceBlockBehaviorSection.set("type","falling_block");
+        double hardness = nexoCustomBlockSection.getDouble("hardness", 2.0);
+        blockSettings.setHardness((float) hardness);
+        boolean canBeBeaconBaseBlock = nexoCustomBlockSection.getBoolean("beacon_base_block", false);
+        if (canBeBeaconBaseBlock) {
+            blockSettings.addTag("minecraft:beacon_base_blocks");
+        }
+        boolean isFallingBlock = nexoCustomBlockSection.getBoolean("is_falling", false);
+        if (isFallingBlock) {
+            blockConfiguration.addBehavior(new FallingBlockBehavior());
         }
         ConfigurationSection nexoSaplingSection = nexoCustomBlockSection.getConfigurationSection("sapling");
-        if (isNotNull(nexoSaplingSection)){
-            Logger.debug("Sapling behavior conversion for custom block item '"+this.itemId+"' is not supported yet. Skipping sapling behavior.", LogType.WARNING);
+        if (isNotNull(nexoSaplingSection)) {
+            Logger.debug(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__SAPLING_NOT_SUPPORTED, LogType.WARNING, "item", this.itemId);
             // TODO implement sapling behavior conversion
-            boolean growsNaturally = nexoSaplingSection.getBoolean("grows_naturally",true);
-            if (!growsNaturally){
-                Logger.info("CraftEngine only supports naturally growing saplings. The sapling for custom block item '"+this.itemId+"' will grow naturally.", LogType.INFO);
+            boolean growsNaturally = nexoSaplingSection.getBoolean("grows_naturally", true);
+            if (!growsNaturally) {
+                Logger.info(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__SAPLING_NATURAL_ONLY, LogType.INFO, "item", this.itemId);
             }
         }
         ConfigurationSection nexoDropSection = nexoCustomBlockSection.getConfigurationSection("drop");
-        if (isNotNull(nexoDropSection)){
-            boolean dropSelfWithSilktouch = nexoDropSection.getBoolean("silktouch",false);
-            boolean fortuneAffectsDrop = nexoDropSection.getBoolean("fortune",false);
-            String minimalType = nexoDropSection.getString("minimal_type",null);
-            String bestTool = nexoDropSection.getString("best_tool",null);
-            if (isValidString(minimalType)){
+        if (isNotNull(nexoDropSection)) {
+            boolean dropSelfWithSilktouch = nexoDropSection.getBoolean("silktouch", false);
+            boolean fortuneAffectsDrop = nexoDropSection.getBoolean("fortune", false);
+            String minimalType = nexoDropSection.getString("minimal_type", null);
+            String bestTool = nexoDropSection.getString("best_tool", null);
+            List<Map<?, ?>> loots = nexoDropSection.getMapList("loots");
+            if (isValidString(minimalType)) {
                 NexoMinimalType nexoMinimalType = null;
                 try {
                     nexoMinimalType = NexoMinimalType.valueOf(minimalType.toUpperCase());
-                } catch (IllegalArgumentException e){
-                    Logger.debug("Unknown minimal_type '"+minimalType+"' for custom block item '"+this.itemId+"'. Skipping minimal_type conversion.", LogType.WARNING);
+                } catch (IllegalArgumentException e) {
+                    Logger.debug(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__UNKNOWN_MINIMAL_TYPE, LogType.WARNING, "type", minimalType, "item", this.itemId);
                 }
-                if (isNotNull(nexoMinimalType)){
-                    ConfigurationSection ceBlockSettings = getOrCreateSection(ceBlockSection, "settings");
-                    ceBlockSettings.set("require-correct-tools",true);
-                    ceBlockSettings.set("correct-tools", nexoMinimalType.getCorrectTools());
+                if (isNotNull(nexoMinimalType)) {
+                    blockSettings.setRequireCorrectTools(true);
+                    blockSettings.setCorrectTools(nexoMinimalType.getCorrectTools());
                 }
             }
-            if (isValidString(bestTool)){
+            if (isValidString(bestTool)) {
                 NexoBestTool nexoBestTool = null;
                 try {
                     nexoBestTool = NexoBestTool.valueOf(bestTool.toUpperCase());
-                } catch (IllegalArgumentException e){
-                    Logger.debug("Unknown best_tool '"+bestTool+"' for custom block item '"+this.itemId+"'. Skipping best_tool conversion.", LogType.WARNING);
+                } catch (IllegalArgumentException e) {
+                    Logger.debug(Message.WARNING__CONVERTER__NEXO__CUSTOM_BLOCK__UNKNOWN_BEST_TOOL, LogType.WARNING, "tool", bestTool, "item", this.itemId);
                 }
-                if (isNotNull(nexoBestTool)){
-                    ConfigurationSection ceBlockSettings = getOrCreateSection(ceBlockSection, "settings");
-                    ceBlockSettings.set("tags", ceBlockSettings.getStringList("tags").add(nexoBestTool.getBestTool()));
+                if (isNotNull(nexoBestTool)) {
+                    blockSettings.addTag(nexoBestTool.getBestTool());
                 }
             }
-            //TODO: implement drop conversion according to silktouch and fortune
+
+            List<ItemLoot> itemLoots = parseItemLoots(loots);
+
+            if (dropSelfWithSilktouch && !fortuneAffectsDrop) {
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool pool = new LootPool();
+                pool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+                pool.addEntry(new ItemEntry(this.itemId));
+                lootTable.addPool(pool);
+
+                blockConfiguration.setLootConfiguration(lootTable);
+            } else if (!dropSelfWithSilktouch && fortuneAffectsDrop) {
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
+                }
+
+                blockConfiguration.setLootConfiguration(lootTable);
+            } else if (dropSelfWithSilktouch) {
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool silkTouchPool = new LootPool();
+                silkTouchPool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+                silkTouchPool.addEntry(new ItemEntry(this.itemId));
+                lootTable.addPool(silkTouchPool);
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addCondition(new InvertedCondition(new EnchantmentCondition("minecraft:silk_touch>=1")));
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
+                }
+
+                blockConfiguration.setLootConfiguration(lootTable);
+            } else {
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+                for (ItemLoot loot : itemLoots) {
+                    LootPool pool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    pool.addEntry(entry);
+                    pool.addCondition(new SurvivesExplosionCondition());
+                    lootTable.addPool(pool);
+                }
+                blockConfiguration.setLootConfiguration(lootTable);
+            }
         }
+        this.getCraftEngineItemsConfiguration().addItemConfiguration(blockConfiguration);
     }
 
     private void convertFurnitureMechanic(ConfigurationSection nexoFurnitureMechanicsSection) {
         String nexoMEGModel = nexoFurnitureMechanicsSection.getString("modelengine_id");
         String nexoBetterModel = nexoFurnitureMechanicsSection.getString("better-model");
-        ConfigurationSection ceBehaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        ceBehaviorSection.set("type", "furniture_item");
-        ConfigurationSection ceSettingsSection = getOrCreateSection(ceBehaviorSection, "settings");
-        ceSettingsSection.set("item", this.itemId);
+
+        FurnitureConfiguration furnitureConfiguration = new FurnitureConfiguration();
+
+        // --- Sounds ---
         ConfigurationSection nexoBlockSoundSection = nexoFurnitureMechanicsSection.getConfigurationSection("block_sounds");
-        if (isNotNull(nexoBlockSoundSection)){
-            ConfigurationSection ceBlockSoundSection = getOrCreateSection(ceSettingsSection, "sounds");
-            setIfNotEmpty(ceBlockSoundSection, "place", nexoBlockSoundSection.getString("place_sound"));
-            setIfNotEmpty(ceBlockSoundSection, "break", nexoBlockSoundSection.getString("break_sound"));
-            // hit_sound / step_sound/ fall_sound are not supported in CE for furniture
+        if (isNotNull(nexoBlockSoundSection)) {
+            FurnitureSettings furnitureSettings = furnitureConfiguration.getOrCreateSettings(this.itemId);
+            furnitureSettings.setPlaceSound(nexoBlockSoundSection.getString("place_sound"));
+            furnitureSettings.setBreakSound(nexoBlockSoundSection.getString("break_sound"));
+            // hit_sound / step_sound / fall_sound are not supported in CE for furniture
         }
+
+        // --- Rotation ---
         FurnitureRotation furnitureRotation = FurnitureRotation.EIGHT;
-        if (!nexoFurnitureMechanicsSection.getBoolean("rotatable",true)){
+        if (!nexoFurnitureMechanicsSection.getBoolean("rotatable", true)) {
             furnitureRotation = FurnitureRotation.FOUR;
         }
         String restrictedRotation = nexoFurnitureMechanicsSection.getString("restricted_rotation");
-        if (isValidString(restrictedRotation)){
-            if (restrictedRotation.equals("VERY_STRICT")){
+        if (isValidString(restrictedRotation)) {
+            if (restrictedRotation.equals("VERY_STRICT")) {
                 furnitureRotation = FurnitureRotation.FOUR;
-            } else if (restrictedRotation.equals("STRICT")){
+            } else if (restrictedRotation.equals("STRICT")) {
                 furnitureRotation = FurnitureRotation.EIGHT;
             }
         }
-        FloatsUtils seatPosition = new FloatsUtils(3,new float[]{0f,0f,0f});
+
+        // --- Seats ---
+        FloatsUtils seatPosition = new FloatsUtils(3, new float[]{0f, 0f, 0f});
         List<String> seats = nexoFurnitureMechanicsSection.getStringList("seats");
-        if (!seats.isEmpty()){
+        if (!seats.isEmpty()) {
             String seat = seats.getFirst();
-            String[] split = seat.split(",",3);
+            String[] split = seat.split(",", 3);
             try {
                 seatPosition.setValue(0, Float.parseFloat(split[0].trim()));
                 seatPosition.setValue(1, Float.parseFloat(split[1].trim()));
                 seatPosition.setValue(2, Float.parseFloat(split[2].trim()));
-            } catch (Exception e){
-                Logger.debug("Invalid seat format for furniture item '" + this.itemId + "', expected 3 comma-separated float values but got '"+seat+"'. Defaulting to (0,0,0).", LogType.WARNING);
+            } catch (Exception e) {
+                Logger.debug(Message.WARNING__FURNITURE__INVALID_SEAT_FORMAT, LogType.WARNING, "item", this.itemId, "value", seat);
             }
         }
 
-        ConfigurationSection nexoPropertiesSection = nexoFurnitureMechanicsSection.getConfigurationSection("properties");
-        Billboard transformType = Billboard.FIXED;
+        // --- Display properties ---
+        net.momirealms.craftengine.core.entity.display.Billboard transformType = net.momirealms.craftengine.core.entity.display.Billboard.FIXED;
         ItemDisplayType displayType = ItemDisplayType.FIXED;
+        FloatsUtils displayTranslation = new FloatsUtils(3, new float[]{0f, 0.5f, 0f});
+        FloatsUtils scale = new FloatsUtils(3, new float[]{1f, 1f, 1f});
 
-        FloatsUtils displayTranslation = new FloatsUtils(3,new float[]{0f,0.5f,0f});;
-        FloatsUtils scale = new FloatsUtils(3,new float[]{1f,1f,1f});
-        if (isNotNull(nexoPropertiesSection)){
-            String display_transform = nexoPropertiesSection.getString("display_transform","NONE");
+        ConfigurationSection nexoPropertiesSection = nexoFurnitureMechanicsSection.getConfigurationSection("properties");
+        if (isNotNull(nexoPropertiesSection)) {
+            String display_transform = nexoPropertiesSection.getString("display_transform", "NONE");
             try {
                 displayType = ItemDisplayType.valueOf(display_transform);
-            } catch (IllegalArgumentException e){
-                Logger.debug("Unknown display_transform '"+display_transform+"' for furniture item '"+this.itemId+"', defaulting to NONE.", LogType.WARNING);
+            } catch (IllegalArgumentException e) {
+                Logger.debug(Message.WARNING__FURNITURE__UNKNOWN_DISPLAY_TRANSFORM, LogType.WARNING, "item", this.itemId, "transform", display_transform);
                 displayType = ItemDisplayType.NONE;
             }
-            String tracking_rotation = nexoPropertiesSection.getString("tracking_rotation",Billboard.FIXED.name());
+            String tracking_rotation = nexoPropertiesSection.getString("tracking_rotation", net.momirealms.craftengine.core.entity.display.Billboard.FIXED.name());
             try {
                 transformType = Billboard.valueOf(tracking_rotation);
-            } catch (IllegalArgumentException e){
-                Logger.debug("Unknown tracking_rotation '"+tracking_rotation+"' for furniture item '"+this.itemId+"', defaulting to FIXED.", LogType.WARNING);
+            } catch (IllegalArgumentException e) {
+                Logger.debug(Message.WARNING__FURNITURE__UNKNOWN_TRACKING_ROTATION, LogType.WARNING, "item", this.itemId, "rotation", tracking_rotation);
             }
             List<Float> translations = nexoPropertiesSection.getFloatList("translation");
-            if (translations.size() >= 3){
+            if (translations.size() >= 3) {
                 displayTranslation.setValue(0, translations.get(0));
                 displayTranslation.setValue(1, translations.get(1));
                 displayTranslation.setValue(2, translations.get(2));
-            } else {
-                if (!translations.isEmpty()) {
-                    Logger.debug("Invalid translation size for furniture item '" + this.itemId + "', expected 3 values but got " + translations.size() + ". Defaulting to (0,0,0).", LogType.WARNING);
-                }
+            } else if (!translations.isEmpty()) {
+                Logger.debug(Message.WARNING__FURNITURE__INVALID_TRANSLATION_SIZE, LogType.WARNING, "item", this.itemId, "size", translations.size());
             }
             String scales = nexoPropertiesSection.getString("scale");
-            if (isNotNull(scales)){
+            if (isNotNull(scales)) {
                 String[] split = scales.split(",", 3);
                 try {
                     scale.setValue(0, Float.parseFloat(split[0].trim()));
                     scale.setValue(1, Float.parseFloat(split[1].trim()));
                     scale.setValue(2, Float.parseFloat(split[2].trim()));
-                } catch (Exception e){
-                    Logger.debug("Invalid scale format for furniture item '" + this.itemId + "', expected 3 comma-separated float values but got '"+scales+"'. Defaulting to (1,1,1).", LogType.WARNING);
+                } catch (Exception e) {
+                    Logger.debug(Message.WARNING__FURNITURE__INVALID_SCALE_FORMAT, LogType.WARNING, "item", this.itemId, "value", scales);
                 }
             }
         }
+
+        // --- Loot ---
         ConfigurationSection dropSection = nexoFurnitureMechanicsSection.getConfigurationSection("drop");
-        if (isNotNull(dropSection)){
-            // TODO: Support for nexo drop
-            boolean dropSelfWithSilktouch = dropSection.getBoolean("silktouch",false);
-            boolean fortuneAffectsDrop = dropSection.getBoolean("fortune",false);
-            String minimal_type = dropSection.getString("minimal_type",null);
-            String best_tool = dropSection.getString("best_tool",null);
+        if (isNotNull(dropSection)) {
+            boolean dropSelfWithSilktouch = dropSection.getBoolean("silktouch", false);
+            boolean fortuneAffectsDrop = dropSection.getBoolean("fortune", false);
+            String minimal_type = dropSection.getString("minimal_type", null);
+            String best_tool = dropSection.getString("best_tool", null);
             List<Map<?, ?>> loots = dropSection.getMapList("loots");
-            List<ItemLoot> itemLoots = new ArrayList<>();
-            for (Map<?, ?> lootMap : loots){
-                ItemLoot itemLoot = null;
-                int minAmount = 1;
-                int maxAmount = 1;
-                Object amount = lootMap.get("amount");
-                if (amount instanceof Integer intAmount){
-                    minAmount = intAmount;
-                    maxAmount = intAmount;
-                } else if (amount instanceof String amountString){
-                    String[] split = amountString.split("..",2);
-                    try {
-                        minAmount = Integer.parseInt(split[0].trim());
-                        if (split.length == 2){
-                            maxAmount = Integer.parseInt(split[1].trim());
-                        } else {
-                            maxAmount = minAmount;
-                        }
-                    } catch (NumberFormatException e){
-                        Logger.debug("Invalid amount format '"+amountString+"' for furniture item '"+this.itemId+"'. Defaulting to 1.", LogType.WARNING);
-                    }
-                }
-                float probability = 1.0f;
-                Object probObj = lootMap.get("probability");
-                if (probObj instanceof Number num){
-                    probability = num.floatValue();;
-                } else if (probObj instanceof String probString){
-                    try {
-                        probability = Float.parseFloat(probString);
-                    } catch (NumberFormatException e){
-                        Logger.debug("Invalid probability format '"+probString+"' for furniture item '"+this.itemId+"'. Defaulting to 1.0.", LogType.WARNING);
-                    }
-                }
-                if (lootMap.get("nexo_item") instanceof String nexoItemString){
-                    itemLoot = new CraftEngineItemLoot(nexoItemString, minAmount, maxAmount, probability);
-                } else if (lootMap.get("minecraft_type") instanceof String minecraftTypeString){
-                    itemLoot = new MinecraftItemLoot(minecraftTypeString, minAmount, maxAmount, probability);
-                }
-                if (isNotNull(itemLoot))
-                    itemLoots.add(itemLoot);
+            List<ItemLoot> itemLoots = parseItemLoots(loots);
+            if (isValidString(minimal_type) || isValidString(best_tool)) {
+                Logger.debug(Message.WARNING__FURNITURE__CUSTOM_DROP_CONDITIONS_NOT_SUPPORTED, LogType.WARNING, "item", this.itemId);
             }
-            if (isValidString(minimal_type) || isValidString(best_tool)){
-                Logger.debug("Custom drop conditions (minimal_type, best_tool) for furniture item '"+this.itemId+"' are not supported yet. Skipping custom drop conditions.", LogType.WARNING);
-            }
-            if (dropSelfWithSilktouch && !fortuneAffectsDrop){
-                ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-                ceFurnitureSection.set("loot", InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_SILK_TOUCH_ONLY, "%type%", "item", "%item%", this.itemId));
-            } else if (!dropSelfWithSilktouch && fortuneAffectsDrop){
-                if (itemLoots.isEmpty()){
-                    Logger.info("Furniture item '"+this.itemId+"' has fortune-based drop enabled but no loots defined. Please define loots to use fortune-based drops.");
-                } else {
-                    //TODO: Wait for Ce support to implement this
+            if (dropSelfWithSilktouch && !fortuneAffectsDrop) {
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool pool = new LootPool();
+                pool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+
+                pool.addEntry(new FurnitureItemEntry(this.itemId));
+
+                lootTable.addPool(pool);
+                furnitureConfiguration.setLoot(lootTable);
+            } else if (!dropSelfWithSilktouch && fortuneAffectsDrop) {
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
                 }
-            } else if (dropSelfWithSilktouch){ // fortuneAffectsDrop == True
-                //TODO: Wait for Ce support to implement this
+
+                furnitureConfiguration.setLoot(lootTable);
+
+            } else if (dropSelfWithSilktouch) {
+                // fortuneAffectsDrop == true && dropSelfWithSilktouch == true
+                LootTable lootTable = new LootTable();
+
+                LootPool silkTouchPool = new LootPool();
+                silkTouchPool.addCondition(new EnchantmentCondition("minecraft:silk_touch>=1"));
+                silkTouchPool.addEntry(new FurnitureItemEntry(this.itemId));
+                lootTable.addPool(silkTouchPool);
+
+                for (ItemLoot loot : itemLoots) {
+                    LootPool fortunePool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    entry.addCondition(new InvertedCondition(new EnchantmentCondition("minecraft:silk_touch>=1")));
+                    entry.addFunction(new ApplyBonusFunction("minecraft:fortune", new OreDropsFormula()));
+                    entry.addFunction(new ExplosionDecayFunction());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+
+                    fortunePool.addEntry(entry);
+                    lootTable.addPool(fortunePool);
+                }
+
+                furnitureConfiguration.setLoot(lootTable);
+            } else {
+                // fortuneAffectsDrop == false && dropSelfWithSilktouch == false
+                LootTable lootTable = new LootTable();
+                for (ItemLoot loot : itemLoots) {
+                    LootPool pool = new LootPool();
+                    ItemEntry entry = new ItemEntry(loot.getItemName());
+                    if (loot.getMinAmount() != 1 || loot.getMaxAmount() != 1) {
+                        entry.addFunction(new LimitCountFunction(loot.getMinAmount(), loot.getMaxAmount()));
+                    }
+                    if (loot.getProbability() < 1.0f) {
+                        entry.addCondition(new RandomCondition(loot.getProbability()));
+                    }
+                    pool.addEntry(entry);
+                    pool.addCondition(new SurvivesExplosionCondition());
+                    lootTable.addPool(pool);
+                }
+                furnitureConfiguration.setLoot(lootTable);
             }
         } else {
-            ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-            ceFurnitureSection.set("loot", InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_BASIC_DROP, "%type%","furniture_item","%item%", this.itemId));
+            LootTable lootConfiguration = new LootTable();
+            LootPool pool = new LootPool();
+            pool.addCondition(new SurvivesExplosionCondition());
+            pool.addEntry(new FurnitureItemEntry(this.itemId));
+            lootConfiguration.addPool(pool);
+            furnitureConfiguration.setLoot(lootConfiguration);
         }
+
+        // --- Placements ---
+        Set<FurniturePlacement> placementKeys = new HashSet<>();
         ConfigurationSection limitedPlacingSection = nexoFurnitureMechanicsSection.getConfigurationSection("limited_placing");
-        Set<FurniturePlacement> noLimitedPlacingKeys = new HashSet<>();
-        if (isNotNull(limitedPlacingSection)){
-            boolean limitedRoof = limitedPlacingSection.getBoolean("roof", false);
-            boolean limitedFloor = limitedPlacingSection.getBoolean("floor", false);
-            boolean limitedWall = limitedPlacingSection.getBoolean("wall", false);
-            if (limitedFloor){
-                noLimitedPlacingKeys.add(FurniturePlacement.GROUND);
+        if (isNotNull(limitedPlacingSection)) {
+            if (limitedPlacingSection.getBoolean("floor", false)) {
+                placementKeys.add(FurniturePlacement.GROUND);
             }
-            if (limitedWall){
-                noLimitedPlacingKeys.add(FurniturePlacement.WALL);
+            if (limitedPlacingSection.getBoolean("wall", false)) {
+                placementKeys.add(FurniturePlacement.WALL);
             }
-            if (limitedRoof){
-                noLimitedPlacingKeys.add(FurniturePlacement.CEILING);
+            if (limitedPlacingSection.getBoolean("roof", false)) {
+                placementKeys.add(FurniturePlacement.CEILING);
             }
         } else {
-            noLimitedPlacingKeys.addAll(List.of(FurniturePlacement.values()));
+            placementKeys.addAll(List.of(FurniturePlacement.values()));
         }
-        if (!noLimitedPlacingKeys.isEmpty()){
-            if (isValidString(nexoBetterModel) || isValidString(nexoMEGModel)){
-                for (FurniturePlacement placement : noLimitedPlacingKeys){
-                    ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-                    ConfigurationSection cePlacementSection = getOrCreateSection(ceFurnitureSection, "placement");
-                    ConfigurationSection ceTypePlacementSection = cePlacementSection.createSection(placement.name().toLowerCase());
-                    if (isValidString(nexoBetterModel)){
-                        ceTypePlacementSection.set("better-model", nexoBetterModel);
-                    } else if (isValidString(nexoMEGModel)){
-                        ceTypePlacementSection.set("model-engine", nexoMEGModel);
+
+        if (!placementKeys.isEmpty()) {
+            if (isValidString(nexoBetterModel) || isValidString(nexoMEGModel)) {
+                for (FurniturePlacement placement : placementKeys) {
+                    Placement p = furnitureConfiguration.getOrCreatePlacement(placement);
+                    if (isValidString(nexoBetterModel)) {
+                        p.setBetterModel(nexoBetterModel);
+                    } else {
+                        p.setModelEngine(nexoMEGModel);
                     }
                 }
-                return;
-            }
-            List<Map<String,Object>> elements = new ArrayList<>();
-            Map<String,Object> map = new HashMap<>();
-            map.put("item", this.itemId);
-            map.put("display-transform", displayType.name());
-            map.put("billboard", transformType.name());
-            map.put("translation", displayTranslation.toString());
-            map.put("scale", scale.toString());
-            elements.add(map);
-            List<Map<String,Object>> hitboxes = new ArrayList<>();
-            ConfigurationSection nexoHitboxesSection = nexoFurnitureMechanicsSection.getConfigurationSection("hitbox");
-            if (isNotNull(nexoHitboxesSection)){
-                // Parse barriers (simple shulker hitboxes)
-                List<String> barriersList = nexoHitboxesSection.getStringList("barriers");
-                List<Position> barrierPositions = expandBarrierPositions(barriersList);
-                for (Position pos : barrierPositions){
-                    Map<String,Object> hitboxMap = new HashMap<>();
-                    hitboxMap.put("type","shulker");
-                    hitboxMap.put("position",pos.toString());
-                    hitboxes.add(hitboxMap);
+            } else {
+                // Build element
+                ItemDisplayElement element = new ItemDisplayElement(this.itemId);
+                element.setDisplayTransform(displayType);
+                element.display().setBillboard(transformType);
+                element.display().setTranslation(displayTranslation.getValue(0), displayTranslation.getValue(1), displayTranslation.getValue(2));
+                element.display().setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
+
+                // Build hitboxes
+                List<Hitbox> hitboxList = new ArrayList<>();
+                ConfigurationSection nexoHitboxesSection = nexoFurnitureMechanicsSection.getConfigurationSection("hitbox");
+                if (isNotNull(nexoHitboxesSection)) {
+                    AtomicBoolean seatsAdded = new AtomicBoolean(false);
+
+                    // Barriers
+                    for (Position pos : expandBarrierPositions(nexoHitboxesSection.getStringList("barriers"))) {
+                        ShulkerHitbox hitbox = new ShulkerHitbox();
+                        hitbox.setPosition(pos.x(), pos.y(), pos.z());
+                        hitboxList.add(hitbox);
+                    }
+
+                    // Shulkers
+                    for (String shulker : nexoHitboxesSection.getStringList("shulkers")) {
+                        if (!isValidString(shulker)) {
+                            continue;
+                        }
+                        String[] parts = shulker.trim().split("\\s+");
+                        if (parts.length < 3) {
+                            Logger.debug(Message.WARNING__FURNITURE__INVALID_SHULKER_ENTRY, LogType.WARNING, "item", this.itemId, "entry", shulker);
+                            continue;
+                        }
+                        String[] coords = parts[0].split("\\s*,\\s*");
+                        if (coords.length != 3) {
+                            continue;
+                        }
+                        try {
+                            ShulkerHitbox hitbox = new ShulkerHitbox();
+                            hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
+                            hitbox.setScale(Float.parseFloat(parts[1]));
+                            hitbox.setPeek((int) (Float.parseFloat(parts[2]) * 100));
+                            if (parts.length >= 4) {
+                                String dir = parts[3].toUpperCase();
+                                hitbox.setDirection(getDirectionFromString(dir));
+                            }
+                            if (seatPosition.isUpdated() && !seatsAdded.getAndSet(true)) {
+                                hitbox.addSeat(seatPosition.getValue(0), seatPosition.getValue(1), seatPosition.getValue(2), 0);
+                            }
+                            hitboxList.add(hitbox);
+                        } catch (NumberFormatException e) {
+                            Logger.debug(Message.WARNING__FURNITURE__NON_NUMERIC_SHULKER_VALUES, LogType.WARNING, "item", this.itemId, "entry", shulker);
+                        }
+                    }
+
+                    // Ghasts
+                    for (String ghast : nexoHitboxesSection.getStringList("ghasts")) {
+                        if (!isValidString(ghast)) {
+                            continue;
+                        }
+                        String[] parts = ghast.trim().split("\\s+");
+                        if (parts.length < 2) {
+                            Logger.debug(Message.WARNING__FURNITURE__INVALID_GHAST_ENTRY, LogType.WARNING, "item", this.itemId, "entry", ghast);
+                            continue;
+                        }
+                        String[] coords = parts[0].split("\\s*,\\s*");
+                        if (coords.length != 3) {
+                            continue;
+                        }
+                        try {
+                            HappyGhastHitbox hitbox = new HappyGhastHitbox();
+                            hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
+                            hitbox.setScale(Float.parseFloat(parts[1]));
+                            if (seatPosition.isUpdated() && !seatsAdded.getAndSet(true)) {
+                                hitbox.addSeat(seatPosition.getValue(0), seatPosition.getValue(1), seatPosition.getValue(2), 0);
+                            }
+                            hitboxList.add(hitbox);
+                        } catch (NumberFormatException e) {
+                            Logger.debug(Message.WARNING__FURNITURE__NON_NUMERIC_GHAST_VALUES, LogType.WARNING, "item", this.itemId, "entry", ghast);
+                        }
+                    }
+
+                    // Interactions
+                    for (String interaction : nexoHitboxesSection.getStringList("interactions")) {
+                        if (!isValidString(interaction)) {
+                            continue;
+                        }
+                        String[] parts = interaction.trim().split("\\s+");
+                        if (parts.length != 2) {
+                            Logger.debug(Message.WARNING__FURNITURE__INVALID_INTERACTION_ENTRY, LogType.WARNING, "item", this.itemId, "entry", interaction);
+                            continue;
+                        }
+                        String[] coords = parts[0].split("\\s*,\\s*");
+                        String[] size = parts[1].split("\\s*,\\s*");
+                        if (coords.length != 3 || size.length != 2) {
+                            continue;
+                        }
+                        try {
+                            InteractionHitbox hitbox = new InteractionHitbox();
+                            hitbox.setPosition(Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
+                            hitbox.setWidth(Float.parseFloat(size[0]));
+                            hitbox.setHeight(Float.parseFloat(size[1]));
+                            hitboxList.add(hitbox);
+                        } catch (NumberFormatException e) {
+                            Logger.debug(Message.WARNING__FURNITURE__NON_NUMERIC_INTERACTION_VALUES, LogType.WARNING, "item", this.itemId, "entry", interaction);
+                        }
+                    }
                 }
 
-                // Track if seats have been added (only add to first hitbox)
-                AtomicBoolean seatsAdded = new AtomicBoolean(false);
-
-                // Parse shulkers (advanced shulker hitboxes with scale, peek, direction)
-                List<String> shulkersList = nexoHitboxesSection.getStringList("shulkers");
-                parseShulkersHitboxes(shulkersList, hitboxes, seatPosition, seatsAdded);
-
-                // Parse ghasts (happy_ghast hitboxes with scale)
-                List<String> ghastsList = nexoHitboxesSection.getStringList("ghasts");
-                parseGhastsHitboxes(ghastsList, hitboxes, seatPosition, seatsAdded);
-
-                // Parse interactions (non-collision hitboxes)
-                List<String> interactionsList = nexoHitboxesSection.getStringList("interactions");
-                parseInteractionsHitboxes(interactionsList, hitboxes);
-            }
-            ConfigurationSection ceFurnitureSection = getOrCreateSection(ceBehaviorSection, "furniture");
-            ConfigurationSection cePlacementSection = getOrCreateSection(ceFurnitureSection, "placement");
-
-            for (FurniturePlacement furniturePlacement : noLimitedPlacingKeys){
-                ConfigurationSection ceTypePlacementSection = cePlacementSection.createSection(furniturePlacement.name().toLowerCase());
-                ConfigurationSection ceRuleSection = ceTypePlacementSection.createSection("rules");
-                ceRuleSection.set("rotation", furnitureRotation.name());
-                ceTypePlacementSection.set("elements", elements);
-                if (!hitboxes.isEmpty()){
-                    ceTypePlacementSection.set("hitboxes", hitboxes);
+                for (FurniturePlacement furniturePlacement : placementKeys) {
+                    Placement p = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
+                    Rules rules = p.getRules();
+                    rules.setRotation(furnitureRotation);
+                    p.addElement(element);
+                    hitboxList.forEach(p::addHitbox);
                 }
             }
-
         }
+
+        this.getCraftEngineItemsConfiguration().addItemConfiguration(furnitureConfiguration);
     }
 
     private List<Position> expandBarrierPositions(List<String> barriersList) {
@@ -1488,10 +2570,12 @@ public class NexoItemConverter extends ItemConverter {
         Set<String> duplicateGuard = new HashSet<>();
 
         for (String barrier : barriersList) {
-            if (!isValidString(barrier)) continue;
+            if (!isValidString(barrier)) {
+                continue;
+            }
             String[] parts = barrier.trim().split("\\s*,\\s*");
             if (parts.length != 3) {
-                Logger.debug("Invalid barrier entry '"+barrier+"' for item '"+this.itemId+"', expected 3 comma-separated values.", LogType.WARNING);
+                Logger.debug(Message.WARNING__FURNITURE__INVALID_BARRIER_ENTRY, LogType.WARNING, "item", this.itemId, "entry", barrier);
                 continue;
             }
 
@@ -1519,12 +2603,14 @@ public class NexoItemConverter extends ItemConverter {
 
     private int[] parseAxisPart(String part, String original) {
         part = part.trim();
-        if (part.isEmpty()) return new int[0];
+        if (part.isEmpty()) {
+            return new int[0];
+        }
 
         if (part.contains("..")) {
             String[] rangeSplit = part.split("\\.\\.");
             if (rangeSplit.length != 2) {
-                Logger.debug("Invalid range '"+part+"' in barrier entry '"+original+"'.", LogType.WARNING);
+                Logger.debug(Message.WARNING__FURNITURE__INVALID_BARRIER_RANGE, LogType.WARNING, "range", part, "entry", original);
                 return new int[0];
             }
             try {
@@ -1538,158 +2624,69 @@ public class NexoItemConverter extends ItemConverter {
                 }
                 return values;
             } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric range bounds '"+part+"' in barrier entry '"+original+"'.", LogType.WARNING);
+                Logger.debug(Message.WARNING__FURNITURE__NON_NUMERIC_BARRIER_RANGE_BOUNDS, LogType.WARNING, "range", part, "entry", original);
                 return new int[0];
             }
         } else {
             try {
                 return new int[]{Integer.parseInt(part)};
             } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric value '"+part+"' in barrier entry '"+original+"'.", LogType.WARNING);
+                Logger.debug(Message.WARNING__FURNITURE__NON_NUMERIC_BARRIER_VALUE, LogType.WARNING, "value", part, "entry", original);
                 return new int[0];
             }
         }
     }
 
-    private void parseInteractionsHitboxes(List<String> interactionsList, List<Map<String,Object>> hitboxes) {
-        for (String interaction : interactionsList) {
-            if (!isValidString(interaction)) continue;
-
-            String[] parts = interaction.trim().split("\\s+");
-            if (parts.length != 2) {
-                Logger.debug("Invalid interaction entry '"+interaction+"' for item '"+this.itemId+"', expected format: 'x,y,z width,height'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] coordParts = parts[0].split("\\s*,\\s*");
-            if (coordParts.length != 3) {
-                Logger.debug("Invalid coordinates in interaction '"+interaction+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] sizeParts = parts[1].split("\\s*,\\s*");
-            if (sizeParts.length != 2) {
-                Logger.debug("Invalid size in interaction '"+interaction+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            try {
-                float x = Float.parseFloat(coordParts[0]);
-                float y = Float.parseFloat(coordParts[1]);
-                float z = Float.parseFloat(coordParts[2]);
-                float width = Float.parseFloat(sizeParts[0]);
-                float height = Float.parseFloat(sizeParts[1]);
-
-                Map<String,Object> hitbox = new HashMap<>();
-                hitbox.put("type", "interaction");
-                hitbox.put("position", x+","+y+","+z);
-                hitbox.put("width", width);
-                hitbox.put("height", height);
-                hitboxes.add(hitbox);
-            } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric values in interaction '"+interaction+"' for item '"+this.itemId+"'.", LogType.WARNING);
-            }
-        }
-    }
-
-    private void parseShulkersHitboxes(List<String> shulkersList, List<Map<String,Object>> hitboxes, FloatsUtils seatPosition, AtomicBoolean seatsAdded) {
-        for (String shulker : shulkersList) {
-            if (!isValidString(shulker)) continue;
-
-            // Format: "x,y,z scale peek [direction] [visible]"
-            String[] parts = shulker.trim().split("\\s+");
-            if (parts.length < 3) {
-                Logger.debug("Invalid shulker entry '"+shulker+"' for item '"+this.itemId+"', expected format: 'x,y,z scale peek [direction] [visible]'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] coordParts = parts[0].split("\\s*,\\s*");
-            if (coordParts.length != 3) {
-                Logger.debug("Invalid coordinates in shulker '"+shulker+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            try {
-                float x = Float.parseFloat(coordParts[0]);
-                float y = Float.parseFloat(coordParts[1]);
-                float z = Float.parseFloat(coordParts[2]);
-                float scale = Float.parseFloat(parts[1]);
-                float peek = Float.parseFloat(parts[2]);
-
-                Map<String,Object> hitbox = new HashMap<>();
-                hitbox.put("type", "shulker");
-                hitbox.put("position", x+","+y+","+z);
-                hitbox.put("scale", scale);
-                hitbox.put("peek", (int) (peek * 100));
-
-                if (parts.length >= 4) {
-                    String direction = parts[3].toUpperCase();
-                    if (isValidDirection(direction)) {
-                        hitbox.put("direction", direction);
-                    } else {
-                        Logger.debug("Invalid direction '"+parts[3]+"' in shulker '"+shulker+"' for item '"+this.itemId+"', defaulting to UP.", LogType.WARNING);
-                        hitbox.put("direction", "UP");
-                    }
-                } else {
-                    hitbox.put("direction", "UP");
-                }
-
-                addSeatsIfNeeded(hitbox, seatPosition, seatsAdded);
-                hitboxes.add(hitbox);
-            } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric values in shulker '"+shulker+"' for item '"+this.itemId+"'.", LogType.WARNING);
-            }
-        }
-    }
-
-    private void parseGhastsHitboxes(List<String> ghastsList, List<Map<String,Object>> hitboxes, FloatsUtils seatPosition, AtomicBoolean seatsAdded) {
-        for (String ghast : ghastsList) {
-            if (!isValidString(ghast)) continue;
-
-            // Format: "x,y,z scale [rotation] [visible]"
-            String[] parts = ghast.trim().split("\\s+");
-            if (parts.length < 2) {
-                Logger.debug("Invalid ghast entry '"+ghast+"' for item '"+this.itemId+"', expected format: 'x,y,z scale [rotation] [visible]'.", LogType.WARNING);
-                continue;
-            }
-
-            String[] coordParts = parts[0].split("\\s*,\\s*");
-            if (coordParts.length != 3) {
-                Logger.debug("Invalid coordinates in ghast '"+ghast+"' for item '"+this.itemId+"'.", LogType.WARNING);
-                continue;
-            }
-
-            try {
-                float x = Float.parseFloat(coordParts[0]);
-                float y = Float.parseFloat(coordParts[1]);
-                float z = Float.parseFloat(coordParts[2]);
-                float scale = Float.parseFloat(parts[1]);
-
-                Map<String,Object> hitbox = new HashMap<>();
-                hitbox.put("type", "happy_ghast");
-                hitbox.put("position", x+","+y+","+z);
-                hitbox.put("scale", scale);
-
-                addSeatsIfNeeded(hitbox, seatPosition, seatsAdded);
-                hitboxes.add(hitbox);
-            } catch (NumberFormatException e) {
-                Logger.debug("Non-numeric values in ghast '"+ghast+"' for item '"+this.itemId+"'.", LogType.WARNING);
-            }
-        }
-    }
-
-    private void addSeatsIfNeeded(Map<String, Object> hitbox, FloatsUtils seatPosition, AtomicBoolean seatsAdded) {
-        if (seatPosition.isUpdated() && !seatsAdded.getAndSet(true)) {
-            List<String> seats = new ArrayList<>();
-            seats.add(seatPosition + " 0");
-            hitbox.put("seats", seats);
-        }
-    }
-
-    private boolean isValidDirection(String direction) {
+    public Direction getDirectionFromString(String direction) {
         return switch (direction.toUpperCase()) {
-            case "UP", "DOWN", "NORTH", "SOUTH", "EAST", "WEST" -> true;
-            default -> false;
+            case "DOWN" -> Direction.DOWN;
+            case "NORTH" -> Direction.NORTH;
+            case "SOUTH" -> Direction.SOUTH;
+            case "EAST" -> Direction.EAST;
+            case "WEST" -> Direction.WEST;
+            default -> Direction.UP;
         };
+    }
+
+    private List<ItemLoot> parseItemLoots(List<Map<?, ?>> loots) {
+        List<ItemLoot> itemLoots = new ArrayList<>();
+        for (Map<?, ?> lootMap : loots) {
+            ItemLoot itemLoot = null;
+            int minAmount = 1;
+            int maxAmount = 1;
+            Object amount = lootMap.get("amount");
+            if (amount instanceof Integer intAmount) {
+                minAmount = intAmount;
+                maxAmount = intAmount;
+            } else if (amount instanceof String amountString) {
+                String[] split = amountString.split("\\.\\.", 2);
+                try {
+                    minAmount = Integer.parseInt(split[0].trim());
+                    maxAmount = split.length == 2 ? Integer.parseInt(split[1].trim()) : minAmount;
+                } catch (NumberFormatException e) {
+                    Logger.debug(Message.WARNING__FURNITURE__INVALID_AMOUNT_FORMAT, LogType.WARNING, "item", this.itemId, "amount", amountString);
+                }
+            }
+            float probability = 1.0f;
+            Object probObj = lootMap.get("probability");
+            if (probObj instanceof Number num) {
+                probability = num.floatValue();
+            } else if (probObj instanceof String probString) {
+                try {
+                    probability = Float.parseFloat(probString);
+                } catch (NumberFormatException e) {
+                    Logger.debug(Message.WARNING__FURNITURE__INVALID_PROBABILITY_FORMAT, LogType.WARNING, "item", this.itemId, "probability", probString);
+                }
+            }
+            if (lootMap.get("nexo_item") instanceof String nexoItemString) {
+                itemLoot = new CraftEngineItemLoot(nexoItemString, minAmount, maxAmount, probability);
+            } else if (lootMap.get("minecraft_type") instanceof String minecraftTypeString) {
+                itemLoot = new MinecraftItemLoot(minecraftTypeString, minAmount, maxAmount, probability);
+            }
+            if (isNotNull(itemLoot)) {
+                itemLoots.add(itemLoot);
+            }
+        }
+        return itemLoots;
     }
 }

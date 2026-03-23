@@ -1,24 +1,66 @@
 package fr.robie.craftengineconverter.converter.itemsadder;
 
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.enums.CraftEngineBlockState;
-import fr.robie.craftengineconverter.common.enums.Plugins;
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
+import fr.robie.craftengineconverter.api.configuration.item.LoreConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.BlockSettings;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.behaviors.OnLiquidBlockBehavior;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockAppearance;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.BlockVariant;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.MultiStateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.SingleStateBlock;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.defaults.PillarBlockState;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.block.states.properties.HorizontalDirectionBlockStateProperty;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurnitureConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.FurniturePlacement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.ItemElement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.Placement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ArmorStandElement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.element.ItemDisplayElement;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.Hitbox;
+import fr.robie.craftengineconverter.api.configuration.item.behavior.furniture.hitbox.ShulkerHitbox;
+import fr.robie.craftengineconverter.api.configuration.item.data.*;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootPool;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.LootTable;
+import fr.robie.craftengineconverter.api.configuration.conditions.SurvivesExplosionCondition;
+import fr.robie.craftengineconverter.api.configuration.item.loottables.entries.FurnitureItemEntry;
+import fr.robie.craftengineconverter.api.configuration.item.models.condition.ConditionModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.range_dispatch.UseDurationRangeDispatchConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.ChargeTypeSelectConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.select.DisplayContentSelectConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.settings.GlowDropColorConfiguration;
+import fr.robie.craftengineconverter.api.enums.ComponentFlag;
+import fr.robie.craftengineconverter.api.enums.CraftEngineBlockState;
+import fr.robie.craftengineconverter.api.enums.ItemDisplayType;
+import fr.robie.craftengineconverter.api.enums.Plugins;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.Logger;
+import fr.robie.craftengineconverter.api.utils.FloatsUtils;
+import fr.robie.craftengineconverter.common.enums.BukkitFlagToComponentFlag;
+import fr.robie.craftengineconverter.common.utils.enums.BlockParent;
+import fr.robie.craftengineconverter.common.utils.enums.ia.IADirectionalMode;
+import fr.robie.craftengineconverter.common.utils.enums.ia.IAEntityTypes;
+import fr.robie.craftengineconverter.common.utils.enums.ia.IAModelsKeys;
+import fr.robie.craftengineconverter.common.utils.enums.ia.IAPlacedModelTypes;
 import fr.robie.craftengineconverter.converter.Converter;
 import fr.robie.craftengineconverter.converter.ItemConverter;
-import fr.robie.craftengineconverter.utils.FloatsUtils;
-import fr.robie.craftengineconverter.utils.enums.*;
-import fr.robie.craftengineconverter.utils.enums.ia.IADirectionalMode;
-import fr.robie.craftengineconverter.utils.enums.ia.IAEntityTypes;
-import fr.robie.craftengineconverter.utils.enums.ia.IAModelsKeys;
-import fr.robie.craftengineconverter.utils.enums.ia.IAPlacedModelTypes;
-import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
+import net.momirealms.craftengine.core.attribute.AttributeModifier;
+import net.momirealms.craftengine.core.entity.EquipmentSlot;
+import net.momirealms.craftengine.core.entity.display.Billboard;
+import net.momirealms.craftengine.core.util.HorizontalDirection;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemFlag;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -26,169 +68,269 @@ public class IAItemsConverter extends ItemConverter {
     private final ConfigurationSection iaItemSection;
     private final String namespace;
 
-    public IAItemsConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig, ConfigurationSection iaItemSection, String namespace) {
-        super(itemId, craftEngineItemSection, converter, fileConfig);
+    public IAItemsConverter(@NotNull String itemId, Converter converter, YamlConfiguration fileConfig, ConfigurationSection iaItemSection, String namespace) {
+        super(itemId, converter, fileConfig);
         this.iaItemSection = iaItemSection;
         this.namespace = namespace;
     }
 
     @Override
-    public void convertMaterial(){
+    public void convertMaterial() {
         ConfigurationSection resourceSection = this.iaItemSection.getConfigurationSection("resource");
-        Material material = Configuration.defaultMaterial;
-        if (isNotNull(resourceSection)){
+        if (isNotNull(resourceSection)) {
             try {
-                material = Material.valueOf(resourceSection.getString("material").toUpperCase());
+                this.craftEngineItemsConfiguration.setMaterial(Material.valueOf(resourceSection.getString("material", "").toUpperCase()));
             } catch (Exception ignored) {
             }
         }
-        this.craftEngineItemUtils.setMaterial(material);
     }
 
     @Override
-    public void convertItemName(){
+    public void convertItemName() {
         String itemName = this.iaItemSection.getString("name", this.iaItemSection.getString("display_name"));
-        if (isValidString(itemName)){
-            this.craftEngineItemUtils.setItemName(itemName);
+        if (isValidString(itemName)) {
+            if (itemName.startsWith("display-name-")) {
+                itemName = "<l10n:" + itemName + ">";
+            }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new ItemNameConfiguration(itemName, Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC)));
         }
     }
 
     @Override
-    public void convertLore(){
+    public void convertLore() {
         List<String> lore = this.iaItemSection.getStringList("lore");
-        if (!lore.isEmpty()){
-            this.craftEngineItemUtils.setLore(lore);
+        if (!lore.isEmpty()) {
+            for (int i = 0; i < lore.size(); i++) {
+                String line = lore.get(i);
+                if (line.startsWith("lore-")) {
+                    lore.set(i, "<l10n:" + line + ">");
+                }
+            }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new LoreConfiguration(lore, Configuration.<Boolean>get(ConfigurationKey.DISABLE_DEFAULT_ITALIC)));
         }
     }
 
     @Override
-    public void convertDyedColor(){
+    public void convertDyedColor() {
         Object color = this.iaItemSection.get("graphics.color");
-        if (isNotNull(color)){
-            this.craftEngineItemUtils.getDataSection().set("dyed-color", color);
-        }
-    }
-
-    @Override
-    public void convertUnbreakable(){
-        ConfigurationSection durabilitySection = this.iaItemSection.getConfigurationSection("durability");
-        if (isNotNull(durabilitySection)){
-            boolean unbreakable = durabilitySection.getBoolean("unbreakable", false);
-            if (unbreakable){
-                this.craftEngineItemUtils.getDataSection().set("unbreakable", true);
+        if (isNotNull(color)) {
+            try {
+                this.craftEngineItemsConfiguration.addItemConfiguration(DyedColorConfiguration.parse(color));
+            } catch (Exception ignored) {
             }
         }
     }
 
     @Override
-    public void convertItemFlags(){
-        List<String> itemFlags = this.iaItemSection.getStringList("item_flags");
-        if (!itemFlags.isEmpty()){
-            this.craftEngineItemUtils.getDataSection().set("hide-tooltip", itemFlags);
+    public void convertUnbreakable() {
+        ConfigurationSection durabilitySection = this.iaItemSection.getConfigurationSection("durability");
+        if (isNotNull(durabilitySection)) {
+            boolean unbreakable = durabilitySection.getBoolean("unbreakable", false);
+            if (unbreakable) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new UnbreakableConfiguration(true));
+            }
         }
     }
 
     @Override
-    public void convertAttributeModifiers(){
+    public void convertItemFlags() {
+        List<String> itemFlags = this.iaItemSection.getStringList("item_flags");
+        if (!itemFlags.isEmpty()) {
+            List<ComponentFlag> convertedFlags = new ArrayList<>();
+            for (String flag : itemFlags) {
+                try {
+                    ItemFlag bukkitFlag = ItemFlag.valueOf(flag.toUpperCase());
+                    ComponentFlag componentFlag = BukkitFlagToComponentFlag.fromBukkitItemFlag(bukkitFlag);
+                    if (componentFlag != null) {
+                        convertedFlags.add(componentFlag);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            this.craftEngineItemsConfiguration.addItemConfiguration(new HideTooltipConfiguration(convertedFlags));
+        }
+    }
+
+    @Override
+    public void convertAttributeModifiers() {
         ConfigurationSection attributesSection = this.iaItemSection.getConfigurationSection("attribute_modifiers");
         if (isNotNull(attributesSection)) {
-            List<Map<String, Object>> ceAttributes = new ArrayList<>();
-            //TODO: implement attribute modifiers conversion from ItemsAdder to CraftEngine
+            List<fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier> attributeModifiers = new ArrayList<>();
+
+            for (String equipmentSlot : attributesSection.getKeys(false)) {
+                ConfigurationSection slotSection = attributesSection.getConfigurationSection(equipmentSlot);
+                if (isNull(slotSection)) {
+                    continue;
+                }
+
+                net.momirealms.craftengine.core.attribute.AttributeModifier.Slot slot;
+                try {
+                    slot = net.momirealms.craftengine.core.attribute.AttributeModifier.Slot.valueOf(equipmentSlot.toUpperCase());
+                } catch (Exception e) {
+                    Logger.debug("[IAItemsConverter] Invalid equipment slot " + equipmentSlot + " for attribute modifiers for item " + this.itemId);
+                    continue;
+                }
+
+                for (String attributeKey : slotSection.getKeys(false)) {
+                    if (slotSection.isConfigurationSection(attributeKey)) {
+                        ConfigurationSection attributeSection = slotSection.getConfigurationSection(attributeKey);
+                        if (isNull(attributeSection)) {
+                            continue;
+                        }
+
+                        Attribute attribute = getAttributeByKey(attributeKey);
+                        if (attribute == null) {
+                            continue;
+                        }
+
+                        double value = attributeSection.getDouble("value", 0.0);
+                        String operationStr = attributeSection.getString("operation", "add_value").toUpperCase();
+                        net.momirealms.craftengine.core.attribute.AttributeModifier.Operation operation;
+                        try {
+                            if (operationStr.equalsIgnoreCase("multiply_base")) {
+                                operation = AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                            } else {
+                                operation = AttributeModifier.Operation.valueOf(operationStr);
+                            }
+                        } catch (Exception e) {
+                            Logger.debug("[IAItemsConverter] Invalid operation " + operationStr + " for attribute " + attributeKey + " for item " + this.itemId + ", defaulting to ADD_VALUE");
+                            operation = net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE;
+                        }
+                        attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier(attribute.name(), slot, null, value, operation, null));
+                    } else {
+                        Attribute attribute = getAttributeByKey(attributeKey);
+                        if (attribute == null) {
+                            continue;
+                        }
+
+                        double amount = slotSection.getDouble(attributeKey);
+                        attributeModifiers.add(new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier(attribute.name(), slot, null, amount, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null));
+                    }
+                }
+            }
+
+            if (!attributeModifiers.isEmpty()) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(attributeModifiers));
+            }
         }
     }
 
+    public Attribute getAttributeByKey(String key) {
+        try {
+            return Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(key));
+        } catch (Exception ignored) {
+        }
+
+        try {
+            String fallbackKey = "minecraft:" + key.replaceAll("([A-Z])", "_$1").toLowerCase();
+            return Registry.ATTRIBUTE.getOrThrow(NamespacedKey.fromString(fallbackKey));
+        } catch (Exception ignored) {
+        }
+
+        Logger.debug("[IAItemsConverter] Invalid attribute key: " + key + " for item " + this.itemId);
+        return null;
+    }
+
     @Override
-    public void convertEnchantments(){
+    public void convertEnchantments() {
         ConfigurationSection enchantsSection = this.iaItemSection.getConfigurationSection("enchants");
-        if (isNotNull(enchantsSection)){
-            for (String enchantmentKey : enchantsSection.getKeys(false)){
+        if (isNotNull(enchantsSection)) {
+            fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration();
+            for (String enchantmentKey : enchantsSection.getKeys(false)) {
                 int enchantLevel = enchantsSection.getInt(enchantmentKey, 1);
-                ConfigurationSection ceEnchantSection = getOrCreateSection(this.craftEngineItemUtils.getDataSection(), "enchantment");
-                ceEnchantSection.set(enchantmentKey, enchantLevel);
+                enchantmentConfiguration.addEnchantment(enchantmentKey, enchantLevel);
+            }
+            if (enchantmentConfiguration.hasEnchantments()) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
             }
         }
         List<String> enchantments = this.iaItemSection.getStringList("enchants");
-        if (!enchantments.isEmpty()){
-            ConfigurationSection ceEnchantSection = getOrCreateSection(this.craftEngineItemUtils.getDataSection(), "enchantment");
-            for (String enchantmentEntry : enchantments){
+        if (!enchantments.isEmpty()) {
+            fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration enchantmentConfiguration = new fr.robie.craftengineconverter.api.configuration.item.data.EnchantmentConfiguration();
+            for (String enchantmentEntry : enchantments) {
                 String enchantName;
                 int enchantLevel = 1;
                 int lastIndexOf = enchantmentEntry.lastIndexOf(':');
-                if (lastIndexOf != -1){
+                if (lastIndexOf != -1) {
                     enchantName = enchantmentEntry.substring(0, lastIndexOf);
                     try {
                         enchantLevel = Integer.parseInt(enchantmentEntry.substring(lastIndexOf + 1));
-                    } catch (NumberFormatException ignored){
+                    } catch (NumberFormatException ignored) {
                     }
                 } else {
                     enchantName = enchantmentEntry;
                 }
-                ceEnchantSection.set(enchantName.toLowerCase(), enchantLevel);
+                enchantmentConfiguration.addEnchantment(enchantName, enchantLevel);
+            }
+            if (enchantmentConfiguration.hasEnchantments()) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(enchantmentConfiguration);
             }
         }
     }
 
     @Override
-    public void convertCustomModelData(){
+    public void convertCustomModelData() {
         ConfigurationSection resourceSection = this.iaItemSection.getConfigurationSection("resource");
-        if (isNotNull(resourceSection)){
+        if (isNotNull(resourceSection)) {
             int customModelData = resourceSection.getInt("custom_model_data", resourceSection.getInt("model_id", 0));
-            if (customModelData != 0){
-                this.craftEngineItemUtils.getGeneralSection().set("custom-model-data", customModelData);
+            if (customModelData != 0) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.CustomModelDataConfiguration(customModelData));
             }
         }
     }
 
     @Override
-    public void convertItemModel(){
+    public void convertItemModel() {
         String itemModel = this.iaItemSection.getString("item_model");
-        if (isValidString(itemModel)){
-            this.craftEngineItemUtils.getComponentsSection().set("item_model", itemModel);
+        if (isValidString(itemModel)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.ItemModelConfiguration(itemModel));
         }
     }
 
     @Override
-    public void convertMaxStackSize(){
+    public void convertMaxStackSize() {
         int maxStackSize = this.iaItemSection.getInt("max_stack_size", -1);
-        if (maxStackSize > 0){
-            this.craftEngineItemUtils.getComponentsSection().set("minecraft:max_stack_size", maxStackSize);
+        if (maxStackSize > 0 && maxStackSize <= 99) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.MaxStackSizeConfiguration(maxStackSize));
         }
     }
 
     @Override
-    public void convertEnchantmentGlintOverride(){
-        if (this.iaItemSection.getBoolean("glint", false)){
-            this.craftEngineItemUtils.enableEnchantmentGlint();
+    public void convertEnchantmentGlintOverride() {
+        if (this.iaItemSection.getBoolean("glint", false)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.EnchantmentGlintOverrideConfiguration(true));
         }
     }
 
     @Override
-    public void convertFireResistance(){
+    public void convertFireResistance() {
         // Not supported ?
     }
 
     @Override
-    public void convertMaxDamage(){
+    public void convertMaxDamage() {
         ConfigurationSection durability = this.iaItemSection.getConfigurationSection("durability");
-        if (isNotNull(durability)){
+        if (isNotNull(durability)) {
             int maxDamage = durability.getInt("max_durability", -1);
-            if (maxDamage > 0){
-                this.craftEngineItemUtils.getDataSection().set("max-damage", maxDamage);
+            if (maxDamage > 0) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.MaxDamageConfiguration(maxDamage));
             }
         }
     }
 
     @Override
-    public void convertGlowDropColor(){
+    public void convertGlowDropColor() {
         ConfigurationSection dropSection = this.iaItemSection.getConfigurationSection("drop");
-        if (isNotNull(dropSection)){
+        if (isNotNull(dropSection)) {
             ConfigurationSection glowSection = dropSection.getConfigurationSection("glow");
-            if (isNotNull(glowSection)){
+            if (isNotNull(glowSection)) {
                 boolean glow = glowSection.getBoolean("enabled", false);
-                if (glow){
+                if (glow) {
                     String color = glowSection.getString("color");
-                    if (isValidString(color)){
-                        this.craftEngineItemUtils.getSettingsSection().set("glow-color", color.toLowerCase());
+                    try {
+                        this.craftEngineItemsConfiguration.addItemConfiguration(new GlowDropColorConfiguration(DyeColor.valueOf(color.toLowerCase())));
+                    } catch (Exception e) {
+                        Logger.debug(Message.ERROR__CONVERTER__INVALID_GLOW_DROP_COLOR, "converter", "IAItemsConverter", "item", this.itemId, "color", color, "valid_colors", Arrays.toString(DyeColor.values()));
                     }
                 }
             }
@@ -196,44 +338,37 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     @Override
-    public void convertDropShowName(){
+    public void convertDropShowName() {
         ConfigurationSection dropSection = this.iaItemSection.getConfigurationSection("drop");
-        if (isNotNull(dropSection)){
+        if (isNotNull(dropSection)) {
             boolean showName = dropSection.getBoolean("show_name", true);
-            if (!showName){
-                this.craftEngineItemUtils.getSettingsSection().set("drop-display", true);
+            if (!showName) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.DropDisplayConfiguration(false));
             }
-
         }
     }
 
     @Override
-    public void convertHideTooltip(){
+    public void convertHideTooltip() {
         // Not supported ?
     }
 
     @Override
-    public void convertToolTipStyle(){
+    public void convertToolTipStyle() {
         String toolTipStyle = this.iaItemSection.getString("tooltip_style");
-        if (isValidString(toolTipStyle)){
-            this.craftEngineItemUtils.getDataSection().set("tooltip-style", toolTipStyle);
+        if (isValidString(toolTipStyle)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.data.TooltipStyleConfiguration(toolTipStyle));
         }
     }
 
     @Override
-    public void convertFood(){
+    public void convertFood() {
         ConfigurationSection consumableSection = this.iaItemSection.getConfigurationSection("consumable");
-        if (isNotNull(consumableSection)){
+        if (isNotNull(consumableSection)) {
             int nutrition = consumableSection.getInt("nutrition", -1);
             float saturation = (float) consumableSection.getDouble("saturation", -1.0);
-            if (nutrition > 0 || saturation > 0){
-                ConfigurationSection foodSection = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(), "minecraft:food");
-                if (nutrition > 0){
-                    foodSection.set("nutrition", nutrition);
-                }
-                if (saturation > 0) {
-                    foodSection.set("saturation", saturation);
-                }
+            if (nutrition >= 0 && saturation >= 0) {
+                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.FoodConfiguration(nutrition, saturation));
             }
         }
     }
@@ -241,82 +376,151 @@ public class IAItemsConverter extends ItemConverter {
     @Override
     public void convertJukeboxPlayable() {
         String song = this.iaItemSection.getString("jukebox_disc.song", this.iaItemSection.getString("behaviours.music_disc.song.name"));
-        this.craftEngineItemUtils.setJukeboxPlayable(song);
+        if (isValidString(song)) {
+            this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.components.JukeboxPlayableConfiguration(song));
+        }
     }
 
     @Override
-    public void convertEquipable() {
+    public void convertEquippable() {
+        convertEquipmentSection();
+        convertSpecificPropertiesArmorSection();
+    }
+
+    private void convertEquipmentSection() {
         ConfigurationSection equipmentSection = this.iaItemSection.getConfigurationSection("equipment");
-        if (isNotNull(equipmentSection)) {
-            String assetId = equipmentSection.getString("id");
-            if (!isValidString(assetId)) return;
-            assetId = namespaced(assetId,this.namespace);
-            ConfigurationSection ceEquipableSection = this.isValidString(assetId) ? getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable") : getOrCreateSection(this.craftEngineItemUtils.getDataSection(),"equippable");
-            if (isValidString(assetId)) {
-                ceEquipableSection.set("asset-id", assetId);
-                this.setAssetId(assetId);
-            }
-            String slot;
-            if (this.itemId.endsWith("_helmet")){
-                slot = "head";
-            } else if (this.itemId.endsWith("_chestplate")){
-                slot = "chest";
-            } else if (this.itemId.endsWith("_leggings")){
-                slot = "legs";
-            } else if (this.itemId.endsWith("_boots")){
-                slot = "feet";
-            } else {
-                slot = equipmentSection.getString("slot");
-                if (!isValidString(slot)){
-                    Material material = this.craftEngineItemUtils.getMaterial();
-                    String materialName = material.name();
-                    if (materialName.endsWith("_HELMET") || materialName.endsWith("_SKULL") || materialName.endsWith("_HAT")){
-                        slot = "head";
-                    } else if (materialName.endsWith("_CHESTPLATE") || materialName.endsWith("_ELYTRA")){
-                        slot = "chest";
-                    } else if (materialName.endsWith("_LEGGINGS")){
-                        slot = "legs";
-                    } else if (materialName.endsWith("_BOOTS")){
-                        slot = "feet";
-                    } else {
-                        slot = null;
+        if (!isNotNull(equipmentSection)) {
+            return;
+        }
+
+        String assetId = equipmentSection.getString("id");
+        if (!isValidString(assetId)) {
+            return;
+        }
+
+        assetId = namespaced(assetId, this.namespace);
+        EquipmentSlot equipmentSlot = resolveEquipmentSlot(equipmentSection);
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId, equipmentSlot));
+        applySlotAttributeModifiers(equipmentSection, equipmentSlot);
+    }
+
+    private EquipmentSlot resolveEquipmentSlot(ConfigurationSection equipmentSection) {
+        EquipmentSlot fromItemId = getEquipmentSlotFromSuffix(this.itemId.toLowerCase(), false);
+        if (fromItemId != null) {
+            return fromItemId;
+        }
+
+        String slot = equipmentSection.getString("slot");
+        if (isValidString(slot)) {
+            return null;
+        }
+
+        return getEquipmentSlotFromSuffix(this.craftEngineItemsConfiguration.getMaterial().name(), true);
+    }
+
+    private EquipmentSlot getEquipmentSlotFromSuffix(String name, boolean uppercase) {
+        String upString = uppercase ? name.toUpperCase() : name;
+        if (upString.endsWith(uppercase ? "_HELMET" : "_helmet") || upString.endsWith("_SKULL") || upString.endsWith("_HAT")) {
+            return EquipmentSlot.HEAD;
+        }
+        if (upString.endsWith(uppercase ? "_CHESTPLATE" : "_chestplate") || upString.endsWith("_ELYTRA")) {
+            return EquipmentSlot.CHEST;
+        }
+        if (upString.endsWith(uppercase ? "_LEGGINGS" : "_leggings")) {
+            return EquipmentSlot.LEGS;
+        }
+        if (upString.endsWith(uppercase ? "_BOOTS" : "_boots")) {
+            return EquipmentSlot.FEET;
+        }
+        return null;
+    }
+
+    private void applySlotAttributeModifiers(ConfigurationSection equipmentSection, EquipmentSlot equipmentSlot) {
+        if (equipmentSlot == null) {
+            return;
+        }
+
+        ConfigurationSection slotAttributeModifiers = equipmentSection.getConfigurationSection("slot_attribute_modifiers");
+        if (!isNotNull(slotAttributeModifiers)) {
+            return;
+        }
+
+        net.momirealms.craftengine.core.attribute.AttributeModifier.Slot attributeSlot = toAttributeSlot(equipmentSlot);
+        if (attributeSlot == null) {
+            return;
+        }
+
+        double armor = slotAttributeModifiers.getDouble("armor", 0.0);
+        fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier modifier = new fr.robie.craftengineconverter.api.configuration.item.data.AttributeModifier("minecraft:armor", attributeSlot, null, armor, net.momirealms.craftengine.core.attribute.AttributeModifier.Operation.ADD_VALUE, null);
+        this.craftEngineItemsConfiguration.addItemConfiguration(new AttributeModifiersConfiguration(List.of(modifier)));
+    }
+
+    private net.momirealms.craftengine.core.attribute.AttributeModifier.Slot toAttributeSlot(EquipmentSlot equipmentSlot) {
+        return switch (equipmentSlot) {
+            case HEAD -> net.momirealms.craftengine.core.attribute.AttributeModifier.Slot.HEAD;
+            case CHEST -> net.momirealms.craftengine.core.attribute.AttributeModifier.Slot.CHEST;
+            case LEGS -> net.momirealms.craftengine.core.attribute.AttributeModifier.Slot.LEGS;
+            case FEET -> net.momirealms.craftengine.core.attribute.AttributeModifier.Slot.FEET;
+            default -> null;
+        };
+    }
+
+    private void convertSpecificPropertiesArmorSection() {
+        ConfigurationSection specificPropertiesSection = this.iaItemSection.getConfigurationSection("specific_properties");
+        if (!isNotNull(specificPropertiesSection)) {
+            return;
+        }
+
+        ConfigurationSection armorSection = specificPropertiesSection.getConfigurationSection("armor");
+        if (!isNotNull(armorSection)) {
+            return;
+        }
+
+        String color = armorSection.getString("color");
+        if (isValidString(color)) {
+            try {
+                this.craftEngineItemsConfiguration.addItemConfiguration(DyedColorConfiguration.parse(color));
+                Material customMaterial = this.craftEngineItemsConfiguration.getCustomMaterial();
+                if (customMaterial == null) {
+                    if (this.itemId.endsWith("_helmet")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_HELMET);
+                    } else if (this.itemId.endsWith("_chestplate")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_CHESTPLATE);
+                    } else if (this.itemId.endsWith("_leggings")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_LEGGINGS);
+                    } else if (this.itemId.endsWith("_boots")) {
+                        this.craftEngineItemsConfiguration.setMaterial(Material.LEATHER_BOOTS);
                     }
                 }
-            }
-            if (isValidString(slot)){
-                ceEquipableSection.set("slot", slot);
-                ConfigurationSection slotAttributeModifiers = equipmentSection.getConfigurationSection("slot_attribute_modifiers");
-                if (isNotNull(slotAttributeModifiers)){
-                    ConfigurationSection attributeModifiers = getOrCreateSection(this.craftEngineItemUtils.getComponentsSection(), "minecraft:attribute_modifiers");
-                    List<Map<?, ?>> attributeModifiersMapList = attributeModifiers.getMapList("");
-                    Map<String, Object> attributeModifiersMap = new HashMap<>();
-                    attributeModifiersMap.put("type", "minecraft:armor");
-                    attributeModifiersMap.put("slot", slot);
-                    attributeModifiersMap.put("amount", slotAttributeModifiers.getDouble("armor",0f));
-                    attributeModifiersMap.put("operation", "add_value");
-                    attributeModifiersMap.put("id", UUID.randomUUID().toString());
-                    attributeModifiersMapList.add(attributeModifiersMap);
-                    this.craftEngineItemUtils.getComponentsSection().set("minecraft:attribute_modifiers", attributeModifiersMapList);
-                }
+            } catch (Exception e) {
+                Logger.debug("[IAItemsConverter] Invalid armor color '" + color + "' for item " + this.itemId);
             }
         }
-        ConfigurationSection specificPropertiesSection = this.iaItemSection.getConfigurationSection("specific_properties");
-        if (isNotNull(specificPropertiesSection)) {
-            ConfigurationSection armorSection = specificPropertiesSection.getConfigurationSection("armor");
-            if (isNotNull(armorSection)) {
-                String assetId = armorSection.getString("custom_armor");
-                if (isValidString(assetId)){
-                    assetId = namespaced(assetId,this.namespace);
-                    this.isValidString(assetId);
-                    ConfigurationSection ceEquipableSection = getOrCreateSection(this.craftEngineItemUtils.getSettingsSection(),"equippable");
-                    ceEquipableSection.set("asset-id", assetId);
-                    this.setAssetId(assetId);
-                    String slot = armorSection.getString("slot");
-                    if (isValidString(slot)){
-                        ceEquipableSection.set("slot", slot);
-                    }
-                }
-            }
+
+        String assetId = armorSection.getString("custom_armor");
+        if (!isValidString(assetId)) {
+            return;
+        }
+
+        assetId = namespaced(assetId, this.namespace);
+        this.isValidString(assetId);
+
+        this.setAssetId(assetId);
+
+        EquipmentSlot equipmentSlot = parseEquipmentSlot(armorSection.getString("slot"));
+        this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.EquippableConfiguration(assetId, equipmentSlot));
+    }
+
+    private EquipmentSlot parseEquipmentSlot(String slot) {
+        if (slot == null) {
+            return null;
+        }
+        try {
+            return EquipmentSlot.valueOf(slot.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            Logger.debug("[IAItemsConverter] Invalid equipment slot '" + slot + "' for item " + this.itemId);
+            return null;
         }
     }
 
@@ -348,7 +552,8 @@ public class IAItemsConverter extends ItemConverter {
             case NONE -> handleNoneDirectionalMode(resourceSection);
             case ALL, LOG -> handleAllOrLogDirectionalMode(resourceSection);
             case FURNACE -> handleFurnaceDirectionalMode(resourceSection);
-            default -> Logger.debug("[IAItemsConverter] Directional mode " + directionalMode + " is not supported for item " + this.itemId);
+            default ->
+                    Logger.debug("[IAItemsConverter] Directional mode " + directionalMode + " is not supported for item " + this.itemId);
         }
     }
 
@@ -366,66 +571,69 @@ public class IAItemsConverter extends ItemConverter {
         if (isValidString(texturePath)) {
             texturePath = namespaced(texturePath, this.namespace);
             ConfigurationSection blockSection = this.iaItemSection.getConfigurationSection("specific_properties.block");
-            if (isNotNull(blockSection)){
-                this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(Template.MODEL_ITEM_DEFAULT, "%model_path%", texturePath));
+            if (isNotNull(blockSection)) {
+                this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(texturePath));
                 handleBlockItem(resourceSection, blockSection);
 
                 return;
             }
-            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                    Template.MODEL_ITEM_GENERATED,
-                    "%model_path%", texturePath,
-                    "%texture_path%", texturePath
-            );
-            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+            SimpleModelConfiguration simpleModelConfiguration = new SimpleModelConfiguration(texturePath);
+            GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/generated");
+            generation.addTexture("layer0", texturePath);
+            simpleModelConfiguration.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
         }
     }
 
     private void handleAllOrLogDirectionalMode(ConfigurationSection resourceSection) {
         Map<BlockFace, String> faceTextureMap = buildFaceTextureMap(resourceSection, "ALL");
-        if (faceTextureMap == null) return;
+        if (faceTextureMap == null) {
+            return;
+        }
 
-        Map<String, Object> parsedTemplate = createCubeModelTemplate(faceTextureMap);
-        this.setSavedModelTemplates(parsedTemplate);
+        SimpleModelConfiguration simpleModelConfiguration = createCubeModelTemplate(faceTextureMap);
+        this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
 
-        ConfigurationSection stateSection = setupLogBlockState(behaviorSection);
-        stateSection.set("appearances", InternalTemplateManager.parseTemplate(
-                Template.BLOCK_STATE_LOG_APPEARANCE,
-                "%model%", parsedTemplate,
-                "%auto-state-x%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-y%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-z%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL)
-        ));
+        blockConfiguration.setStateBlock(
+                new PillarBlockState(
+                        Plugins.ITEMS_ADDER,
+                        this.itemId,
+                        CraftEngineBlockState.SOLID, simpleModelConfiguration,
+                        CraftEngineBlockState.SOLID, simpleModelConfiguration,
+                        CraftEngineBlockState.SOLID, simpleModelConfiguration
+                )
+        );
 
-        setupLogVariants(stateSection);
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
+
     }
 
     private void handleFurnaceDirectionalMode(ConfigurationSection resourceSection) {
         Map<BlockFace, String> faceTextureMap = buildFaceTextureMap(resourceSection, "Furnace");
-        if (faceTextureMap == null) return;
+        if (faceTextureMap == null) {
+            return;
+        }
 
-        Map<String, Object> parsedTemplate = createCubeModelTemplate(faceTextureMap);
-        this.setSavedModelTemplates(parsedTemplate);
+        SimpleModelConfiguration simpleModelConfiguration = createCubeModelTemplate(faceTextureMap);
+        this.craftEngineItemsConfiguration.setModelConfiguration(simpleModelConfiguration);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
-        ConfigurationSection stateSection = getOrCreateSection(getOrCreateSection(behaviorSection, "block"), "states");
-        stateSection.set("auto-state", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL));
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
+        MultiStateBlock multiStateBlock = new MultiStateBlock();
+        multiStateBlock.addAppearance("east", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        multiStateBlock.addAppearance("west", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        multiStateBlock.addAppearance("north", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        multiStateBlock.addAppearance("south", BlockAppearance.autoState(Plugins.ITEMS_ADDER, getBlockState(IAPlacedModelTypes.TILE), this.itemId, simpleModelConfiguration).build());
+        HorizontalDirectionBlockStateProperty facing = new HorizontalDirectionBlockStateProperty("facing", HorizontalDirection.NORTH);
+        multiStateBlock.addProperty(facing);
+        multiStateBlock.addVariant(new BlockVariant("east").addVariantCondition(facing, HorizontalDirection.EAST));
+        multiStateBlock.addVariant(new BlockVariant("west").addVariantCondition(facing, HorizontalDirection.WEST));
+        multiStateBlock.addVariant(new BlockVariant("north").addVariantCondition(facing, HorizontalDirection.NORTH));
+        multiStateBlock.addVariant(new BlockVariant("south").addVariantCondition(facing, HorizontalDirection.SOUTH));
+        blockConfiguration.setStateBlock(multiStateBlock);
 
-        setupFurnaceFacingProperty(stateSection);
-        stateSection.set("appearances", InternalTemplateManager.parseTemplate(
-                Template.BLOCK_STATE_4_DIRECTIONS_APPEARANCE,
-                "%model%", parsedTemplate,
-                "%auto-state-east%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-west%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-north%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL),
-                "%auto-state-south%", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL)
-        ));
-
-        setupFurnaceVariants(stateSection);
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
 
     private Map<BlockFace, String> buildFaceTextureMap(ConfigurationSection resourceSection, String modeName) {
@@ -441,7 +649,9 @@ public class IAItemsConverter extends ItemConverter {
 
         for (String faceTexture : faceTextures) {
             String cleanedTexture = cleanPath(faceTexture);
-            if (isNull(cleanedTexture)) continue;
+            if (isNull(cleanedTexture)) {
+                continue;
+            }
 
             BlockFace face = determineBlockFace(cleanedTexture);
             if (face != null) {
@@ -461,71 +671,39 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private BlockFace determineBlockFace(String textureName) {
-        if (textureName.endsWith("_down")) return BlockFace.DOWN;
-        if (textureName.endsWith("_up")) return BlockFace.UP;
-        if (textureName.endsWith("_north")) return BlockFace.NORTH;
-        if (textureName.endsWith("_south")) return BlockFace.SOUTH;
-        if (textureName.endsWith("_west")) return BlockFace.WEST;
-        if (textureName.endsWith("_east")) return BlockFace.EAST;
+        if (textureName.endsWith("_down")) {
+            return BlockFace.DOWN;
+        }
+        if (textureName.endsWith("_up")) {
+            return BlockFace.UP;
+        }
+        if (textureName.endsWith("_north")) {
+            return BlockFace.NORTH;
+        }
+        if (textureName.endsWith("_south")) {
+            return BlockFace.SOUTH;
+        }
+        if (textureName.endsWith("_west")) {
+            return BlockFace.WEST;
+        }
+        if (textureName.endsWith("_east")) {
+            return BlockFace.EAST;
+        }
         return null;
     }
 
-    private Map<String, Object> createCubeModelTemplate(Map<BlockFace, String> faceTextureMap) {
-        return InternalTemplateManager.parseTemplate(
-                Template.MODEL_CUBE,
-                "%model_path%", faceTextureMap.get(BlockFace.NORTH),
-                "%texture_down_path%", faceTextureMap.get(BlockFace.DOWN),
-                "%texture_up_path%", faceTextureMap.get(BlockFace.UP),
-                "%texture_north_path%", faceTextureMap.get(BlockFace.NORTH),
-                "%texture_south_path%", faceTextureMap.get(BlockFace.SOUTH),
-                "%texture_west_path%", faceTextureMap.get(BlockFace.WEST),
-                "%texture_east_path%", faceTextureMap.get(BlockFace.EAST)
-        );
-    }
+    private SimpleModelConfiguration createCubeModelTemplate(Map<BlockFace, String> faceTextureMap) {
+        GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube");
+        generation.addTexture("down", faceTextureMap.get(BlockFace.DOWN));
+        generation.addTexture("up", faceTextureMap.get(BlockFace.UP));
+        generation.addTexture("north", faceTextureMap.get(BlockFace.NORTH));
+        generation.addTexture("south", faceTextureMap.get(BlockFace.SOUTH));
+        generation.addTexture("west", faceTextureMap.get(BlockFace.WEST));
+        generation.addTexture("east", faceTextureMap.get(BlockFace.EAST));
 
-    private ConfigurationSection setupLogBlockState(ConfigurationSection behaviorSection) {
-        ConfigurationSection stateSection = getOrCreateSection(
-                getOrCreateSection(behaviorSection, "block"),
-                "states"
-        );
-        stateSection.set("auto-state", getAutoStateForPlacedModelType(IAPlacedModelTypes.REAL));
-
-        ConfigurationSection properties = getOrCreateSection(stateSection, "properties");
-        ConfigurationSection axis = getOrCreateSection(properties, "axis");
-        axis.set("type", "axis");
-        axis.set("default", "y");
-
-        return stateSection;
-    }
-
-    private void setupLogVariants(ConfigurationSection stateSection) {
-        ConfigurationSection variants = getOrCreateSection(stateSection, "variants");
-
-        ConfigurationSection axisX = getOrCreateSection(variants, "axis=x");
-        axisX.set("appearance", "axisX");
-
-        ConfigurationSection axisY = getOrCreateSection(variants, "axis=y");
-        axisY.set("appearance", "axisY");
-
-        ConfigurationSection axisZ = getOrCreateSection(variants, "axis=z");
-        axisZ.set("appearance", "axisZ");
-    }
-
-    private void setupFurnaceFacingProperty(ConfigurationSection stateSection) {
-        ConfigurationSection properties = getOrCreateSection(stateSection, "properties");
-        ConfigurationSection facing = getOrCreateSection(properties, "facing");
-        facing.set("type", "4-direction");
-        facing.set("default", "north");
-    }
-
-    private void setupFurnaceVariants(ConfigurationSection stateSection) {
-        ConfigurationSection variants = getOrCreateSection(stateSection, "variants");
-
-        String[] directions = {"north", "south", "west", "east"};
-        for (String direction : directions) {
-            ConfigurationSection variant = getOrCreateSection(variants, "facing=" + direction);
-            variant.set("appearance", direction);
-        }
+        SimpleModelConfiguration model = new SimpleModelConfiguration(faceTextureMap.get(BlockFace.NORTH));
+        model.setGeneration(generation);
+        return model;
     }
 
     private void handleExistingResource(ConfigurationSection resourceSection) {
@@ -539,21 +717,21 @@ public class IAItemsConverter extends ItemConverter {
             return;
         }
         modelPath = namespaced(modelPath, this.namespace);
-        if (isNull(modelPath)){
+        if (isNull(modelPath)) {
             Logger.debug("[IAItemsConverter] Missing model path for item " + this.itemId + ". Cannot convert item texture.");
             return;
         }
-        Material itemMaterial = this.craftEngineItemUtils.getMaterial();
-        if (itemMaterial == Material.FISHING_ROD){
-            handleFishingRod3D(modelPath,modelPath+"_cast");
+        Material itemMaterial = this.craftEngineItemsConfiguration.getMaterial();
+        if (itemMaterial == Material.FISHING_ROD) {
+            handleFishingRod3D(modelPath, modelPath + "_cast");
             return;
         }
-        if (itemMaterial == Material.BOW){
-            handleBow3D(modelPath,modelPath+"_0",modelPath+"_1",modelPath+"_2");
+        if (itemMaterial == Material.BOW) {
+            handleBow3D(modelPath, modelPath + "_0", modelPath + "_1", modelPath + "_2");
             return;
         }
-        if (itemMaterial == Material.SHIELD){
-            handleShield3D(modelPath,modelPath+"_blocking");
+        if (itemMaterial == Material.SHIELD) {
+            handleShield3D(modelPath, modelPath + "_blocking");
             return;
         }
         handleSimpleModelPath(modelPath);
@@ -562,13 +740,12 @@ public class IAItemsConverter extends ItemConverter {
     private void handleBlockItem(ConfigurationSection resourceSection, ConfigurationSection blockSection) {
         IAPlacedModelTypes placedModelType = getPlacedModelType(blockSection);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
-        ConfigurationSection blockBehaviorSection = getOrCreateSection(behaviorSection, "block");
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
+        BlockSettings blockSettings = blockConfiguration.getBlockSettings();
 
-        configureBlockProperties(blockSection, blockBehaviorSection);
-        configureBlockSounds(blockSection, blockBehaviorSection);
-        configureLiquidPlacement(blockSection, blockBehaviorSection);
+        configureBlockProperties(blockSection, blockSettings);
+        configureBlockSounds(blockSection, blockSettings);
+        configureLiquidPlacement(blockSection, blockConfiguration);
 
         String modelPath = resourceSection.getString("model_path");
         if (!isValidString(modelPath)) {
@@ -580,7 +757,15 @@ public class IAItemsConverter extends ItemConverter {
                     return;
                 }
                 texturePath = namespaced(texturePath, this.namespace);
-                setupBlockStateFromTexture(blockBehaviorSection, placedModelType, texturePath);
+
+                GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube_all");
+                generation.addTexture("all", texturePath);
+
+                SimpleModelConfiguration model = new SimpleModelConfiguration(texturePath);
+                model.setGeneration(generation);
+
+                blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, model));
+                this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
                 return;
             } else {
                 Logger.debug("[IAItemsConverter] Missing model path for block item " + this.itemId + ". Cannot convert item texture.");
@@ -589,9 +774,9 @@ public class IAItemsConverter extends ItemConverter {
         }
 
         modelPath = namespaced(modelPath, this.namespace);
-        setupBlockState(blockBehaviorSection, placedModelType, modelPath);
 
-
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, getBlockState(placedModelType), this.itemId, new SimpleModelConfiguration(modelPath)));
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
 
     private IAPlacedModelTypes getPlacedModelType(ConfigurationSection blockSection) {
@@ -610,122 +795,77 @@ public class IAItemsConverter extends ItemConverter {
         }
     }
 
-    private void configureBlockProperties(ConfigurationSection blockSection, ConfigurationSection blockBehaviorSection) {
-        int lightLevel = blockSection.getInt("light_level", 0);
+    private void configureBlockProperties(ConfigurationSection iaBlockSection, BlockSettings blockSettings) {
+        int lightLevel = iaBlockSection.getInt("light_level", 0);
         if (lightLevel > 0) {
-            ConfigurationSection settings = getOrCreateSection(blockBehaviorSection, "settings");
-            settings.set("luminance", lightLevel);
+            blockSettings.setLuminance(lightLevel);
         }
 
-        double hardness = blockSection.getDouble("hardness", 2d);
-        if (hardness != 2d) {
-            ConfigurationSection settings = getOrCreateSection(blockBehaviorSection, "settings");
-            settings.set("hardness", hardness);
-        }
+        double hardness = iaBlockSection.getDouble("hardness", 2f);
+        blockSettings.setHardness((float) hardness);
 
-        double blastResistance = blockSection.getDouble("blast_resistance", 2d);
-        if (blastResistance != 2d) {
-            ConfigurationSection settings = getOrCreateSection(blockBehaviorSection, "settings");
-            settings.set("resistance", blastResistance);
-        }
+        double blastResistance = iaBlockSection.getDouble("blast_resistance", 2d);
+        blockSettings.setResistance((float) blastResistance);
 
         // TODO: implement break tools blacklist/whitelist conversion
-        List<String> breakToolsBlackList = blockSection.getStringList("break_tools_blacklist");
-        List<String> breakToolsWhiteList = blockSection.getStringList("break_tools_whitelist");
+        List<String> breakToolsBlackList = iaBlockSection.getStringList("break_tools_blacklist");
+        List<String> breakToolsWhiteList = iaBlockSection.getStringList("break_tools_whitelist");
     }
 
-    private void configureBlockSounds(ConfigurationSection blockSection, ConfigurationSection blockBehaviorSection) {
+    private void configureBlockSounds(ConfigurationSection blockSection, BlockSettings blockSettings) {
         ConfigurationSection soundSection = blockSection.getConfigurationSection("sounds");
         if (isNotNull(soundSection)) {
-            List<String> soundEvents = List.of("fall", "hit", "break", "step", "place");
-            for (String eventKey : soundEvents) {
-                processBlockSound(soundSection, eventKey, blockBehaviorSection);
-            }
+            String fallSound = soundSection.getString("fall");
+            blockSettings.setFallSound(fallSound);
+            String hitSound = soundSection.getString("hit");
+            blockSettings.setHitSound(hitSound);
+            String breakSound = soundSection.getString("break");
+            blockSettings.setBreakSound(breakSound);
+            String stepSound = soundSection.getString("step");
+            blockSettings.setStepSound(stepSound);
+            String placeSound = soundSection.getString("place");
+            blockSettings.setPlaceSound(placeSound);
         }
     }
 
-    private void configureLiquidPlacement(ConfigurationSection blockSection, ConfigurationSection blockBehaviorSection) {
+    private void configureLiquidPlacement(ConfigurationSection blockSection, BlockConfiguration blockConfiguration) {
         boolean placeableOnWater = blockSection.getBoolean("placeable_on_water", false);
         boolean placeableOnLava = blockSection.getBoolean("placeable_on_lava", false);
 
         if (placeableOnWater || placeableOnLava) {
-            List<Map<?, ?>> behaviors = blockBehaviorSection.getMapList("behaviors");
-            Map<String, Object> liquidPlacementBehavior = new HashMap<>();
-            liquidPlacementBehavior.put("type", "on_liquid_block");
-
-            List<String> liquids = new ArrayList<>();
-            if (placeableOnWater) liquids.add("water");
-            if (placeableOnLava) liquids.add("lava");
-
-            liquidPlacementBehavior.put("liquid-type", liquids);
-            behaviors.add(liquidPlacementBehavior);
-            blockBehaviorSection.set("behaviors", behaviors);
+            OnLiquidBlockBehavior onLiquidBlockBehavior = new OnLiquidBlockBehavior();
+            if (placeableOnWater) {
+                onLiquidBlockBehavior.addLiquidType("water");
+            }
+            if (placeableOnLava) {
+                onLiquidBlockBehavior.addLiquidType("lava");
+            }
+            blockConfiguration.addBehavior(onLiquidBlockBehavior);
         }
     }
 
-    private void setupBlockState(ConfigurationSection blockBehaviorSection, IAPlacedModelTypes placedModelType, String modelPath) {
-        ConfigurationSection stateSection = getOrCreateSection(blockBehaviorSection, "state");
-
-        String autoState = getAutoStateForPlacedModelType(placedModelType);
-        if (isNull(autoState)){
-            Logger.info("Limit reached for placed model type " + placedModelType + " for item " + this.itemId + ". Defaulting to SOLID auto-state.");
-            autoState = "solid";
-        }
-
-        stateSection.set("auto-state", autoState);
-        stateSection.set("model", InternalTemplateManager.parseTemplate(
-                Template.BLOCK_MODEL,
-                "%model_path%", modelPath
-        ));
-    }
-
-    private void setupBlockStateFromTexture(ConfigurationSection blockBehaviorSection, IAPlacedModelTypes placedModelType, String texturePath){
-        ConfigurationSection stateSection = getOrCreateSection(blockBehaviorSection, "state");
-        String autoState = getAutoStateForPlacedModelType(placedModelType);
-        if (isNull(autoState)){
-            Logger.info("Limit reached for placed model type " + placedModelType + " for item " + this.itemId + ". Defaulting to SOLID auto-state.");
-            autoState = "solid";
-        }
-        stateSection.set("auto-state", autoState);
-        stateSection.set("model", InternalTemplateManager.parseTemplate(
-                Template.MODEL_CUBE_ALL,
-                "%model_path%", texturePath,
-                "%texture_path%", texturePath
-        ));
-    }
-
-    @Nullable
-    private String getAutoStateForPlacedModelType(IAPlacedModelTypes placedModelType) {
-        Plugins plugin = this.getConverter().getPluginType();
-        CraftEngineBlockState blockState = switch (placedModelType) {
-            case REAL_NOTE -> CraftEngineBlockState.NOTE_BLOCK.getAvailableAndIncrement(plugin);
-            case REAL_TRANSPARENT -> CraftEngineBlockState.CHORUS.getAvailableAndIncrement(plugin);
-            case REAL_WIRE -> CraftEngineBlockState.TRIPWIRE.getAvailableAndIncrement(plugin);
-            case REAL -> CraftEngineBlockState.MUSHROOM.getAvailableAndIncrement(plugin);
-            default -> CraftEngineBlockState.SOLID.getAvailableAndIncrement(plugin);
+    public CraftEngineBlockState getBlockState(IAPlacedModelTypes placedModelType) {
+        return switch (placedModelType) {
+            case REAL_TRANSPARENT -> CraftEngineBlockState.CHORUS;
+            case REAL_WIRE -> CraftEngineBlockState.TRIPWIRE;
+            default -> CraftEngineBlockState.SOLID;
         };
-        if (isNull(blockState)) {
-            return null;
-        }
-
-        return blockState.name().toLowerCase();
     }
 
     private void handleSimpleModelPath(@NotNull String namespacedModelPath) {
-        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                Template.MODEL_ITEM_DEFAULT,
-                "%model_path%", namespacedModelPath
-        );
-        this.setSavedModelTemplates(parsedTemplate);
-        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+        this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(namespacedModelPath));
 
     }
 
     private void handleGraphicsSection() {
         ConfigurationSection graphicsSection = this.iaItemSection.getConfigurationSection("graphics");
-        if (isNull(graphicsSection)) return;
+        if (isNull(graphicsSection)) {
+            return;
+        }
 
-        if (handleGraphicsModel(graphicsSection)) return;
+        if (handleGraphicsModel(graphicsSection)) {
+            return;
+        }
 
         boolean isBlock = this.iaItemSection.contains("behaviours.block.placed_model.type");
         String texturePath = graphicsSection.getString("texture");
@@ -743,11 +883,7 @@ public class IAItemsConverter extends ItemConverter {
         String modelPath = graphicsSection.getString("model");
         if (isValidString(modelPath)) {
             modelPath = namespaced(modelPath, this.namespace);
-            Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                    Template.MODEL_ITEM_DEFAULT,
-                    "%model_path%", modelPath
-            );
-            this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+            this.craftEngineItemsConfiguration.setModelConfiguration(new SimpleModelConfiguration(modelPath));
             return true;
         }
         return false;
@@ -755,12 +891,11 @@ public class IAItemsConverter extends ItemConverter {
 
     private void handleSimpleTexture(String texturePath) {
         texturePath = namespaced(texturePath, this.namespace);
-        Map<String, Object> parsedTemplate = InternalTemplateManager.parseTemplate(
-                Template.MODEL_ITEM_GENERATED,
-                "%model_path%", texturePath,
-                "%texture_path%", texturePath
-        );
-        this.craftEngineItemUtils.getGeneralSection().createSection("model", parsedTemplate);
+        SimpleModelConfiguration modelConfiguration = new SimpleModelConfiguration(texturePath);
+        GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/generated");
+        generation.addTexture("layer0", texturePath);
+        modelConfiguration.setGeneration(generation);
+        this.craftEngineItemsConfiguration.setModelConfiguration(modelConfiguration);
     }
 
     private void handleBlockGraphics(ConfigurationSection graphicsSection, String texturePath) {
@@ -776,11 +911,11 @@ public class IAItemsConverter extends ItemConverter {
             }
         } else if (isValidString(texturePath)) {
             texturePath = namespaced(texturePath, this.namespace);
-            this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                    Template.MODEL_CUBE_ALL,
-                    "%model_path%", texturePath,
-                    "%texture_path%", texturePath
-            ));
+            SimpleModelConfiguration modelConfiguration = new SimpleModelConfiguration(texturePath);
+            GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cube_all");
+            generation.addTexture("all", texturePath);
+            modelConfiguration.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(modelConfiguration);
         }
     }
 
@@ -797,36 +932,33 @@ public class IAItemsConverter extends ItemConverter {
         String iconPath = graphicsSection.getString("icon");
         if (isValidString(iconPath)) {
             iconPath = namespaced(iconPath, this.namespace);
-            this.craftEngineItemUtils.getGeneralSection().createSection("model",
-                    InternalTemplateManager.parseTemplate(
-                            Template.MODEL_ITEM_GENERATED,
-                            "%model_path%", iconPath,
-                            "%texture_path%", iconPath
-                    )
-            );
+            SimpleModelConfiguration modelConfiguration = new SimpleModelConfiguration(iconPath);
+            GenerationConfiguration generation = new GenerationConfiguration("minecraft:item/generated");
+            generation.addTexture("layer0", iconPath);
+            modelConfiguration.setGeneration(generation);
+            this.craftEngineItemsConfiguration.setModelConfiguration(modelConfiguration);
         }
     }
 
     private void handleCrossBlock(ConfigurationSection graphicsSection) {
         String crossTexture = graphicsSection.getString("textures.cross", graphicsSection.getString("texture"));
-        if (!isValidString(crossTexture)) return;
+        if (!isValidString(crossTexture)) {
+            return;
+        }
 
         crossTexture = namespaced(crossTexture, this.namespace);
 
-        ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-        behaviorSection.set("type", "block_item");
-        ConfigurationSection blockSection = getOrCreateSection(behaviorSection, "block");
+        BlockConfiguration blockConfiguration = new BlockConfiguration(this.itemId);
 
-        ConfigurationSection stateSection = getOrCreateSection(blockSection, "state");
-        stateSection.set("properties", InternalTemplateManager.parseTemplate(Template.BLOCK_STATE_PROPERTIES_STAGE));
-        stateSection.set("appearances", InternalTemplateManager.parseTemplate(
-                Template.BLOCK_STATE_SAPLING_APPEARANCE,
-                "%model%", InternalTemplateManager.parseTemplate(
-                        Template.MODEL_CROSS,
-                        "%model_path%", crossTexture,
-                        "%texture_path%", crossTexture
-                )
-        ));
+        GenerationConfiguration generation = new GenerationConfiguration("minecraft:block/cross");
+        generation.addTexture("cross", crossTexture);
+
+        SimpleModelConfiguration model = new SimpleModelConfiguration(crossTexture);
+        model.setGeneration(generation);
+
+        blockConfiguration.setStateBlock(new SingleStateBlock(Plugins.ITEMS_ADDER, CraftEngineBlockState.SAPLING, this.itemId, model));
+
+        this.craftEngineItemsConfiguration.addItemConfiguration(blockConfiguration);
     }
 
     private void handleComplexModels(ConfigurationSection graphicsSection) {
@@ -862,9 +994,9 @@ public class IAItemsConverter extends ItemConverter {
                     namespaced(modelsSection.getString("pulling_0"), this.namespace),
                     namespaced(modelsSection.getString("pulling_1"), this.namespace),
                     namespaced(modelsSection.getString("pulling_2"), this.namespace)
-                );
+            );
         } else if (IAModelsKeys.FISHING_ROD.containsAny(keys) && keys.size() == IAModelsKeys.FISHING_ROD.getKeysCount()) {
-            handleFishingRod3D(namespaced(modelsSection.getString("normal"),this.namespace),namespaced(modelsSection.getString("cast"),this.namespace));
+            handleFishingRod3D(namespaced(modelsSection.getString("normal"), this.namespace), namespaced(modelsSection.getString("cast"), this.namespace));
         } else if (IAModelsKeys.CROSSBOW.containsAny(keys) && keys.size() == IAModelsKeys.CROSSBOW.getKeysCount()) {
             handleCrossbow3D(modelsSection);
         } else if (IAModelsKeys.TRIDENT.containsAny(keys) && keys.size() == IAModelsKeys.TRIDENT.getKeysCount()) {
@@ -877,99 +1009,152 @@ public class IAItemsConverter extends ItemConverter {
     }
 
     private void handleBow2D(ConfigurationSection texturesSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_2D_BOW_SIMPLIFIED,
-                "%default_texture_path%", namespaced(texturesSection.getString("normal"), this.namespace),
-                "%pulling_0_texture_path%", namespaced(texturesSection.getString("pulling_0"), this.namespace),
-                "%pulling_1_texture_path%", namespaced(texturesSection.getString("pulling_1"), this.namespace),
-                "%pulling_2_texture_path%", namespaced(texturesSection.getString("pulling_2"), this.namespace)
-        ));
+        String normalTexture = namespaced(texturesSection.getString("normal"), this.namespace);
+        String pulling0Texture = namespaced(texturesSection.getString("pulling_0"), this.namespace);
+        String pulling1Texture = namespaced(texturesSection.getString("pulling_1"), this.namespace);
+        String pulling2Texture = namespaced(texturesSection.getString("pulling_2"), this.namespace);
+
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.setScale(0.05);
+        pullingDispatch.addEntry(0.65, buildSimpleModel("minecraft:item/bow_pulling_1", pulling1Texture));
+        pullingDispatch.addEntry(0.90, buildSimpleModel("minecraft:item/bow_pulling_2", pulling2Texture));
+        pullingDispatch.setFallback(buildSimpleModel("minecraft:item/bow_pulling_0", pulling0Texture));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnTrue(pullingDispatch);
+        usingItemCondition.setOnFalse(buildSimpleModel("minecraft:item/bow", normalTexture));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     private void handleFishingRod2D(ConfigurationSection texturesSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_2D_FISHING_ROD_SIMPLIFIED,
-                "%default_texture_path%", namespaced(texturesSection.getString("normal"), this.namespace),
-                "%cast_texture_path%", namespaced(texturesSection.getString("cast"), this.namespace)
-        ));
+        String normalTexture = namespaced(texturesSection.getString("normal"), this.namespace);
+        String castTexture = namespaced(texturesSection.getString("cast"), this.namespace);
+
+        ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+        castCondition.setOnFalse(buildSimpleModel("minecraft:item/fishing_rod", normalTexture));
+        castCondition.setOnTrue(buildSimpleModel("minecraft:item/fishing_rod", castTexture));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
     }
 
     private void handleCrossbow2D(ConfigurationSection texturesSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_2D_CROSSBOW_SIMPLIFIED,
-                "%default_texture_path%", namespaced(texturesSection.getString("normal"), this.namespace),
-                "%pulling_0_texture_path%", namespaced(texturesSection.getString("pulling_0"), this.namespace),
-                "%pulling_1_texture_path%", namespaced(texturesSection.getString("pulling_1"), this.namespace),
-                "%pulling_2_texture_path%", namespaced(texturesSection.getString("pulling_2"), this.namespace),
-                "%charged_rocket_texture_path%", namespaced(texturesSection.getString("rocket"), this.namespace),
-                "%charged_arrow_texture_path%", namespaced(texturesSection.getString("arrow"), this.namespace)
-        ));
+        String normalTexture = namespaced(texturesSection.getString("normal"), this.namespace);
+        String pulling0Texture = namespaced(texturesSection.getString("pulling_0"), this.namespace);
+        String pulling1Texture = namespaced(texturesSection.getString("pulling_1"), this.namespace);
+        String pulling2Texture = namespaced(texturesSection.getString("pulling_2"), this.namespace);
+        String rocketTexture = namespaced(texturesSection.getString("rocket"), this.namespace);
+        String arrowTexture = namespaced(texturesSection.getString("arrow"), this.namespace);
+
+        ChargeTypeSelectConfiguration chargeTypeSelect = new ChargeTypeSelectConfiguration();
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ARROW, buildSimpleModel("minecraft:item/crossbow_arrow", arrowTexture));
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ROCKET, buildSimpleModel("minecraft:item/crossbow_firework", rocketTexture));
+        chargeTypeSelect.setFallback(buildSimpleModel("minecraft:item/crossbow", normalTexture));
+
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.addEntry(0.58, buildSimpleModel("minecraft:item/crossbow_pulling_1", pulling1Texture));
+        pullingDispatch.addEntry(1.0, buildSimpleModel("minecraft:item/crossbow_pulling_2", pulling2Texture));
+        pullingDispatch.setFallback(buildSimpleModel("minecraft:item/crossbow_pulling_0", pulling0Texture));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(chargeTypeSelect);
+        usingItemCondition.setOnTrue(pullingDispatch);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     private void handleBow3D(String defaultModelPath, String pulling0ModelPath, String pulling1ModelPath, String pulling2ModelPath) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_3D_BOW,
-                "%default_model_path%", defaultModelPath,
-                "%pulling_0_model_path%", pulling0ModelPath,
-                "%pulling_1_model_path%", pulling1ModelPath,
-                "%pulling_2_model_path%", pulling2ModelPath
-        ));
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.setScale(0.05);
+        pullingDispatch.addEntry(0.65, new SimpleModelConfiguration(pulling1ModelPath));
+        pullingDispatch.addEntry(0.90, new SimpleModelConfiguration(pulling2ModelPath));
+        pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0ModelPath));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(defaultModelPath));
+        usingItemCondition.setOnTrue(pullingDispatch);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     private void handleFishingRod3D(String defaultModelPath, String castingModelPath) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_3D_FISHING_ROD,
-                "%default_model_path%", defaultModelPath,
-                "%casting_model_path%", castingModelPath
-        ));
+        ConditionModelConfiguration castCondition = new ConditionModelConfiguration("minecraft:fishing_rod/cast");
+        castCondition.setOnFalse(new SimpleModelConfiguration(defaultModelPath));
+        castCondition.setOnTrue(new SimpleModelConfiguration(castingModelPath));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(castCondition);
     }
 
     private void handleCrossbow3D(ConfigurationSection modelsSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_3D_CROSSBOW,
-                "%default_model_path%", namespaced(modelsSection.getString("normal"), this.namespace),
-                "%pulling_0_model_path%", namespaced(modelsSection.getString("pulling_0"), this.namespace),
-                "%pulling_1_model_path%", namespaced(modelsSection.getString("pulling_1"), this.namespace),
-                "%pulling_2_model_path%", namespaced(modelsSection.getString("pulling_2"), this.namespace),
-                "%charged_rocket_model_path%", namespaced(modelsSection.getString("rocket"), this.namespace),
-                "%charged_arrow_model_path%", namespaced(modelsSection.getString("arrow"), this.namespace)
-        ));
+        String normalModel = namespaced(modelsSection.getString("normal"), this.namespace);
+        String pulling0Model = namespaced(modelsSection.getString("pulling_0"), this.namespace);
+        String pulling1Model = namespaced(modelsSection.getString("pulling_1"), this.namespace);
+        String pulling2Model = namespaced(modelsSection.getString("pulling_2"), this.namespace);
+        String rocketModel = namespaced(modelsSection.getString("rocket"), this.namespace);
+        String arrowModel = namespaced(modelsSection.getString("arrow"), this.namespace);
+
+        ChargeTypeSelectConfiguration chargeTypeSelect = new ChargeTypeSelectConfiguration();
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ARROW, new SimpleModelConfiguration(arrowModel));
+        chargeTypeSelect.addCase(ChargeTypeSelectConfiguration.ChargeType.ROCKET, new SimpleModelConfiguration(rocketModel));
+        chargeTypeSelect.setFallback(new SimpleModelConfiguration(normalModel));
+
+        UseDurationRangeDispatchConfiguration pullingDispatch = new UseDurationRangeDispatchConfiguration();
+        pullingDispatch.addEntry(0.58, new SimpleModelConfiguration(pulling1Model));
+        pullingDispatch.addEntry(1.0, new SimpleModelConfiguration(pulling2Model));
+        pullingDispatch.setFallback(new SimpleModelConfiguration(pulling0Model));
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnFalse(chargeTypeSelect);
+        usingItemCondition.setOnTrue(pullingDispatch);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     private void handleTrident3D(ConfigurationSection modelsSection) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_TRIDENT,
-                "%model_path%", namespaced(modelsSection.getString("normal"), this.namespace),
-                "%throwing_model_path%", namespaced(modelsSection.getString("throwing"), this.namespace)
-        ));
+        String normalModel = namespaced(modelsSection.getString("normal"), this.namespace);
+        String throwingModel = namespaced(modelsSection.getString("throwing"), this.namespace);
+
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnTrue(new SimpleModelConfiguration(throwingModel));
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(normalModel));
+
+        DisplayContentSelectConfiguration displayContentSelect = new DisplayContentSelectConfiguration();
+        displayContentSelect.addCase(new SimpleModelConfiguration(normalModel),
+                DisplayContentSelectConfiguration.DisplayContent.GUI,
+                DisplayContentSelectConfiguration.DisplayContent.GROUND,
+                DisplayContentSelectConfiguration.DisplayContent.FIXED
+        );
+        displayContentSelect.setFallback(usingItemCondition);
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(displayContentSelect);
     }
 
     private void handleShield3D(String defaultModelPath, String blockingModelPath) {
-        this.craftEngineItemUtils.setModel(InternalTemplateManager.parseTemplate(
-                Template.MODEL_3D_SHIELD,
-                "%default_model_path%", defaultModelPath,
-                "%blocking_model_path%", blockingModelPath
-        ));
+        ConditionModelConfiguration usingItemCondition = new ConditionModelConfiguration("minecraft:using_item");
+        usingItemCondition.setOnTrue(new SimpleModelConfiguration(blockingModelPath));
+        usingItemCondition.setOnFalse(new SimpleModelConfiguration(defaultModelPath));
+
+        this.craftEngineItemsConfiguration.setModelConfiguration(usingItemCondition);
     }
 
     @Override
-    public void convertOther(){
+    public void convertOther() {
         ConfigurationSection behavioursSection = this.iaItemSection.getConfigurationSection("behaviours");
-        if (isNotNull(behavioursSection)){
-            for (String behaviourKey : behavioursSection.getKeys(false)){
-                switch (behaviourKey){
+        if (isNotNull(behavioursSection)) {
+            for (String behaviourKey : behavioursSection.getKeys(false)) {
+                switch (behaviourKey) {
                     case "furniture" -> {
                         ConfigurationSection furnitureSection = behavioursSection.getConfigurationSection("furniture");
-                        if (isNotNull(furnitureSection)){
+                        if (isNotNull(furnitureSection)) {
                             this.convertFurniture(furnitureSection, behavioursSection);
                         }
                     }
-                    case "fuel"->{
+                    case "fuel" -> {
                         ConfigurationSection fuelSection = behavioursSection.getConfigurationSection("fuel");
-                        if (isNotNull(fuelSection)){
+                        if (isNotNull(fuelSection)) {
                             int burnTicks = fuelSection.getInt("burn_ticks", -1);
-                            if (burnTicks > 0){
-                                this.craftEngineItemUtils.getSettingsSection().set("fuel-time", burnTicks);
+                            if (burnTicks > 0) {
+                                this.craftEngineItemsConfiguration.addItemConfiguration(new fr.robie.craftengineconverter.api.configuration.item.settings.FuelTimeSettingConfiguration(burnTicks));
                             }
                             // machines fuel type not supported
                         }
@@ -985,124 +1170,142 @@ public class IAItemsConverter extends ItemConverter {
     private void convertFurniture(ConfigurationSection furnitureSection, ConfigurationSection behavioursSection) {
         IAEntityTypes entityType = IAEntityTypes.ITEM_FRAME;
         try {
-            entityType = IAEntityTypes.valueOf(furnitureSection.getString("entity","ITEM_FRAME").toUpperCase());
-        } catch (Exception ignored){
+            entityType = IAEntityTypes.valueOf(furnitureSection.getString("entity", "ITEM_FRAME").toUpperCase());
+        } catch (Exception ignored) {
         }
+
         boolean isBig = furnitureSection.getBoolean("small", true);
+
         Set<FurniturePlacement> placements = new HashSet<>();
         ConfigurationSection placeableSection = furnitureSection.getConfigurationSection("placeable_on");
-        if (isNotNull(placeableSection)){
-            boolean placeableOnFloor = placeableSection.getBoolean("floor", true);
-            boolean placeableOnCeiling = placeableSection.getBoolean("ceiling", true);
-            boolean placeableOnWall = placeableSection.getBoolean("wall", true);
-            if (placeableOnFloor){
+        if (isNotNull(placeableSection)) {
+            if (placeableSection.getBoolean("floor", true)) {
                 placements.add(FurniturePlacement.GROUND);
             }
-            if (placeableOnCeiling){
+            if (placeableSection.getBoolean("ceiling", true)) {
                 placements.add(FurniturePlacement.CEILING);
             }
-            if (placeableOnWall){
+            if (placeableSection.getBoolean("wall", true)) {
                 placements.add(FurniturePlacement.WALL);
             }
         } else {
             placements.addAll(List.of(FurniturePlacement.values()));
         }
-        if (!placements.isEmpty()){
-            Billboard transformType = Billboard.FIXED;
-            ItemDisplayType displayType = ItemDisplayType.NONE;
 
-            FloatsUtils displayTranslation = new FloatsUtils(3,new float[]{0f,0.5f,0f});
-            if (isBig){
-                displayTranslation.addValue(1,1f);
-            }
-            FloatsUtils scale = new FloatsUtils(3, new float[]{1f,1f,1f});
-
-            ConfigurationSection displayTransformationSection = furnitureSection.getConfigurationSection("display_transformation");
-            if (isNotNull(displayTransformationSection)){
-                try {
-                    displayType = ItemDisplayType.valueOf(displayTransformationSection.getString("transform","FIXED").toUpperCase());
-                } catch (Exception exception){
-                    Logger.debug("[IAItemsConverter] Unknown furniture display transform type for item "+this.itemId+": "+displayTransformationSection.getString("transform"));
-                }
-                ConfigurationSection translationSection = displayTransformationSection.getConfigurationSection("translation");
-                if (isNotNull(translationSection)){
-                    double x = translationSection.getDouble("x");
-                    double y = translationSection.getDouble("y");
-                    double z = translationSection.getDouble("z");
-                    if (x != 0d){
-                        displayTranslation.setValue(0,(float)x);
-                    }
-                    if (y != 0d){
-                        displayTranslation.setValue(1,(float)y);
-                    }
-                    if (z != 0d) {
-                        displayTranslation.setValue(2, (float) z);
-                    }
-                }
-                ConfigurationSection scaleSection = displayTransformationSection.getConfigurationSection("scale");
-                if (isNotNull(scaleSection)){
-                    double x = scaleSection.getDouble("x",1.0);
-                    double y = scaleSection.getDouble("y",1.0);
-                    double z = scaleSection.getDouble("z",1.0);
-                    if (x != 1.0){
-                        scale.setValue(0,(float)x);
-                    }
-                    if (y != 1.0){
-                        scale.setValue(1,(float)y);
-                    }
-                    if (z != 1.0) {
-                        scale.setValue(2, (float) z);
-                    }
-                }
-            }
-
-            List<Map<String,Object>> elements = new ArrayList<>();
-            Map<String,Object> map = new HashMap<>();
-            if (entityType == IAEntityTypes.ITEM_FRAME){
-                map.put("type", "item_display");
-                int light = furnitureSection.getInt("light_level",-1);
-                if (light >= 0){
-                    map.put("brightness", Map.of("block-light", light));
-                }
-
-            }
-            map.put("item", this.itemId);
-            if (displayType != ItemDisplayType.NONE) {
-                map.put("display-transform", displayType.name());
-            }
-            map.put("billboard", transformType.name());
-            map.put("translation", displayTranslation.toString());
-            map.put("scale", scale.toString());
-            elements.add(map);
-
-            double sitHeight = behavioursSection.getDouble("furniture_sit.sit_height", 0d);
-            List<Map<String,Object>> hitboxes = new ArrayList<>();
-            ConfigurationSection iaHitboxesSection = furnitureSection.getConfigurationSection("hitbox");
-
-            if (isNotNull(iaHitboxesSection)) {
-                parseItemsAdderHitboxes(iaHitboxesSection, hitboxes, sitHeight);
-            }
-            ConfigurationSection behaviorSection = this.craftEngineItemUtils.getBehaviorSection();
-            behaviorSection.set("type","furniture_item");
-            getOrCreateSection(behaviorSection, "settings").set("item", this.itemId);
-            ConfigurationSection ceFurnitureSection = getOrCreateSection(behaviorSection, "furniture");
-            ConfigurationSection cePlacementSection = getOrCreateSection(ceFurnitureSection, "placement");
-
-            for (FurniturePlacement furniturePlacement : placements){
-                ConfigurationSection ceTypePlacementSection = cePlacementSection.createSection(furniturePlacement.name().toLowerCase());
-                ceTypePlacementSection.set("elements", elements);
-                if (!hitboxes.isEmpty()){
-                    ceTypePlacementSection.set("hitboxes", hitboxes);
-                }
-            }
-
-            ceFurnitureSection.set("loot", InternalTemplateManager.parseTemplate(Template.LOOT_TABLE_BASIC_DROP, "%type%","furniture_item","%item%", this.itemId));
-
+        if (placements.isEmpty()) {
+            return;
         }
+
+        FurnitureConfiguration furnitureConfiguration = new FurnitureConfiguration();
+
+        // --- Display properties ---
+        Billboard transformType = Billboard.FIXED;
+        ItemDisplayType displayType = ItemDisplayType.NONE;
+        FloatsUtils displayTranslation = new FloatsUtils(3, new float[]{0f, 0.5f, 0f});
+        if (isBig) {
+            displayTranslation.addValue(1, 1f);
+        }
+        FloatsUtils scale = new FloatsUtils(3, new float[]{1f, 1f, 1f});
+
+        ConfigurationSection displayTransformationSection = furnitureSection.getConfigurationSection("display_transformation");
+        if (isNotNull(displayTransformationSection)) {
+            try {
+                displayType = ItemDisplayType.valueOf(displayTransformationSection.getString("transform", "FIXED").toUpperCase());
+            } catch (Exception e) {
+                Logger.debug(Message.WARNING__CONVERTER__IA__FURNITURE__UNKNOWN_DISPLAY_TRANSFORM, "item", this.itemId, "transform", displayTransformationSection.getString("transform"));
+            }
+            ConfigurationSection translationSection = displayTransformationSection.getConfigurationSection("translation");
+            if (isNotNull(translationSection)) {
+                double x = translationSection.getDouble("x");
+                double y = translationSection.getDouble("y");
+                double z = translationSection.getDouble("z");
+                if (x != 0d) {
+                    displayTranslation.setValue(0, (float) x);
+                }
+                if (y != 0d) {
+                    displayTranslation.setValue(1, (float) y);
+                }
+                if (z != 0d) {
+                    displayTranslation.setValue(2, (float) z);
+                }
+            }
+            ConfigurationSection scaleSection = displayTransformationSection.getConfigurationSection("scale");
+            if (isNotNull(scaleSection)) {
+                double x = scaleSection.getDouble("x", 1.0);
+                double y = scaleSection.getDouble("y", 1.0);
+                double z = scaleSection.getDouble("z", 1.0);
+                if (x != 1.0) {
+                    scale.setValue(0, (float) x);
+                }
+                if (y != 1.0) {
+                    scale.setValue(1, (float) y);
+                }
+                if (z != 1.0) {
+                    scale.setValue(2, (float) z);
+                }
+            }
+        }
+
+        // --- Element ---
+        ItemElement element;
+        if (entityType == IAEntityTypes.ARMOR_STAND) {
+            ArmorStandElement armorStand = new ArmorStandElement(this.itemId);
+            if (scale.isUpdated()) {
+                armorStand.setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
+            }
+            if (!isBig) {
+                armorStand.setSmall(true);
+            }
+            element = armorStand;
+        } else {
+            ItemDisplayElement itemDisplay = new ItemDisplayElement(this.itemId);
+            int light = furnitureSection.getInt("light_level", -1);
+            if (light >= 0) {
+                itemDisplay.display().setBrightness(light, -1);
+            }
+            if (displayType != ItemDisplayType.NONE) {
+                itemDisplay.setDisplayTransform(displayType);
+            }
+            itemDisplay.display().setBillboard(transformType);
+            if (displayTranslation.isUpdated()) {
+                itemDisplay.display().setTranslation(displayTranslation.getValue(0), displayTranslation.getValue(1), displayTranslation.getValue(2));
+            }
+            if (scale.isUpdated()) {
+                itemDisplay.display().setScale(scale.getValue(0), scale.getValue(1), scale.getValue(2));
+            }
+            element = itemDisplay;
+        }
+
+        // --- Hitboxes ---
+        double sitHeight = behavioursSection.getDouble("furniture_sit.sit_height", 0d);
+        List<Hitbox> hitboxList = new ArrayList<>();
+        ConfigurationSection iaHitboxesSection = furnitureSection.getConfigurationSection("hitbox");
+        if (isNotNull(iaHitboxesSection)) {
+            parseItemsAdderHitboxes(iaHitboxesSection, hitboxList, sitHeight);
+        }
+
+        // --- Loot ---
+        LootTable lootConfiguration = new LootTable();
+        LootPool pool = new LootPool();
+        pool.addCondition(new SurvivesExplosionCondition());
+        pool.addEntry(new FurnitureItemEntry(this.itemId));
+        lootConfiguration.addPool(pool);
+        furnitureConfiguration.setLoot(lootConfiguration);
+
+        // --- Placements ---
+        for (FurniturePlacement furniturePlacement : placements) {
+            Placement placement = furnitureConfiguration.getOrCreatePlacement(furniturePlacement);
+            placement.addElement(element);
+            hitboxList.forEach(placement::addHitbox);
+        }
+
+        this.getCraftEngineItemsConfiguration().addItemConfiguration(furnitureConfiguration);
     }
 
-    private void parseItemsAdderHitboxes(ConfigurationSection iaHitboxesSection, List<Map<String,Object>> hitboxes, double seatPosition) {
-        if (iaHitboxesSection == null) return;
+    private void parseItemsAdderHitboxes(ConfigurationSection iaHitboxesSection, List<Hitbox> hitboxes, double seatPosition) {
+        if (iaHitboxesSection == null) {
+            return;
+        }
 
         int length = iaHitboxesSection.getInt("length", 1);
         int width = iaHitboxesSection.getInt("width", 1);
@@ -1114,52 +1317,15 @@ public class IAItemsConverter extends ItemConverter {
         for (int x = 0; x < length; x++) {
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < width; z++) {
-                    float posX = x + lengthOffset;
-                    float posY = y + heightOffset;
-                    float posZ = z + widthOffset;
-
-                    Map<String, Object> hitbox = new HashMap<>();
-                    hitbox.put("type", "shulker");
-                    hitbox.put("position", posX + "," + posY + "," + posZ);
-
+                    ShulkerHitbox hitbox = new ShulkerHitbox();
+                    hitbox.setPosition(x + lengthOffset, y + heightOffset, z + widthOffset);
                     if (x == 0 && y == 0 && z == 0) {
-                        hitbox.put("seats", List.of("0,"+seatPosition+",0 0"));
+                        hitbox.addSeat(0, (float) seatPosition, 0, 0);
                     }
-
                     hitboxes.add(hitbox);
                 }
             }
         }
     }
 
-    /**
-     * Process a single block sound event from the source section and write it into the converted
-     * block behaviour section under settings.sounds.<eventKey>.
-     * If volume/pitch differ from defaults (1.0) a map with id/volume/pitch is written,
-     * otherwise the raw sound name is stored.
-     */
-    private void processBlockSound(ConfigurationSection soundSection, String eventKey, ConfigurationSection blockBehaviorSection) {
-        if (soundSection == null || eventKey == null) return;
-
-        ConfigurationSection eventSection = soundSection.getConfigurationSection(eventKey);
-        if (isNull(eventSection)) return;
-
-        String soundName = eventSection.getString("name");
-        double volume = eventSection.getDouble("volume", 1.0);
-        double pitch = eventSection.getDouble("pitch", 1.0);
-
-        if (!isValidString(soundName)) return;
-
-        ConfigurationSection soundSettingsSection = getOrCreateSection(getOrCreateSection(blockBehaviorSection, "settings"), "sounds");
-
-        if (volume != 1d || pitch != 1d) {
-            Map<String, Object> soundMap = new HashMap<>();
-            soundMap.put("id", soundName.toLowerCase().replace("_","."));
-            soundMap.put("volume", volume);
-            soundMap.put("pitch", pitch);
-            soundSettingsSection.set(eventKey, soundMap);
-        } else {
-            soundSettingsSection.set(eventKey, soundName);
-        }
-    }
 }

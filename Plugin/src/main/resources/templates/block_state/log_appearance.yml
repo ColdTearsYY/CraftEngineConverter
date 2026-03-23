@@ -1,9 +1,0 @@
-axisY:
-  auto-state: "%auto-state-y%"
-  model: "%model%"
-axisX:
-  auto-state: "%auto-state-x%"
-  model: "%model%${append:x:90,y:90}"
-axisZ:
-  auto-state: "%auto-state-z%"
-  model: "%model%${append:x:90}"

@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.hooks.placeholderapi.tag;
 
-import fr.robie.craftengineconverter.common.tag.TagProcessor;
+import fr.robie.craftengineconverter.api.tag.TagProcessor;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;
 

@@ -1,3 +1,0 @@
-default:
-  auto-state: sapling
-  model: "%model%"

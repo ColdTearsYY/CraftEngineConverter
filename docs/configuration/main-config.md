@@ -101,6 +101,17 @@ block-state-limit:
 # Auto-convert items on plugin enable
 auto-convert-on-startup: false
 
+# Select which converters and options should be used on startup
+# If empty, all options for all converters will be used
+# Available options: ITEMS, EMOJIS, IMAGES, LANGUAGES, SOUNDS, RECIPES, PACKS, ALL
+# auto-convert-on-startup-types:
+#   nexo:
+#     - ITEMS
+#     - EMOJIS
+#   itemsadder:
+#     - ITEMS
+#     - IMAGES
+
 # Default material for items
 default-material: "PAPER"
 
@@ -141,6 +152,7 @@ nexo:
   enable-block-interaction-conversion: true # When enabled, when you interact with a nexo block, it will convert the nexo block to their CE equivalent
   # Require this permission to allow Nexo furniture interaction conversion : craftengineconverter.nexo.furniture.interact.conversion
   enable-furniture-interaction-conversion: true # When enabled, when you interact with a nexo furniture, it will convert the furniture to their CE equivalent
+  enable-chunk-load-conversion: false # When enabled, when a chunk is loaded, it will convert all Nexo blocks and furnitures to CE equivalents
 
 itemsadder:
   enable-hook: true # Enable ItemsAdder integration if ItemsAdder is installed
@@ -149,6 +161,22 @@ itemsadder:
   enable-block-interaction-conversion: true # When enabled, when you interact with an ItemsAdder block, it will convert the block to their CE equivalent
   # Require this permission to allow ItemsAdder furniture interaction conversion : craftengineconverter.itemsadder.furniture.interact.conversion
   enable-furniture-interaction-conversion: true # When enabled, when you interact with an ItemsAdder furniture, it will convert the furniture to their CE equivalent
+  enable-chunk-load-conversion: false # When enabled, when a chunk is loaded, it will convert all ItemsAdder blocks and furnitures to CE equivalents
+  blacklisted-content-folders-namespaces: [] # List of content folders or namespaces to ignore during conversion
+
+world-converter:
+  enable: false # Enable world conversion feature (Requires server restart to take effect)
+  nexo:
+    enable: true # Enable Nexo world conversion without nexo plugin installed ! Just explore and let the lugin convert Nexo blocks and furnitures to CE equivalents
+  itemsadder:
+    enable: true # Enable ItemsAdder world conversion without ItemsAdder plugin installed ! Just explore and let the lugin convert ItemsAdder blocks and furnitures to CE equivalents
+  progress-bar-options:
+    progress-color: GREEN
+    empty-color: DARK_GRAY
+    percent-color: YELLOW
+    progress-char: █
+    empty-char: ░
+    bar-width: 50
 
 # Available colors:
 # BLACK, DARK_BLUE, DARK_GREEN, DARK_AQUA, DARK_RED, DARK_PURPLE,

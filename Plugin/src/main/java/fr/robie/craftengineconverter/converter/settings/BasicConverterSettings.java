@@ -1,6 +1,6 @@
 package fr.robie.craftengineconverter.converter.settings;
 
-import fr.robie.craftengineconverter.common.configuration.ConverterSettings;
+import fr.robie.craftengineconverter.api.configuration.ConverterSettings;
 
 public class BasicConverterSettings implements ConverterSettings {
     private boolean dryRun = false;
@@ -45,6 +45,4 @@ public class BasicConverterSettings implements ConverterSettings {
         this.threadCount = threadCount;
         return this;
     }
-
-
 }

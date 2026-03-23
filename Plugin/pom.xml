@@ -6,7 +6,7 @@
     <parent>
         <groupId>fr.robie.craftengineconverter</groupId>
         <artifactId>CraftEngineConverter</artifactId>
-        <version>0.0.1</version>
+        <version>0.0.2</version>
     </parent>
 
     <artifactId>Plugin</artifactId>
@@ -32,6 +32,7 @@
                                     <include>com.tcoded:FoliaLib</include>
                                     <include>org.bstats:bstats-bukkit</include>
                                     <include>org.bstats:bstats-base</include>
+                                    <include>fr.maxlego08.sarah:sarah</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
@@ -42,6 +43,10 @@
                                 <relocation>
                                     <pattern>org.bstats</pattern>
                                     <shadedPattern>fr.robie.craftengineconverter.lib.bstats</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>fr.maxlego08.sarah</pattern>
+                                    <shadedPattern>fr.robie.craftengineconverter.lib.sarah</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
@@ -95,14 +100,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.0.2</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.5</version>
         </dependency>
     </dependencies>
 

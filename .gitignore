@@ -111,3 +111,12 @@ buildNumber.properties
 
 # Common working directory
 run/
+/AGENTS.md
+.classpath
+.factorypath
+.project
+.settings/
+
+.gemini/
+gha-creds-*.json
+/GEMINI.md

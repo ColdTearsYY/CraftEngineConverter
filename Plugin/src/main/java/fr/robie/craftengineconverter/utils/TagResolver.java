@@ -1,13 +1,15 @@
 package fr.robie.craftengineconverter.utils;
 
-import fr.robie.craftengineconverter.common.configuration.Configuration;
-import fr.robie.craftengineconverter.common.enums.Plugins;
-import fr.robie.craftengineconverter.common.tag.ITagResolver;
-import fr.robie.craftengineconverter.common.tag.TagProcessor;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
+import fr.robie.craftengineconverter.api.enums.Plugins;
+import fr.robie.craftengineconverter.api.tag.ITagResolver;
+import fr.robie.craftengineconverter.api.tag.TagProcessor;
 import fr.robie.craftengineconverter.hooks.placeholderapi.tag.PlaceholderAPITag;
 import fr.robie.craftengineconverter.tag.GlyphTagProcessor;
 import fr.robie.craftengineconverter.tag.IAImageTagProcessor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,21 +18,25 @@ import java.util.Optional;
 public class TagResolver implements ITagResolver {
     private final List<TagProcessor> tagProcessors = new ArrayList<>();
 
-    @Override
     public void initTagProcessors() {
-        if (Configuration.glyphTagEnabled){
-            this.tagProcessors.add(new GlyphTagProcessor());
+        if (Configuration.<Boolean>get(ConfigurationKey.GLYPH_TAG_ENABLED)){
+            this.registerTagProcessor(new GlyphTagProcessor());
         }
-        if (Configuration.iaImageTagEnabled){
-            this.tagProcessors.add(new IAImageTagProcessor());
+        if (Configuration.<Boolean>get(ConfigurationKey.IMAGE_TAG_ENABLED)){
+            this.registerTagProcessor(new IAImageTagProcessor());
         }
-        if (Plugins.PLACEHOLDER_API.isPresent()){
-            this.tagProcessors.add(new PlaceholderAPITag());
+        if (Plugins.PLACEHOLDER_API.isPresent() && Configuration.<Boolean>get(ConfigurationKey.PLACEHOLDER_API_TAG_ENABLED)){
+            this.registerTagProcessor(new PlaceholderAPITag());
         }
     }
 
     @Override
-    public Optional<String> resolveTags(String message, Player player) {
+    public void registerTagProcessor(@NotNull TagProcessor processor) {
+        this.tagProcessors.add(processor);
+    }
+
+    @Override
+    public Optional<String> resolveTags(@NotNull String message, @NotNull Player player) {
         String result = message;
         boolean modified = false;
 

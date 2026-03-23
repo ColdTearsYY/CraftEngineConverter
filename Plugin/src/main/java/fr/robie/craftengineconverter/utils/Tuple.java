@@ -10,11 +10,11 @@ public class Tuple<T> {
     }
 
     public T getFirst() {
-        return first;
+        return this.first;
     }
 
     public T getSecond() {
-        return second;
+        return this.second;
     }
 
     public static <T> Tuple<T> of(T first, T second) {

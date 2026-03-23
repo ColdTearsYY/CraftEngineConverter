@@ -1,9 +1,9 @@
 package fr.robie.craftengineconverter.utils.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.common.format.Message;
-import fr.robie.craftengineconverter.common.logger.LogType;
-import fr.robie.craftengineconverter.common.logger.Logger;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.LogType;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.utils.CraftEngineConverterUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
@@ -122,7 +122,6 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
     }
 
 
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         for (VCommand command : this.commands) {
@@ -139,7 +138,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
                     return true;
             }
         }
-        message(plugin,sender, Message.COMMAND__NO_ARGS);
+        message(this.plugin, sender, Message.COMMAND__NO_ARGS);
         return true;
     }
 
@@ -186,18 +185,15 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
      * permission or if the command has a permission. If yes then we execute the
      * command otherwise we send the message for the permission
      *
-     * @param command
-     *            - Object that contains the command
-     * @param sender
-     *            - Person who executes the command
-     * @param strings
-     *            - Argument of the command
+     * @param command - Object that contains the command
+     * @param sender  - Person who executes the command
+     * @param strings - Argument of the command
      * @return CommandType - Return of the command
      */
     private CommandType processRequirements(VCommand command, CommandSender sender, String[] strings) {
 
         if (!(sender instanceof Player) && !command.isConsoleCanUse()) {
-            message(plugin,sender, Message.COMMAND__PLAYER_ONLY);
+            message(this.plugin, sender, Message.COMMAND__PLAYER_ONLY);
             return CommandType.DEFAULT;
         }
 
@@ -207,7 +203,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
                 super.runAsync(this.plugin, () -> {
                     CommandType returnType = command.prePerform(this.plugin, sender, strings);
                     if (returnType == CommandType.SYNTAX_ERROR) {
-                        message(plugin,sender, Message.COMMAND__SYNTAX__ERROR, "syntax", command.getSyntax());
+                        message(this.plugin, sender, Message.COMMAND__SYNTAX__ERROR, "syntax", command.getSyntax());
                     }
                 });
                 return CommandType.DEFAULT;
@@ -215,11 +211,11 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
 
             CommandType returnType = command.prePerform(this.plugin, sender, strings);
             if (returnType == CommandType.SYNTAX_ERROR) {
-                message(plugin,sender, Message.COMMAND__SYNTAX__ERROR, "syntax", command.getSyntax());
+                message(this.plugin, sender, Message.COMMAND__SYNTAX__ERROR, "syntax", command.getSyntax());
             }
             return returnType;
         }
-        message(plugin,sender, Message.COMMAND__NO_PERMISSION);
+        message(this.plugin, sender, Message.COMMAND__NO_PERMISSION);
         return CommandType.DEFAULT;
     }
 
@@ -258,7 +254,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String str, String[] args) {
 
-        for (VCommand command : commands) {
+        for (VCommand command : this.commands) {
 
             if (command.getSubCommands().contains(cmd.getName().toLowerCase())) {
                 if (args.length == 1 && command.getParent() == null) {
@@ -310,6 +306,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
 
         return null;
     }
+
     @Override
     public void registerCommand(String command, VCommand vCommand, String... aliases) {
         registerCommand(this.plugin, command, vCommand, Arrays.asList(aliases));
@@ -334,7 +331,7 @@ public class CommandManager extends CraftEngineConverterUtils implements Command
             }
 
 
-            commands.add(vCommand.addSubCommand(string));
+            this.commands.add(vCommand.addSubCommand(string));
             vCommand.addSubCommand(aliases);
 
             if (!commandMap.register(command.getName(), plugin.getPluginMeta().getName(), command)) {

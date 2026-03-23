@@ -1,7 +1,8 @@
 package fr.robie.craftengineconverter.utils.command;
 
 import fr.robie.craftengineconverter.CraftEngineConverter;
-import fr.robie.craftengineconverter.common.format.Message;
+import fr.robie.craftengineconverter.api.format.Message;
+import fr.robie.craftengineconverter.api.logger.Logger;
 import fr.robie.craftengineconverter.common.permission.Permission;
 import fr.robie.craftengineconverter.utils.collection.CollectionBiConsumer;
 import org.bukkit.command.CommandSender;
@@ -13,26 +14,27 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class VCommand extends Arguments {
-    record FlagValue<T>(String flag, boolean hasValue, Class<T> type, T defaultValue){
-        public T parseValue(String value){
-            if (type.equals(Boolean.class)){
-                return type.cast(Boolean.parseBoolean(value));
-            } else if (type.equals(Integer.class)){
+    record FlagValue<T>(String flag, boolean hasValue, Class<T> type, T defaultValue) {
+        public T parseValue(String value) {
+            if (this.type.equals(Boolean.class)) {
+                return this.type.cast(Boolean.parseBoolean(value));
+            } else if (this.type.equals(Integer.class)) {
                 try {
-                    return type.cast(Integer.parseInt(value));
-                } catch (NumberFormatException e){
-                    return defaultValue;
+                    return this.type.cast(Integer.parseInt(value));
+                } catch (NumberFormatException e) {
+                    return this.defaultValue;
                 }
-            } else if (type.equals(Double.class)){
+            } else if (this.type.equals(Double.class)) {
                 try {
-                    return type.cast(Double.parseDouble(value));
-                } catch (NumberFormatException e){
-                    return defaultValue;
+                    return this.type.cast(Double.parseDouble(value));
+                } catch (NumberFormatException e) {
+                    return this.defaultValue;
                 }
             }
-            return type.cast(value);
+            return this.type.cast(value);
         }
     }
+
     protected final CraftEngineConverter plugin;
 
     /**
@@ -106,67 +108,67 @@ public abstract class VCommand extends Arguments {
      * @return the permission
      */
     public String getPermission() {
-        return permission;
+        return this.permission;
     }
 
     /**
      * @return the parent
      */
     public VCommand getParent() {
-        return parent;
+        return this.parent;
     }
 
     /**
      * @return the subCommand
      */
     public List<String> getSubCommands() {
-        return subCommands;
+        return this.subCommands;
     }
 
     /**
      * @return the list of child VCommands
      */
     public List<VCommand> getSubVCommands() {
-        return subVCommands;
+        return this.subVCommands;
     }
 
     /**
      * @return the consoleCanUse
      */
     public boolean isConsoleCanUse() {
-        return consoleCanUse;
+        return this.consoleCanUse;
     }
 
     /**
      * @return the ignoreParent
      */
     public boolean isIgnoreParent() {
-        return ignoreParent;
+        return this.ignoreParent;
     }
 
     public CommandSender getSender() {
-        return sender;
+        return this.sender;
     }
 
     /**
      * @return the argsMinLength
      */
     public int getArgsMinLength() {
-        return argsMinLength;
+        return this.argsMinLength;
     }
 
     /**
      * @return the argsMaxLength
      */
     public int getArgsMaxLength() {
-        return argsMaxLength;
+        return this.argsMaxLength;
     }
 
     /**
      * @return the player
      */
     public Player getPlayer() {
-        return player;
+        return this.player;
     }
 
     /**
@@ -175,22 +177,22 @@ public abstract class VCommand extends Arguments {
      * @return the syntax
      */
     public String getSyntax() {
-        if (syntax == null) {
-            syntax = generateDefaultSyntax("");
+        if (this.syntax == null) {
+            this.syntax = generateDefaultSyntax("");
         }
-        return syntax;
+        return this.syntax;
     }
 
     public boolean isIgnoreArgs() {
-        return ignoreArgs;
+        return this.ignoreArgs;
     }
 
     public String getDescription() {
-        return description == null ? "no description" : description;
+        return this.description == null ? "no description" : this.description;
     }
 
     public CommandType getTabCompleter() {
-        return tabCompleter;
+        return this.tabCompleter;
     }
 
     /*
@@ -217,8 +219,7 @@ public abstract class VCommand extends Arguments {
     }
 
     /**
-     * @param syntax
-     *            the syntax to set
+     * @param syntax the syntax to set
      */
     protected VCommand setSyntax(String syntax) {
         this.syntax = syntax;
@@ -226,8 +227,7 @@ public abstract class VCommand extends Arguments {
     }
 
     /**
-     * @param permission
-     *            the permission to set
+     * @param permission the permission to set
      */
     protected VCommand setPermission(String permission) {
         this.permission = permission;
@@ -235,8 +235,7 @@ public abstract class VCommand extends Arguments {
     }
 
     /**
-     * @param permission
-     *            the permission to set
+     * @param permission the permission to set
      */
     protected VCommand setPermission(Permission permission) {
         this.permission = permission.asPermission();
@@ -244,8 +243,7 @@ public abstract class VCommand extends Arguments {
     }
 
     /**
-     * @param parent
-     *            the parent to set
+     * @param parent the parent to set
      */
     protected VCommand setParent(VCommand parent) {
         this.parent = parent;
@@ -253,15 +251,14 @@ public abstract class VCommand extends Arguments {
     }
 
     /**
-     * @param consoleCanUse
-     *            the consoleCanUse to set
+     * @param consoleCanUse the consoleCanUse to set
      */
     protected VCommand setConsoleCanUse(boolean consoleCanUse) {
         this.consoleCanUse = consoleCanUse;
         return this;
     }
 
-    protected VCommand onlyPlayers(){
+    protected VCommand onlyPlayers() {
         this.consoleCanUse = false;
         return this;
     }
@@ -318,15 +315,22 @@ public abstract class VCommand extends Arguments {
     }
 
     protected void addFlag(@NotNull String flag) {
-        this.flagsArgs.add(new FlagValue<>(flag, false, String.class, null));
+        addFlag(flag, false, String.class, null);
     }
 
     protected void addFlag(@NotNull String flag, boolean hasValue) {
-        this.flagsArgs.add(new FlagValue<>(flag, hasValue, String.class, null));
+        addFlag(flag, hasValue, String.class, null);
     }
 
     protected <T> void addFlag(@NotNull String flag, @NotNull Class<T> type, @Nullable T defaultValue) {
-        this.flagsArgs.add(new FlagValue<>(flag, true, type, defaultValue));
+        addFlag(flag, true, type, defaultValue);
+    }
+
+    private <T> void addFlag(@NotNull String flag, boolean hasValue, @NotNull Class<T> type, @Nullable T defaultValue) {
+        this.flagsArgs.add(new FlagValue<>(flag, hasValue, type, defaultValue));
+        this.ignoreParent = this.parent == null;
+        this.ignoreArgs = true;
+        this.setTabCompletor();
     }
 
     /**
@@ -416,20 +420,20 @@ public abstract class VCommand extends Arguments {
             syntax = syntaxBuilder.toString().trim();
         }
 
-        String tmpString = subCommands.getFirst() + syntax;
-        return parent == null ? "/" + tmpString : parent.generateDefaultSyntax(" " + tmpString);
+        String tmpString = this.subCommands.getFirst() + syntax;
+        return this.parent == null ? "/" + tmpString : this.parent.generateDefaultSyntax(" " + tmpString);
     }
 
     private void appendRequiredArguments(StringBuilder syntaxBuilder) {
-        requireArgs.forEach(arg -> syntaxBuilder.append(" <").append(arg).append(">"));
+        this.requireArgs.forEach(arg -> syntaxBuilder.append(" <").append(arg).append(">"));
     }
 
     private void appendOptionalArguments(StringBuilder syntaxBuilder) {
-        optionalArgs.forEach(arg -> syntaxBuilder.append(" [<").append(arg).append(">]"));
+        this.optionalArgs.forEach(arg -> syntaxBuilder.append(" [<").append(arg).append(">]"));
     }
 
     private void appendFlags(StringBuilder syntaxBuilder) {
-        flagsArgs.forEach(flag -> {
+        this.flagsArgs.forEach(flag -> {
             syntaxBuilder.append(" [").append(flag.flag);
             if (flag.hasValue) {
                 syntaxBuilder.append("=<").append(getSimpleTypeName(flag.type)).append(">");
@@ -454,7 +458,7 @@ public abstract class VCommand extends Arguments {
      * @return
      */
     private int parentCount(int defaultParent) {
-        return parent == null ? defaultParent : parent.parentCount(defaultParent + 1);
+        return this.parent == null ? defaultParent : this.parent.parentCount(defaultParent + 1);
     }
 
     /**
@@ -483,15 +487,17 @@ public abstract class VCommand extends Arguments {
         String defaultString = super.argAsString(0);
 
         if (defaultString != null) {
-            for (VCommand subCommand : subVCommands) {
+            for (VCommand subCommand : this.subVCommands) {
                 if (subCommand.getSubCommands().contains(defaultString.toLowerCase()))
                     return CommandType.CONTINUE;
             }
         }
 
-        if ((this.argsMinLength != 0 && cleanedArgs.length < this.argsMinLength) ||
-                this.argsMaxLength != 0 && cleanedArgs.length > this.argsMaxLength && !this.extendedArgs) {
-            return CommandType.SYNTAX_ERROR;
+        if (!this.ignoreArgs) {
+            if ((this.argsMinLength != 0 && cleanedArgs.length < this.argsMinLength) ||
+                    this.argsMaxLength != 0 && cleanedArgs.length > this.argsMaxLength && !this.extendedArgs) {
+                return CommandType.SYNTAX_ERROR;
+            }
         }
 
         this.sender = commandSender;
@@ -504,6 +510,7 @@ public abstract class VCommand extends Arguments {
         try {
             return perform(plugin);
         } catch (Exception e) {
+            Logger.showException("An error occurred while executing command: " + this.getSyntax(), e);
             return CommandType.SYNTAX_ERROR;
         }
     }
@@ -579,8 +586,8 @@ public abstract class VCommand extends Arguments {
 
     @Override
     public String toString() {
-        return "VCommand [permission=" + permission + ", subCommands=" + subCommands + ", consoleCanUse="
-                + consoleCanUse + ", description=" + description + "]";
+        return "VCommand [permission=" + this.permission + ", subCommands=" + this.subCommands + ", consoleCanUse="
+                + this.consoleCanUse + ", description=" + this.description + "]";
     }
 
     /**
@@ -588,7 +595,7 @@ public abstract class VCommand extends Arguments {
      *
      * @param plugin plugin
      * @param sender sender
-     * @param args arguments
+     * @param args   arguments
      * @return list of completions or null
      */
     public List<String> toTab(CraftEngineConverter plugin, CommandSender sender, String[] args) {
@@ -693,6 +700,7 @@ public abstract class VCommand extends Arguments {
             this.cleanedArgs = cleanedArgs;
         }
     }
+
     /**
      * Generate list for tab completer
      *
@@ -803,8 +811,8 @@ public abstract class VCommand extends Arguments {
      */
     public void syntaxMessage() {
         this.subVCommands.forEach(command -> {
-            if (command.getPermission() == null || hasPermission(sender, command.getPermission())) {
-                message(plugin,this.sender, Message.COMMAND__SYNTAX__HELP, "syntax", command.getSyntax(), "description",
+            if (command.getPermission() == null || hasPermission(this.sender, command.getPermission())) {
+                message(this.plugin, this.sender, Message.COMMAND__SYNTAX__HELP, "syntax", command.getSyntax(), "description",
                         command.getDescription());
             }
         });

@@ -1,7 +1,7 @@
 package fr.robie.craftengineconverter.common.converter;
 
+import fr.robie.craftengineconverter.api.enums.Plugins;
 import fr.robie.craftengineconverter.common.CraftEngineConverterPlugin;
-import fr.robie.craftengineconverter.common.enums.Plugins;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
 import net.momirealms.craftengine.core.util.Key;
 import org.bukkit.Location;
@@ -34,8 +34,9 @@ public abstract class BlockConverter extends ObjectConverter {
                 continue;
             }
 
+            String oldBlockState = adjacentLoc.getBlock().getBlockData().getAsString();
             if (this.removeBlockAt(adjacentLoc)) {
-                this.placeBlock(newName, adjacentLoc);
+                this.placeBlock(newName, adjacentLoc, oldBlockState);
                 counter.increment();
                 executeBlockConversion(adjacentLoc, processed, counter);
             }
@@ -53,9 +54,7 @@ public abstract class BlockConverter extends ObjectConverter {
 
     public abstract boolean removeBlockAt(Location location);
 
-    public void placeBlock(String itemId, Location location){
+    public void placeBlock(String itemId, Location location, String oldBlockState){
         this.plugin.getPlacementTracker().placeBlock(itemId, location);
     }
-
-
 }

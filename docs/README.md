@@ -6,7 +6,7 @@ Welcome to the complete documentation for **CraftEngineConverter**, the ultimate
 
 ### Conversion Support
 
-- **Multi-Plugin Compatibility**: Seamlessly convert configuration files from a variety of popular plugins into the CraftEngine format. `Only Nexo plugin is supported for now. More to come soon!`
+- **Multi-Plugin Compatibility**: Seamlessly convert configuration files from a variety of popular plugins into the CraftEngine format. Currently supporting **Nexo** and **ItemsAdder**, with more to come soon!
 - **Automated Process**: Simplify your workflow with automated conversion processes that save you time and effort.
 
 ### ⚡ Performance & Reliability

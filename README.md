@@ -5,7 +5,8 @@
 [![Folia](https://img.shields.io/badge/Folia-✓-blue.svg)](https://papermc.io/software/folia)
 [![License](https://img.shields.io/badge/License-GPL--3.0-red.svg)](LICENSE)
 
-A powerful Minecraft plugin that converts configurations, items, and resources from other custom item plugins to [CraftEngine](https://modrinth.com/plugin/craftengine) format.
+A powerful Minecraft plugin that converts configurations, items, and resources from other custom item plugins
+to [CraftEngine](https://modrinth.com/plugin/craftengine) format.
 
 ## 📋 Table of Contents
 
@@ -24,12 +25,14 @@ A powerful Minecraft plugin that converts configurations, items, and resources f
 ## ✨ Features
 
 ### Core Features
+
 - **Multi-threaded Conversion**: Asynchronous conversion system for optimal performance
 - **Folia Support**: Full compatibility with Paper's Folia multi-threaded server software
 - **Modular Architecture**: Plugin hook system for easy extensibility
 - **Resource Pack Management**: Automatic pack mapping and asset conversion
 
 ### Conversion Capabilities
+
 - [x] **Items**: Custom items with models, textures, and properties
 - [x] **Glyphs**: Font glyphs and custom character conversion
 - [x] **Emojis**: Custom emoji conversion with font mapping
@@ -40,6 +43,7 @@ A powerful Minecraft plugin that converts configurations, items, and resources f
 - [x] **Equipment**: Armor layers and custom equipment textures (Component && Trim)
 
 ### Advanced Features
+
 - **Path Blacklisting**: Exclude specific files or folders from conversion
 - **Tag Processing**: Custom tag system for text formatting (glyphs, PlaceholderAPI)
 - **Template System**: Pre-configured templates for common model types
@@ -64,11 +68,13 @@ A powerful Minecraft plugin that converts configurations, items, and resources f
 ## 📦 Requirements
 
 ### Server Requirements
+
 - **Minecraft Version**: 1.21 or higher
 - **Server Software**: Paper, Purpur, or Folia
 - **Java Version**: 21 or higher
 
 ### Plugin Dependencies
+
 - **CraftEngine** (required)
 - **PacketEvents** (optional) - For advanced packet formatting
 - **PlaceholderAPI** (optional) - For placeholder support in messages
@@ -88,13 +94,17 @@ A powerful Minecraft plugin that converts configurations, items, and resources f
 ```
 /craftengineconverter convert [plugin] [type]
 ```
+
 Convert items from another plugin to CraftEngine format.
 
 **Arguments:**
+
 - `plugin` - The source plugin name (e.g., `nexo`)
-- `type` - The conversion type: `items`, `glyphs`, `emojis`, `images`, `languages`, `sounds`, `pack`, `recipes`, or `all`
+- `type` - The conversion type: `items`, `glyphs`, `emojis`, `images`, `languages`, `sounds`, `pack`, `recipes`, or
+  `all`
 
 **Examples:**
+
 ```
 /cec convert nexo all          # Convert everything from Nexo
 /cec convert nexo items        # Convert only items
@@ -106,6 +116,7 @@ Convert items from another plugin to CraftEngine format.
 ```
 /craftengineconverter reload
 ```
+
 Reload the plugin configuration and messages.
 
 ### Permissions
@@ -155,6 +166,7 @@ tag:
 ### Path Blacklisting
 
 The blacklist system supports:
+
 - **Wildcards**: `shaders/*` matches all files in the shaders folder
 - **Specific files**: `shaders/rendertype_text.fsh`
 - **Namespaced paths**: `minecraft:textures/shaders/*`
@@ -197,6 +209,7 @@ message: "<papi:player_name> joined!"
 No available for the moment.
 
 **Maven:**
+
 ```xml
 <dependency>
     <groupId>fr.robie.craftengineconverter</groupId>
@@ -207,6 +220,7 @@ No available for the moment.
 ```
 
 **Gradle:**
+
 ```gradle
 dependencies {
     compileOnly 'fr.robie.craftengineconverter:API:1.0'
@@ -235,14 +249,48 @@ public class MyPluginConverter extends Converter {
 
 ### Using the Tag System
 
-```java
-// Register a custom tag processor
-TagProcessor myProcessor = new MyCustomTagProcessor();
-tagResolverRegistry.register(myProcessor);
+You can register custom tags to be processed in any text (packets, world conversion, etc.).
 
-// Process tags in a string
-String input = "<glyph:my_icon>Hello World";
-String output = TagResolverUtils.processTags(input, player, tagProcessors);
+**Registering a custom tag processor:**
+
+```java
+// Get the ITagResolver from Bukkit Services Manager
+RegisteredServiceProvider<ITagResolver> rsp = Bukkit.getServicesManager().getRegistration(ITagResolver.class);
+if (rsp != null) {
+    ITagResolver tagResolver = rsp.getProvider();
+
+    // Register your custom processor
+    tagResolver.registerTagProcessor(new TagProcessor() {
+        @Override
+        public String getTagName() {
+            return "My Custom Tag";
+        }
+
+        @Override
+        public Pattern getPattern() {
+            return Pattern.compile("<my_tag:([^>]+)>");
+        }
+
+        @Override
+        public boolean hasTag(String input) {
+            return input.contains("<my_tag:");
+        }
+
+        @Override
+        public Optional<String> process(String input, Player player) {
+            // Replace <my_tag:hello> with "Hi!"
+            return Optional.of(input.replace("<my_tag:hello>", "Hi!"));
+        }
+    });
+}
+```
+
+**Resolving tags in a string:**
+
+```java
+ITagResolver tagResolver = ...; // Get from services
+Optional<String> resolved = tagResolver.resolveTags("<glyph:heart> Hello!", player);
+String output = resolved.orElse("<glyph:heart> Hello!");
 ```
 
 ### Using SnakeUtils for YAML Manipulation
@@ -256,13 +304,13 @@ utils.setValue("items.my_item.display_name", "My Item");
 String name = utils.getString("items.my_item.display_name");
 
 // Work with sections
-SnakeUtils section = utils.getSection("items.my_item");
+SnakeUtils section = this.utils.getSection("items.my_item");
 section.setValue("material", "DIAMOND_SWORD");
 
 // Get typed values
-int amount = utils.getInt("items.my_item.amount", 1);
-List<String> lore = utils.getStringList("items.my_item.lore");
-Map<String, Object> data = utils.getMap("items.my_item");
+int amount = this.utils.getInt("items.my_item.amount", 1);
+List<String> lore = this.utils.getStringList("items.my_item.lore");
+Map<String, Object> data = this.utils.getMap("items.my_item");
 
 // Save changes
 utils.save();
@@ -271,6 +319,7 @@ utils.save();
 ## 🏗️ Building
 
 ### Prerequisites
+
 - JDK 21 or higher
 - Maven 3.6+
 - Git
@@ -312,6 +361,7 @@ Contributions are welcome! Please follow these guidelines:
 5. **Open** a Pull Request
 
 ### Code Style
+
 - Follow standard Java conventions
 - Use meaningful variable and method names
 - Add JavaDoc comments for public APIs

@@ -1,32 +1,40 @@
 package fr.robie.craftengineconverter.converter;
 
-import fr.robie.craftengineconverter.common.utils.ObjectUtils;
-import fr.robie.craftengineconverter.utils.enums.Template;
-import fr.robie.craftengineconverter.utils.manager.InternalTemplateManager;
+import fr.robie.craftengineconverter.api.configuration.Configuration;
+import fr.robie.craftengineconverter.api.configuration.ConfigurationKey;
+import fr.robie.craftengineconverter.api.configuration.CraftEngineItemsConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.GenerationConfiguration;
+import fr.robie.craftengineconverter.api.configuration.item.models.model.SimpleModelConfiguration;
+import fr.robie.craftengineconverter.api.utils.ObjectUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class ItemConverter extends ObjectUtils {
+    private final Map<String, ItemConverter> resolvedDependencies = new HashMap<>();
+
     protected final @NotNull String itemId;
     private final Converter converter;
-    private final Map<String,Object> savedModelTemplates = new HashMap<>();
-    public final CraftEngineItemUtils craftEngineItemUtils;
     protected boolean excludeFromInventory = false;
     protected YamlConfiguration fileConfig;
     protected String assetId;
 
-    public ItemConverter(@NotNull String itemId, ConfigurationSection craftEngineItemSection, Converter converter, YamlConfiguration fileConfig) {
+    private boolean internalOnly = false;
+
+    protected final CraftEngineItemsConfiguration craftEngineItemsConfiguration;
+
+    public ItemConverter(@NotNull String itemId, Converter converter, YamlConfiguration fileConfig) {
         this.itemId = itemId;
         this.converter = converter;
-        this.craftEngineItemUtils = new CraftEngineItemUtils(craftEngineItemSection);
         this.fileConfig = fileConfig;
         this.fileConfig.options().pathSeparator('\n');
+        this.craftEngineItemsConfiguration = new CraftEngineItemsConfiguration(itemId, Configuration.get(ConfigurationKey.DEFAULT_MATERIAL));
     }
 
     public void convertItem(){
@@ -53,7 +61,7 @@ public abstract class ItemConverter extends ObjectUtils {
         convertCustomData();
         convertJukeboxPlayable();
         convertConsumable();
-        convertEquipable();
+        convertEquippable();
         convertDamageResistance();
         convertEnchantableComponent();
         convertGliderComponent();
@@ -69,6 +77,15 @@ public abstract class ItemConverter extends ObjectUtils {
         convertCanPlaceOnComponent();
         convertCanBreakComponent();
         convertOversizedInGui();
+        convertPaintingVariant();
+        convertKineticComponent();
+        convertPiercingWeaponComponent();
+        convertAttackRangeComponent();
+        convertSwingAnimationComponent();
+        convertUseEffectsComponent();
+        convertDamageTypeComponent();
+        convertMinimumAttackChargeComponent();
+        convertProfileComponent();
         convertItemTexture();
         convertOther();
     }
@@ -95,7 +112,7 @@ public abstract class ItemConverter extends ObjectUtils {
     public void convertCustomData(){}
     public void convertJukeboxPlayable(){}
     public void convertConsumable(){}
-    public void convertEquipable(){}
+    public void convertEquippable(){}
     public void convertDamageResistance(){}
     public void convertEnchantableComponent(){}
     public void convertGliderComponent(){}
@@ -111,41 +128,21 @@ public abstract class ItemConverter extends ObjectUtils {
     public void convertCanPlaceOnComponent(){}
     public void convertCanBreakComponent(){}
     public void convertOversizedInGui(){}
+    public void convertPaintingVariant(){}
+    public void convertKineticComponent(){}
+    public void convertPiercingWeaponComponent(){}
+    public void convertAttackRangeComponent(){}
+    public void convertSwingAnimationComponent(){}
+    public void convertUseEffectsComponent(){}
+    public void convertDamageTypeComponent(){}
+    public void convertMinimumAttackChargeComponent(){}
+    public void convertProfileComponent(){}
     public void convertItemTexture(){}
     public void convertExcludeFromInventory(){}
     public void convertOther(){}
 
-    public void setSavedModelTemplates(Map<String,Object> savedModelTemplates){
-        this.savedModelTemplates.clear();
-        if (savedModelTemplates != null && !savedModelTemplates.isEmpty()) {
-            this.savedModelTemplates.putAll(savedModelTemplates);
-        }
-    }
-
-    public Map<String,Object> getSavedModelTemplates(){
-        return new HashMap<>(this.savedModelTemplates);
-    }
-
     protected boolean notEmptyOrNull(List<String> list, int index) {
         return list != null && list.size() > index && list.get(index) != null && !list.get(index).isEmpty();
-    }
-
-    protected void setIfNotNull(ConfigurationSection section, String key, Object value) {
-        if (value != null) {
-            section.set(key, value);
-        }
-    }
-
-    protected void setIfNotEmpty(ConfigurationSection section, String key, String value) {
-        if (value != null && !value.isEmpty()) {
-            section.set(key, value);
-        }
-    }
-
-    protected void setIfTrue(ConfigurationSection section, String key, boolean value) {
-        if (value) {
-            section.set(key, true);
-        }
     }
 
     public void setAssetId(String assetId){
@@ -171,17 +168,49 @@ public abstract class ItemConverter extends ObjectUtils {
         return equipementsSection;
     }
 
-    public boolean isExcludeFromInventory() {
-        return this.excludeFromInventory;
+    public CraftEngineItemsConfiguration getCraftEngineItemsConfiguration() {
+        return this.craftEngineItemsConfiguration;
+    }
+
+    public boolean isIncludeInsideInventory() {
+        return !this.excludeFromInventory;
     }
 
     public Converter getConverter() {
         return this.converter;
     }
 
-    public Map<String,Object> getEffectMap(String effectName,double amplifier,int duration, boolean ambient, boolean show_particles, boolean show_icon){
-        return InternalTemplateManager.parseTemplate(Template.MINECRAFT_EFFECT,"%effect_id%",effectName,"%effect_amplifier%",amplifier,"%effect_duration%",
-                duration, "%effect_ambient%", ambient, "%effect_show_particles%", show_particles,
-                "%effect_show_icon%" ,show_icon);
+    public void markAsInternalOnly() {
+        this.internalOnly = true;
+    }
+
+    public boolean isInternalOnly() {
+        return this.internalOnly;
+    }
+
+    protected SimpleModelConfiguration buildSimpleModel(String parent, String texture) {
+        GenerationConfiguration generation = new GenerationConfiguration(parent);
+        generation.addTexture("layer0", texture);
+
+        SimpleModelConfiguration model = new SimpleModelConfiguration(texture);
+        model.setGeneration(generation);
+        return model;
+    }
+
+    public List<String> getDependencies() {
+        return Collections.emptyList();
+    }
+
+    public void addResolvedDependency(String rawItemId, ItemConverter converter) {
+        this.resolvedDependencies.put(rawItemId, converter);
+    }
+
+    public @NotNull String getItemId() {
+        return this.itemId;
+    }
+
+    @Nullable
+    public ItemConverter getResolvedDependency(String rawItemId) {
+        return this.resolvedDependencies.get(rawItemId);
     }
 }

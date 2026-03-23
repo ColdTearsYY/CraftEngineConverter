@@ -5,13 +5,16 @@ public enum Permission {
     COMMAND_RELOAD("Allows the user to reload the plugin configuration."),
     COMMAND_CONVERT("Allows the user to convert assets for CraftEngine"),
     COMMAND_CLEARFILESCACHE("Allows the user to clear the file cache used by the plugin."),
+    COMMAND_WORLDCONVERTER("Allows the user to convert world blocks from other plugins"),
+    COMMAND_WORLDCONVERTER_START("Allows the user to start a world conversion process"),
+    COMMAND_WORLDCONVERTER_CLEAR_CACHED_CHUNKS("Allows the user to clear processed chunks cache"),
+    COMMAND_WORLDCONVERTER_RESTORE("Allows the user to restore converted blocks/entities to their original state"),
 
     NEXO_BLOCK_INTERACT_CONVERSION("Allows the user to convert Nexo blocks on interaction"),
     NEXO_FURNITURE_INTERACT_CONVERSION("Allows the user to convert Nexo furniture on interaction"),
 
     ITEMSADDER_BLOCK_INTERACT_CONVERSION("Allows the user to convert ItemsAdder blocks on interaction"),
-    ITEMSADDER_FURNITURE_INTERACT_CONVERSION("Allows the user to convert ItemsAdder furniture on interaction")
-    ;
+    ITEMSADDER_FURNITURE_INTERACT_CONVERSION("Allows the user to convert ItemsAdder furniture on interaction");
     private final String description;
     private final String[] args;
 
@@ -32,7 +35,7 @@ public enum Permission {
      * @return The permission string.
      */
     public String asPermission() {
-        return "craftengineconverter."+name().toLowerCase().replace("_", ".");
+        return "craftengineconverter." + name().toLowerCase().replace("_", ".");
     }
 
     public String toPermission() {
@@ -60,10 +63,10 @@ public enum Permission {
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public String[] getArgs() {
-        return args;
+        return this.args;
     }
 }
